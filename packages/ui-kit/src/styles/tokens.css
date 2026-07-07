@@ -1,7 +1,22 @@
 :root {
     --spacing: 4px;
-    --font-size: 14px;
-    --font-weight: 400;
+
+    --font-size-display-xl: 48px;
+    --font-size-display-l: 36px;
+    --font-size-heading-l: 28px;
+    --font-size-heading-m: 24px;
+    --font-size-heading-s: 20px;
+    --font-size-body-l: 16px;
+    --font-size-body-m: 14px;
+    --font-size-body-s: 12px;
+    --font-size-label-l: 14px;
+    --font-size-label-m: 12px;
+    --font-size-label-s: 11px;
+
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-bold: 700;
 
     --neutral-950: #0f0f0f;
     --neutral-900: #1c1b1b;

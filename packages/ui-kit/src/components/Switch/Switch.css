@@ -1,0 +1,82 @@
+@layer components {
+    .ui-kit-switch {
+        --switch-gap: 8px;
+        --switch-track-width: 36px;
+        --switch-track-height: 20px;
+        --switch-track-radius: 10px;
+        --switch-track-bg: var(--neutral-400);
+        --switch-track-checked-bg: var(--accent-600);
+        --switch-thumb-size: 16px;
+        --switch-thumb-radius: 50%;
+        --switch-thumb-bg: #ffffff;
+        --switch-thumb-offset: 2px;
+        --switch-disabled-opacity: 0.4;
+        --switch-label-color: var(--neutral-900);
+        --switch-label-font-size: var(--font-size-body-m, 14px);
+        --switch-label-font-weight: var(--font-weight-regular, 400);
+        --switch-focus-outline-color: var(--semantic-focus);
+
+        display: inline-flex;
+        align-items: center;
+        gap: var(--switch-gap);
+        cursor: pointer;
+    }
+
+    .ui-kit-switch__root {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        width: var(--switch-track-width);
+        height: var(--switch-track-height);
+        border-radius: var(--switch-track-radius);
+        background: var(--switch-track-bg);
+        flex-shrink: 0;
+        transition: background 0.2s ease;
+    }
+
+    .ui-kit-switch__root:focus-visible {
+        box-shadow: 0 0 0 2px var(--switch-focus-outline-color);
+    }
+
+    .ui-kit-switch__root[data-checked] {
+        background: var(--switch-track-checked-bg);
+    }
+
+    .ui-kit-switch__thumb {
+        position: absolute;
+        left: var(--switch-thumb-offset);
+        width: var(--switch-thumb-size);
+        height: var(--switch-thumb-size);
+        border-radius: var(--switch-thumb-radius);
+        background: var(--switch-thumb-bg);
+        transition: transform 0.2s ease;
+    }
+
+    .ui-kit-switch__root[data-checked] .ui-kit-switch__thumb {
+        transform: translateX(calc(var(--switch-track-width) - var(--switch-thumb-size) - var(--switch-thumb-offset) * 2));
+    }
+
+    .ui-kit-switch__label {
+        color: var(--switch-label-color);
+        font-size: var(--switch-label-font-size);
+        font-weight: var(--switch-label-font-weight);
+        line-height: 1.2;
+        user-select: none;
+    }
+
+    /* Disabled */
+    .ui-kit-switch[data-disabled] {
+        opacity: var(--switch-disabled-opacity);
+        cursor: not-allowed;
+    }
+
+    /* Size L */
+    .ui-kit-switch-size-l {
+        --switch-track-width: 44px;
+        --switch-track-height: 24px;
+        --switch-thumb-size: 20px;
+        --switch-track-radius: 12px;
+        --switch-label-font-size: var(--font-size-body-l, 16px);
+        --switch-thumb-offset: 2px;
+    }
+}

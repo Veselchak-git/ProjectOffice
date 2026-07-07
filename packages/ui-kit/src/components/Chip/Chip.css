@@ -1,0 +1,86 @@
+@layer components {
+    .ui-kit-chip {
+        --chip-gap: 4px;
+        --chip-height: 24px;
+        --chip-padding-inline: 8px;
+        --chip-border-radius: 6px;
+        --chip-font-size: var(--font-size-label-m, 12px);
+        --chip-font-weight: var(--font-weight-medium, 500);
+
+        --chip-accent-bg: var(--accent-100);
+        --chip-accent-text: var(--accent-700);
+        --chip-neutral-bg: var(--neutral-200);
+        --chip-neutral-text: var(--neutral-800);
+        --chip-red-bg: var(--red-100);
+        --chip-red-text: var(--red-700);
+        --chip-green-bg: var(--green-100);
+        --chip-green-text: var(--green-700);
+        --chip-orange-bg: var(--orange-100);
+        --chip-orange-text: var(--orange-700);
+
+        --chip-disabled-opacity: 0.4;
+        --chip-remove-size: 14px;
+
+        display: inline-flex;
+        align-items: center;
+        gap: var(--chip-gap);
+        height: var(--chip-height);
+        padding-inline: var(--chip-padding-inline);
+        border-radius: var(--chip-border-radius);
+        font-size: var(--chip-font-size);
+        font-weight: var(--chip-font-weight);
+        line-height: 1;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .ui-kit-chip-color-accent {
+        background: var(--chip-accent-bg);
+        color: var(--chip-accent-text);
+    }
+
+    .ui-kit-chip-color-neutral {
+        background: var(--chip-neutral-bg);
+        color: var(--chip-neutral-text);
+    }
+
+    .ui-kit-chip-color-red {
+        background: var(--chip-red-bg);
+        color: var(--chip-red-text);
+    }
+
+    .ui-kit-chip-color-green {
+        background: var(--chip-green-bg);
+        color: var(--chip-green-text);
+    }
+
+    .ui-kit-chip-color-orange {
+        background: var(--chip-orange-bg);
+        color: var(--chip-orange-text);
+    }
+
+    .ui-kit-chip-disabled {
+        opacity: var(--chip-disabled-opacity);
+        pointer-events: none;
+    }
+
+    .ui-kit-chip__remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--chip-remove-size);
+        height: var(--chip-remove-size);
+        border: none;
+        padding: 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        border-radius: 50%;
+        opacity: 0.7;
+        transition: opacity 0.15s;
+    }
+
+    .ui-kit-chip__remove:hover {
+        opacity: 1;
+    }
+}

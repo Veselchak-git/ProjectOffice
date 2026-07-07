@@ -1,0 +1,134 @@
+@layer components {
+    .ui-kit-input {
+        --input-gap: 4px;
+        --input-label-text: var(--neutral-900);
+        --input-label-font-size: var(--font-size-label-s, 11px);
+        --input-label-font-weight: var(--font-weight-light, 300);
+        --input-bg: var(--neutral-100);
+        --input-text: var(--neutral-900);
+        --input-placeholder: var(--neutral-500);
+        --input-border-color: transparent;
+        --input-border-width: 2px;
+        --input-min-height: 40px;
+        --input-padding-inline: 12px;
+        --input-padding-block: 8px;
+        --input-border-radius: 8px;
+        --input-font-size: var(--font-size-body-m, 14px);
+        --input-font-weight: var(--font-weight-regular, 400);
+        --input-icon-size: 16px;
+        --input-focus-outline-color: var(--semantic-focus);
+        --input-focus-outline-offset: 2px;
+        --input-hover-bg: var(--neutral-50);
+        --input-error-bg: var(--red-100);
+        --input-error-border-color: var(--red-500);
+        --input-error-text: var(--red-500);
+        --input-disabled-bg: var(--neutral-200);
+        --input-disabled-text: var(--neutral-400);
+        --input-disabled-border-color: transparent;
+
+        display: flex;
+        flex-direction: column;
+        gap: var(--input-gap, 4px);
+        width: 100%;
+    }
+
+    .ui-kit-input__label {
+        color: var(--input-label-text, var(--neutral-900));
+        font-size: var(--input-label-font-size, 11px);
+        font-weight: var(--input-label-font-weight, 300);
+        line-height: 1.3;
+        user-select: none;
+    }
+
+    .ui-kit-input__field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: var(--input-min-height, 40px);
+        padding: var(--input-padding-block, 8px) var(--input-padding-inline, 12px);
+        border: var(--input-border-width, 2px) solid var(--input-border-color, transparent);
+        border-radius: var(--input-border-radius, 8px);
+        background-color: var(--input-bg, var(--neutral-100));
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .ui-kit-input__native {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--input-text, var(--neutral-900));
+        font: inherit;
+        font-size: var(--input-font-size, 14px);
+        font-weight: var(--input-font-weight, 400);
+        line-height: 1.2;
+
+        &::placeholder {
+            color: var(--input-placeholder, var(--neutral-500));
+        }
+    }
+
+    .ui-kit-input__icon {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: var(--input-icon-size, 16px);
+        height: var(--input-icon-size, 16px);
+        color: var(--input-text, var(--neutral-900));
+    }
+
+    .ui-kit-input__error {
+        color: var(--input-error-text, var(--red-500));
+        font-size: var(--font-size-label-s, 11px);
+        font-weight: var(--font-weight-light, 300);
+        line-height: 1.3;
+    }
+
+    .ui-kit-input:hover:not(.ui-kit-input-error):not(.ui-kit-input-disabled) .ui-kit-input__field {
+        background-color: var(--input-hover-bg, var(--neutral-50));
+    }
+
+    .ui-kit-input.ui-kit-input-focused .ui-kit-input__field {
+        background-color: var(--input-bg, var(--neutral-100));
+        box-shadow: 0 0 0 2px var(--input-focus-outline-color, var(--accent-300));
+        outline-offset: var(--input-focus-outline-offset, 2px);
+    }
+
+    .ui-kit-input.ui-kit-input-error .ui-kit-input__field {
+        background-color: var(--input-error-bg, var(--red-100));
+        border-color: var(--input-error-border-color, var(--red-500));
+    }
+
+    .ui-kit-input.ui-kit-input-error.ui-kit-input-focused .ui-kit-input__field {
+        box-shadow: 0 0 0 2px var(--input-error-border-color, var(--red-500));
+    }
+
+    .ui-kit-input.ui-kit-input-disabled {
+        .ui-kit-input__field {
+            background-color: var(--input-disabled-bg, var(--neutral-200));
+            cursor: not-allowed;
+        }
+
+        .ui-kit-input__native {
+            color: var(--input-disabled-text, var(--neutral-400));
+            cursor: not-allowed;
+        }
+
+        .ui-kit-input__label {
+            color: var(--input-disabled-text, var(--neutral-400));
+        }
+    }
+
+    .ui-kit-input-size-l {
+        --input-min-height: 48px;
+        --input-padding-inline: 16px;
+        --input-padding-block: 12px;
+        --input-font-size: var(--font-size-body-l, 16px);
+        --input-icon-size: 20px;
+    }
+}

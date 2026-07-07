@@ -1,0 +1,72 @@
+@layer components {
+    .ui-kit-context-item {
+        --context-item-gap: 8px;
+        --context-item-height: 36px;
+        --context-item-padding-inline: 8px;
+        --context-item-border-radius: 6px;
+        --context-item-font-size: var(--font-size-body-m, 14px);
+        --context-item-font-weight: var(--font-weight-regular, 400);
+        --context-item-text: var(--neutral-900);
+        --context-item-icon-color: var(--neutral-600);
+        --context-item-hover-bg: var(--neutral-100);
+        --context-item-active-bg: var(--neutral-200);
+        --context-item-disabled-opacity: 0.4;
+
+        display: flex;
+        align-items: center;
+        gap: var(--context-item-gap);
+        width: 100%;
+        height: var(--context-item-height);
+        padding-inline: var(--context-item-padding-inline);
+        border: none;
+        border-radius: var(--context-item-border-radius);
+        background: transparent;
+        color: var(--context-item-text);
+        font-size: var(--context-item-font-size);
+        font-weight: var(--context-item-font-weight);
+        line-height: 1;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .ui-kit-context-item:hover:not(.ui-kit-context-item-disabled) {
+        background: var(--context-item-hover-bg);
+    }
+
+    .ui-kit-context-item:active:not(.ui-kit-context-item-disabled) {
+        background: var(--context-item-active-bg);
+    }
+
+    .ui-kit-context-item__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        color: var(--context-item-icon-color);
+    }
+
+    .ui-kit-context-item__label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ui-kit-context-item__end-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        color: var(--context-item-icon-color);
+    }
+
+    .ui-kit-context-item-disabled {
+        opacity: var(--context-item-disabled-opacity);
+        pointer-events: none;
+    }
+}
