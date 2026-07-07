@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  GUEST
+  PROJECT_MANAGER
+  ADMIN
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProjectMemberRole {
+  VIEWER
+  REPORTER
+  UPDATER
+  DEVELOPER
+  MANAGER
+  ADMINISTRATOR
+}
+
+enum IssueCategory {
+  BUG
+  FEATURE
+  TASK
+  IMPROVEMENT
+  QUESTION
+}
+
+enum IssuePriority {
+  CRITICAL
+  SERIOUS
+  MINOR
+  GENERAL
+}
+
+enum Reproducibility {
+  ALWAYS
+  SOMETIMES
+  RANDOMLY
+  NOT_REPRODUCIBLE
+  NOT_ATTEMPTED
+}
+
+enum IssueStatus {
+  NEW
+  ACKNOWLEDGED
+  CONFIRMED
+  ASSIGNED
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id        Int    @id @default(autoincrement())
+  login     String @unique
+  hashPassword String
+  role      Role   @default(GUEST)
+
+  projectMemberships ProjectMember[]
+  createdIssues      Issue[]         @relation("reporter")
+  assignedIssues     Issue[]         @relation("assignee")
+  auditLogs          AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+
+  memberships ProjectMember[]
+  versions    ProductVersion[]
+  issues      Issue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectMember {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  projectId Int
+  role      ProjectMemberRole
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model ProductVersion {
+  id        Int    @id @default(autoincrement())
+  projectId Int
+  version   String
+
+  project Project @relation(fields: [projectId], references: [id])
+  issues  Issue[]
+
+  @@unique([projectId, version])
+}
+
+model Issue {
+  id               Int            @id @default(autoincrement())
+  title            String
+  projectId        Int
+  category         IssueCategory
+  priority         IssuePriority
+  reproducibility  Reproducibility?
+  productVersionId Int?
+  description      String?
+  additionalInfo   String?
+  status           IssueStatus    @default(NEW)
+  assigneeId       Int?
+  reporterId       Int
+  solution         String?
+
+  project        Project        @relation(fields: [projectId], references: [id])
+  productVersion ProductVersion? @relation(fields: [productVersionId], references: [id])
+  assignee       User?           @relation("assignee", fields: [assigneeId], references: [id])
+  reporter       User            @relation("reporter", fields: [reporterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  eventType  String
+  subjectType String
+  objectType String
+  subjectId  Int
+  objectId   Int
+  oldValue   String?
+  newValue   String?
+
+  subject User @relation(fields: [subjectId], references: [id])
+
+  createdAt DateTime @default(now())
+}

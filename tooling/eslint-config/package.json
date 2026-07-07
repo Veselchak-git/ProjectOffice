@@ -1,0 +1,44 @@
+{
+  "name": "@helpdesk-portal/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./react-app": "./react-app.js",
+    "./react-library": "./react-library.js",
+    "./fastify": "./fastify.js",
+    "./library": "./library.js"
+  },
+  "files": [
+    "README.md",
+    "base.js",
+    "react-app.js",
+    "react-library.js",
+    "fastify.js",
+    "library.js"
+  ],
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.4.1",
+    "globals": "17.6.0",
+    "typescript-eslint": "8.61.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.2",
+    "eslint-config-prettier": "10.1.8",
+    "@tanstack/eslint-plugin-query": "5.101.0"
+  },
+  "peerDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
+    "globals": "^17.6.0",
+    "typescript-eslint": "^8.61.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-config-prettier": "^10.1.8",
+    "@tanstack/eslint-plugin-query": "^5.101.0"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  }
+}

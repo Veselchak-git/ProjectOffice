@@ -1,0 +1,51 @@
+{
+    "name": "@helpdesk-portal/icons",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "vite build",
+        "lint": "eslint .",
+        "format": "prettier --log-level=silent --write .",
+        "type-check": "tsc -b --noEmit",
+        "test": "vitest"
+    },
+    "exports": {
+        "./*.svg": {
+            "import": "./dist/*.svg",
+            "types": "./dist/icon-svg-url.d.ts"
+        },
+        "./*.svg?react": {
+            "import": "./dist/*.svg",
+            "types": "./dist/icon-svg-react.d.ts"
+        },
+        "./*.svg?url": {
+            "import": "./dist/*.svg",
+            "types": "./dist/icon-svg-url.d.ts"
+        }
+    },
+    "peerDependencies": {
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@helpdesk-portal/eslint-config": "*",
+        "@helpdesk-portal/prettier-config": "*",
+        "@helpdesk-portal/typescript-config": "*",
+        "@helpdesk-portal/vite-config": "*",
+        "clsx": "2.1.1",
+        "vite": "8.0.16",
+        "@vitejs/plugin-react": "6.0.2",
+        "vite-plugin-dts": "5.0.2",
+        "terser": "5.48.0",
+        "vitest": "4.1.8",
+        "vite-plugin-svgr": "5.2.0",
+        "vite-plugin-static-copy": "4.1.1"
+    }
+}

@@ -1,0 +1,108 @@
+{
+  "psi-header.config": {
+    "forceToTop": true,
+    "blankLinesAfter": 1,
+    "spacesBetweenYears": false,
+    "license": "Custom"
+  },
+  "psi-header.changes-tracking": {
+    "isActive": true,
+    "include": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+    "exclude": [
+      "markdown",
+      "json",
+      "jsonc",
+      "shellscript",
+      "mdx",
+      "html"
+    ],
+    "excludeGlob": [
+      "**/.*",
+      "**/*.eslint*",
+      "**/*.prettier*",
+      "**/*.babelrc*",
+      "**/node_modules/**",
+      "**/scripts/**",
+      "**/dist/**"
+    ],
+    "autoHeader": "autoSave",
+    "enforceHeader": true,
+    "replace": [
+      "Copyright",
+      "Исключительное право"
+    ]
+  },
+  "psi-header.templates": [
+    {
+      "language": "javascript",
+      "template": [
+        "Copyright (c) <<yeartoyear(2016,now)>> Tecom LLC",
+        "All rights reserved",
+        "",
+        "Исключительное право (c) <<yeartoyear(2016,now)>> принадлежит ООО Теком",
+        "Все права защищены"
+      ]
+    },
+    {
+      "language": "javascriptreact",
+      "mapTo": "javascript"
+    },
+    {
+      "language": "typescript",
+      "mapTo": "javascript"
+    },
+    {
+      "language": "typescriptreact",
+      "mapTo": "javascript"
+    },
+    {
+      "language": "java",
+      "mapTo": "javascript"
+    }
+  ],
+  "psi-header.lang-config": [
+    {
+      "language": "javascript",
+      "begin": "/*",
+      "prefix": " * ",
+      "end": " */",
+      "beforeHeader": [],
+      "forceToTop": true
+    },
+    {
+      "language": "javascriptreact",
+      "mapTo": "javascript"
+    },
+    {
+      "language": "typescript",
+      "mapTo": "javascript"
+    },
+    {
+      "language": "typescriptreact",
+      "mapTo": "javascript"
+    }
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

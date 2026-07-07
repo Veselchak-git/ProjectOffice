@@ -1,0 +1,11 @@
+/* TODO не работает из самой либы https://github.com/vitejs/vite/issues/22301 нужно в consumer приложении обьявить свой порядок стилей */
+@layer reset, fonts, tokens, utilities, surfaces, components;
+@import "@helpdesk-portal/ui-kit/styles.css";
+#root {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}

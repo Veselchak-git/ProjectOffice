@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Monorepo Shared Dependencies Versions",
+  "description": "Centralized version management for all packages in the monorepo",
+  "type": "object",
+  "properties": {
+    "dependencies": {
+      "type": "object",
+      "description": "Shared versions used for dependencies and devDependencies across packages",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[~^]?\\d+\\.\\d+\\.\\d+.*$"
+      }
+    },
+    "peerDependencies": {
+      "type": "object",
+      "description": "Peer dependencies shared across packages",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[~^]?\\d+\\.\\d+\\.\\d+.*$"
+      }
+    }
+  },
+  "required": ["dependencies", "peerDependencies"]
+}

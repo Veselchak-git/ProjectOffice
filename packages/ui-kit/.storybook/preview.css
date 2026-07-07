@@ -1,0 +1,33 @@
+@layer reset, fonts, tokens, utilities, surfaces, components;
+
+@import "../src/styles/reset.css" layer(reset);
+@import "../src/styles/fonts.css" layer(fonts);
+@import "../src/styles/tokens.css" layer(tokens);
+@import "../src/styles/utilities.css" layer(utilities);
+@import "../src/styles/surfaces.css" layer(surfaces);
+/*
+ * В ui-kit для body заданы height: 100vh и overflow: hidden (шеллы приложений).
+ * В iframe Storybook длинные доки иначе не прокручиваются.
+ */
+body {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+}
+/*
+шрифты для сторибука грузим сразу из ui-kit т.к. в fonts другой путь
+*/
+@font-face {
+    font-family: Geologica;
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../src/assets/fonts/Geologica-Regular.woff2") format("woff2");
+}
+@font-face {
+    font-family: Geologica;
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url("../src/assets/fonts/Geologica-Light.woff2") format("woff2");
+}

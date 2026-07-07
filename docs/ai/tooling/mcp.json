@@ -1,0 +1,22 @@
+{
+    "mcpServers": {
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp"
+            ],
+            "alwaysAllow": [
+                "resolve-library-id",
+                "query-docs"
+            ],
+            "disabled": false,
+            "enabled": true
+        },
+        "figma-desktop": {
+            "type": "remote",
+            "url": "http://127.0.0.1:3845/mcp",
+            "enabled": true
+        }
+    }
+}

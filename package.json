@@ -1,0 +1,43 @@
+{
+  "name": "helpdesk-portal",
+  "version": "1.0.0",
+  "description": "",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "tooling/*"
+  ],
+  "scripts": {
+    "ci": "npm ci",
+    "prepare": "husky",
+    "clean-node-modules": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+    "clean-dist": "find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
+    "versions:sync": "node scripts/sync-versions.js",
+    "versions:collect-untracket": "node scripts/collect-untracket-version.js",
+    "versions:check": "node scripts/sync-versions.js --check",
+    "versions:dry-run": "node scripts/sync-versions.js --dry-run",
+    "lint-staged": "lint-staged"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.12.3",
+    "eslint": "10.4.1",
+    "globals": "17.6.0",
+    "typescript": "6.0.3",
+    "vite": "8.0.16",
+    "vitest": "4.1.8",
+    "lerna": "9.0.7",
+    "husky": "9.1.7",
+    "lint-staged": "17.0.7",
+    "cross-env": "10.1.0",
+    "prettier": "3.8.4"
+  },
+  "volta": {
+    "node": "24.14.0",
+    "npm": "11.9.0"
+  }
+}

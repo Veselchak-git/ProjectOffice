@@ -1,0 +1,30 @@
+{
+  "name": "@helpdesk-portal/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./tsconfig.base.json",
+    "./react-app": "./tsconfig.react-app.json",
+    "./vite-node": "./tsconfig.vite-node.json",
+    "./fastify": "./tsconfig.fastify.json",
+    "./library": "./tsconfig.library.json"
+  },
+  "files": [
+    "README.md",
+    "tsconfig.base.json",
+    "tsconfig.react-app.json",
+    "tsconfig.vite-node.json",
+    "tsconfig.fastify.json",
+    "tsconfig.library.json"
+  ],
+  "devDependencies": {
+    "typescript": "6.0.3"
+  },
+  "peerDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  }
+}

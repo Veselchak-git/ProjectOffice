@@ -1,0 +1,184 @@
+:root {
+    --spacing: 4px;
+    --font-size: 14px;
+    --font-weight: 400;
+
+    --neutral-950: #0f0f0f;
+    --neutral-900: #1c1b1b;
+    --neutral-800: #3d3c3c;
+    --neutral-700: #636262;
+    --neutral-600: #8e8d8d;
+    --neutral-500: #b8b7b7;
+    --neutral-400: #d2d1d1;
+    --neutral-300: #e7e7e7;
+    --neutral-200: #ededed;
+    --neutral-100: #f6f6f6;
+    --neutral-50: #fcfcfc;
+
+    --accent-950: #0f003b;
+    --accent-900: #170454;
+    --accent-800: #28108e;
+    --accent-700: #3a17d0;
+    --accent-600: #4e26fa;
+    --accent-500: #7a55fb;
+    --accent-400: #a692fc;
+    --accent-300: #c0b2fd;
+    --accent-200: #d4cafe;
+    --accent-100: #e7e0ff;
+    --accent-50: #f4f1ff;
+
+    --green-950: #061e15;
+    --green-900: #0b3526;
+    --green-800: #11533a;
+    --green-700: #18734f;
+    --green-600: #219365;
+    --green-500: #34b27b;
+    --green-400: #5dcc98;
+    --green-300: #8ee0b9;
+    --green-200: #beefd7;
+    --green-100: #e0f7ec;
+    --green-50: #f3fcf8;
+
+    --orange-950: #2a1702;
+    --orange-900: #452705;
+    --orange-800: #6f3f09;
+    --orange-700: #9d5b0d;
+    --orange-600: #c77712;
+    --orange-500: #e4951f;
+    --orange-400: #f6b246;
+    --orange-300: #ffcc72;
+    --orange-200: #ffe0a8;
+    --orange-100: #fff0d8;
+    --orange-50: #fff9ef;
+
+    --red-950: #290909;
+    --red-900: #471010;
+    --red-800: #6f1a1a;
+    --red-700: #992525;
+    --red-600: #bf3030;
+    --red-500: #d94444;
+    --red-400: #ea6b6b;
+    --red-300: #f39a9a;
+    --red-200: #fac8c8;
+    --red-100: #fde5e5;
+    --red-50: #fef4f4;
+}
+
+:root,
+:root[data-color-mode="light"] {
+    --semantic-text-primary: var(--neutral-900);
+    --semantic-text-secondary: var(--neutral-700);
+    --semantic-text-tertiary: var(--neutral-600);
+    --semantic-text-disabled: var(--neutral-500);
+    --semantic-text-accent: var(--accent-600);
+    --semantic-bg-base: var(--neutral-50);
+    --semantic-bg-surface: var(--neutral-100);
+    --semantic-bg-surface-elevated: #ffffff;
+    --semantic-border-default: var(--neutral-400);
+    --semantic-focus: var(--accent-300);
+
+    --semantic-btn-accent-fill-text: var(--neutral-50);
+    --semantic-btn-accent-fill-bg: var(--accent-600);
+    --semantic-btn-accent-fill-hover-bg: var(--accent-700);
+    --semantic-btn-accent-fill-pressed-bg: var(--accent-800);
+    --semantic-btn-accent-fill-disabled-bg: var(--accent-100);
+    --semantic-btn-accent-fill-disabled-text: var(--accent-400);
+
+    --semantic-btn-accent-stroke-border: var(--accent-600);
+    --semantic-btn-accent-stroke-text: var(--accent-600);
+    --semantic-btn-accent-stroke-hover-border: var(--accent-700);
+    --semantic-btn-accent-stroke-hover-bg: var(--accent-50);
+    --semantic-btn-accent-stroke-hover-text: var(--accent-700);
+    --semantic-btn-accent-stroke-pressed-border: var(--accent-800);
+    --semantic-btn-accent-stroke-pressed-bg: var(--accent-100);
+    --semantic-btn-accent-stroke-pressed-text: var(--accent-800);
+    --semantic-btn-accent-stroke-disabled-border: var(--accent-100);
+    --semantic-btn-accent-stroke-disabled-text: var(--accent-400);
+
+    --semantic-btn-accent-link-text: var(--accent-600);
+    --semantic-btn-accent-link-hover-text: var(--accent-700);
+    --semantic-btn-accent-link-active-text: var(--accent-800);
+    --semantic-btn-accent-link-disabled-text: var(--accent-400);
+
+    --semantic-btn-error-fill-text: var(--neutral-50);
+    --semantic-btn-error-fill-bg: var(--red-500);
+    --semantic-btn-error-fill-hover-bg: var(--red-600);
+    --semantic-btn-error-fill-pressed-bg: var(--red-700);
+    --semantic-btn-error-fill-disabled-bg: var(--red-100);
+    --semantic-btn-error-fill-disabled-text: var(--red-300);
+
+    --semantic-btn-error-stroke-border: var(--red-500);
+    --semantic-btn-error-stroke-text: var(--red-500);
+    --semantic-btn-error-stroke-hover-border: var(--red-600);
+    --semantic-btn-error-stroke-hover-bg: var(--red-50);
+    --semantic-btn-error-stroke-hover-text: var(--red-600);
+    --semantic-btn-error-stroke-pressed-border: var(--red-700);
+    --semantic-btn-error-stroke-pressed-bg: var(--red-100);
+    --semantic-btn-error-stroke-pressed-text: var(--red-700);
+    --semantic-btn-error-stroke-disabled-border: var(--red-200);
+    --semantic-btn-error-stroke-disabled-text: var(--red-300);
+
+    --semantic-btn-error-link-text: var(--red-500);
+    --semantic-btn-error-link-hover-text: var(--red-600);
+    --semantic-btn-error-link-active-text: var(--red-700);
+    --semantic-btn-error-link-disabled-text: var(--red-300);
+}
+
+:root[data-color-mode="dark"] {
+    --semantic-text-primary: var(--neutral-50);
+    --semantic-text-secondary: var(--neutral-300);
+    --semantic-text-tertiary: var(--neutral-500);
+    --semantic-text-disabled: var(--neutral-700);
+    --semantic-text-accent: var(--accent-400);
+    --semantic-bg-base: var(--neutral-950);
+    --semantic-bg-surface: var(--neutral-900);
+    --semantic-bg-surface-elevated: var(--neutral-800);
+    --semantic-border-default: var(--neutral-700);
+    --semantic-focus: var(--accent-300);
+
+    --semantic-btn-accent-fill-text: var(--neutral-50);
+    --semantic-btn-accent-fill-bg: var(--accent-600);
+    --semantic-btn-accent-fill-hover-bg: var(--accent-500);
+    --semantic-btn-accent-fill-pressed-bg: var(--accent-400);
+    --semantic-btn-accent-fill-disabled-bg: var(--accent-800);
+    --semantic-btn-accent-fill-disabled-text: var(--accent-600);
+
+    --semantic-btn-accent-stroke-border: var(--accent-400);
+    --semantic-btn-accent-stroke-text: var(--accent-400);
+    --semantic-btn-accent-stroke-hover-border: var(--accent-300);
+    --semantic-btn-accent-stroke-hover-bg: var(--accent-950);
+    --semantic-btn-accent-stroke-hover-text: var(--accent-300);
+    --semantic-btn-accent-stroke-pressed-border: var(--accent-200);
+    --semantic-btn-accent-stroke-pressed-bg: var(--accent-900);
+    --semantic-btn-accent-stroke-pressed-text: var(--accent-200);
+    --semantic-btn-accent-stroke-disabled-border: var(--accent-800);
+    --semantic-btn-accent-stroke-disabled-text: var(--accent-700);
+
+    --semantic-btn-accent-link-text: var(--accent-400);
+    --semantic-btn-accent-link-hover-text: var(--accent-500);
+    --semantic-btn-accent-link-active-text: var(--accent-300);
+    --semantic-btn-accent-link-disabled-text: var(--accent-600);
+
+    --semantic-btn-error-fill-text: var(--neutral-50);
+    --semantic-btn-error-fill-bg: var(--red-600);
+    --semantic-btn-error-fill-hover-bg: var(--red-500);
+    --semantic-btn-error-fill-pressed-bg: var(--red-400);
+    --semantic-btn-error-fill-disabled-bg: var(--red-800);
+    --semantic-btn-error-fill-disabled-text: var(--red-600);
+
+    --semantic-btn-error-stroke-border: var(--red-400);
+    --semantic-btn-error-stroke-text: var(--red-400);
+    --semantic-btn-error-stroke-hover-border: var(--red-300);
+    --semantic-btn-error-stroke-hover-bg: var(--red-950);
+    --semantic-btn-error-stroke-hover-text: var(--red-300);
+    --semantic-btn-error-stroke-pressed-border: var(--red-200);
+    --semantic-btn-error-stroke-pressed-bg: var(--red-900);
+    --semantic-btn-error-stroke-pressed-text: var(--red-200);
+    --semantic-btn-error-stroke-disabled-border: var(--red-800);
+    --semantic-btn-error-stroke-disabled-text: var(--red-700);
+
+    --semantic-btn-error-link-text: var(--red-400);
+    --semantic-btn-error-link-hover-text: var(--red-500);
+    --semantic-btn-error-link-active-text: var(--red-300);
+    --semantic-btn-error-link-disabled-text: var(--red-700);
+}

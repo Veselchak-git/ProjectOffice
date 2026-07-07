@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "vitest.explorer",
+    "psioniq.psi-header",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "editorconfig.editorconfig",
+    "prisma.prisma"
+  ]
+}

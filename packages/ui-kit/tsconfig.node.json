@@ -1,0 +1,8 @@
+{
+    "extends": "@helpdesk-portal/typescript-config/vite-node",
+    "compilerOptions": {
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+        "types": ["node", "vite/client"]
+    },
+    "include": ["vite.config.ts", "vitest.config.ts", ".storybook/main.ts", ".storybook/vite-env.d.ts"]
+}

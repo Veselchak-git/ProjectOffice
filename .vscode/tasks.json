@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "npm run dev --workspace=frontend",
+            "label": "dev:frontend",
+            "detail": "Start frontend development server at http://localhost:3000 and proxy backend at http://localhost:8442",
+            "options": {
+                "env": {
+                    "VITE_BACKEND_URL": "http://localhost:8442"
+                }
+            }
+        }
+    ]
+}

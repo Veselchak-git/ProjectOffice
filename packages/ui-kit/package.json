@@ -1,0 +1,70 @@
+{
+    "name": "@helpdesk-portal/ui-kit",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./styles.css": {
+            "import": "./dist/styles.css"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "vite build",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "type-check": "tsc -b --noEmit",
+        "test": "vitest",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
+    },
+    "devDependencies": {
+        "@helpdesk-portal/eslint-config": "*",
+        "@helpdesk-portal/typescript-config": "*",
+        "@helpdesk-portal/vite-config": "*",
+        "@helpdesk-portal/icons": "*",
+        "@base-ui/react": "1.5.0",
+        "@storybook/addon-a11y": "10.4.3",
+        "@storybook/addon-docs": "10.4.3",
+        "@storybook/react-vite": "10.4.3",
+        "@tanstack/react-table": "8.21.3",
+        "@tanstack/react-virtual": "3.14.2",
+        "@vitejs/plugin-react": "6.0.2",
+        "clsx": "2.1.1",
+        "date-fns": "4.4.0",
+        "eslint-plugin-storybook": "10.4.3",
+        "react": "19.2.7",
+        "react-dom": "19.2.7",
+        "react-i18next": "17.0.8",
+        "storybook": "10.4.3",
+        "terser": "5.48.0",
+        "vite": "8.0.16",
+        "vite-plugin-dts": "5.0.2",
+        "@testing-library/dom": "10.4.1",
+        "@testing-library/jest-dom": "6.9.1",
+        "@testing-library/react": "16.3.2",
+        "@testing-library/user-event": "14.6.1",
+        "jsdom": "29.1.1",
+        "vitest": "4.1.8"
+    },
+    "peerDependencies": {
+        "@base-ui/react": "^1.5.0",
+        "@tanstack/react-table": "^8.21.3",
+        "@tanstack/react-virtual": "^3.14.2",
+        "@helpdesk-portal/icons": "*",
+        "clsx": "^2.1.1",
+        "date-fns": "^4.4.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-i18next": "^17.0.3"
+    }
+}

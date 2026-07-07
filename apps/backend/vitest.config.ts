@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { defineConfig } from "vitest/config";
+
+const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+    resolve: {
+        alias: {
+            "@": path.resolve(currentDirectory, "src")
+        }
+    },
+    test: {
+        environment: "node",
+        globals: true
+    }
+});
