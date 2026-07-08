@@ -1,11 +1,4 @@
-/*
- * Copyright (c) 2016-2026 Tecom LLC
- * All rights reserved
- *
- * Исключительное право (c) 2016-2026 принадлежит ООО Теком
- * Все права защищены
- */
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 
 import { BaseLayout, LoginLayout } from "../layout";
 
@@ -15,15 +8,52 @@ export const routes = createBrowserRouter([
         element: <BaseLayout />,
         children: [
             {
-                path: "/",
+                index: true,
+                element: <Navigate to="/projects" replace />,
+            },
+            {
+                path: "projects",
+                lazy: async () => {
+                    const { ProjectsPage } = await import("@/pages/projects-page");
+                    return { Component: ProjectsPage };
+                },
+            },
+            {
+                path: "projects/:id",
+                lazy: async () => {
+                    const { ProjectPage } = await import("@/pages/project-page");
+                    return { Component: ProjectPage };
+                },
+            },
+            {
+                path: "tasks",
                 lazy: async () => {
                     const { HomePage } = await import("@/pages/home-page");
-                    return {
-                        Component: HomePage
-                    };
-                }
-            }
-        ]
+                    return { Component: HomePage };
+                },
+            },
+            {
+                path: "audit-log",
+                lazy: async () => {
+                    const { HomePage } = await import("@/pages/home-page");
+                    return { Component: HomePage };
+                },
+            },
+            {
+                path: "users",
+                lazy: async () => {
+                    const { HomePage } = await import("@/pages/home-page");
+                    return { Component: HomePage };
+                },
+            },
+            {
+                path: "profile",
+                lazy: async () => {
+                    const { ProfilePage } = await import("@/pages/profile-page");
+                    return { Component: ProfilePage };
+                },
+            },
+        ],
     },
     {
         path: "/login",
@@ -34,8 +64,8 @@ export const routes = createBrowserRouter([
                 lazy: async () => {
                     const { LoginPage } = await import("@/pages/login-page");
                     return { Component: LoginPage };
-                }
-            }
-        ]
-    }
+                },
+            },
+        ],
+    },
 ]);
