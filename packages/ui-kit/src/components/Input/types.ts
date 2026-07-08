@@ -7,7 +7,7 @@ export interface IInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
     color?: InputColor;
     inputSize?: InputSize;
     label?: string;
-    errorMessage?: string;
+    errorMessage?: string | undefined;
     startIcon?: ReactNode;
     endIcon?: ReactNode;
     filled?: boolean;

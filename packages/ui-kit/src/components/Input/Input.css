@@ -1,13 +1,13 @@
 @layer components {
     .ui-kit-input {
         --input-gap: 4px;
-        --input-label-text: var(--neutral-900);
+        --input-label-text: var(--semantic-text-primary);
         --input-label-font-size: var(--font-size-label-s, 11px);
         --input-label-font-weight: var(--font-weight-light, 300);
         --input-bg: var(--neutral-100);
         --input-text: var(--neutral-900);
         --input-placeholder: var(--neutral-500);
-        --input-border-color: transparent;
+        --input-border-color: var(--semantic-border-default);
         --input-border-width: 2px;
         --input-min-height: 40px;
         --input-padding-inline: 12px;
