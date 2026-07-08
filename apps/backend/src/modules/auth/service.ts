@@ -12,10 +12,11 @@ import type { UserRepository } from "@/modules/users/repository.js";
 import type { JwtPayload } from "@/plugins/jwt-plugin/model.js";
 
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
-import { verifyPassword } from "@/shared/lib/hash-password/index.js";
+import { hashPassword, verifyPassword } from "@/shared/lib/hash-password/index.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 
-import type { AuthUser, CurrentUserResponse, LoginResponse, getCurrentUserSchema, postLoginSchema } from "./schema.js";
+import type { changePasswordSchema, getCurrentUserSchema, postLoginSchema } from "./schema.js";
+import type { AuthUser, CurrentUserResponse, LoginResponse } from "./schema.js";
 
 const normalizeLogin = (login: string) => login.trim().toLowerCase();
 
@@ -74,4 +75,32 @@ export const getCurrentUserService = async (
             role: request.user.role
         }
     };
+};
+
+export const changePasswordService = async (
+    request: FastifyRequestTypeBox<typeof changePasswordSchema>
+): Promise<{ message: string }> => {
+    const userId = Number(request.user.sub);
+    const { currentPassword, newPassword } = request.body;
+
+    const userRecord = await request.server.userRepository.findUserRecordByLogin(request.user.login);
+
+    if (!userRecord) {
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "User not found", "USER_NOT_FOUND");
+    }
+
+    const isPasswordValid = await verifyPassword(
+        currentPassword,
+        userRecord.hashPassword,
+        request.server.config.SALT_SECRET
+    );
+
+    if (!isPasswordValid) {
+        throw new AppError(HTTP_STATUS.BAD_REQUEST, "Current password is incorrect", "INVALID_CURRENT_PASSWORD");
+    }
+
+    const newHash = await hashPassword(newPassword, request.server.config.SALT_SECRET);
+    await request.server.userRepository.updateUserPassword(userId, newHash);
+
+    return { message: "Password changed successfully" };
 };
