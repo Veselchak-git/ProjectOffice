@@ -1,0 +1,347 @@
+@layer pages {
+    .projects-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .projects-page__title-area {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .projects-page__title-text {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .projects-page__title-heading {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    .projects-page__title-subtitle {
+        font-family: Geologica;
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 140%;
+        color: var(--semantic-text-secondary);
+        margin: 0;
+    }
+
+    .projects-page__create-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 20px;
+        border: none;
+        border-radius: 8px;
+        background-color: var(--semantic-btn-accent-fill-hover-bg);
+        color: var(--semantic-btn-accent-fill-text);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s;
+    }
+
+    .projects-page__create-btn:hover {
+        background-color: var(--semantic-btn-accent-fill-bg);
+    }
+
+    .projects-page__create-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .projects-page__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .projects-page__export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 20px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: transparent;
+        color: var(--semantic-text-primary);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .projects-page__export-btn:hover {
+        background-color: var(--semantic-fill-primary-hover);
+        border-color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .projects-page__export-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .projects-page__controls {
+        display: flex;
+        align-items: center;
+    }
+
+    .projects-page__controls-search {
+        width: 320px;
+    }
+
+    .projects-table-wrapper {
+        overflow-x: auto;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: var(--semantic-bg-surface);
+    }
+
+    .projects-table {
+        width: 100%;
+        min-width: 1560px;
+        border-collapse: collapse;
+    }
+
+    .projects-table th {
+        height: 41px;
+        padding: 0 12px;
+        text-align: left;
+        font-family: Geologica;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--semantic-text-secondary);
+        border-bottom: 1px solid var(--semantic-border-default);
+        background-color: var(--semantic-bg-surface);
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .projects-table th.projects-table__header--sortable {
+        cursor: pointer;
+    }
+
+    .projects-table th .projects-table__sort-icon {
+        display: inline-flex;
+        vertical-align: middle;
+        margin-left: 4px;
+        opacity: 0.5;
+        transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .projects-table th .projects-table__sort-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .projects-table__header--sorted .projects-table__sort-icon {
+        opacity: 1;
+    }
+
+    .projects-table__header--sorted {
+        color: var(--semantic-text-primary);
+    }
+
+    .projects-table__sort-icon--desc {
+        transform: rotate(180deg);
+    }
+
+    .projects-table td {
+        height: 57px;
+        padding: 0 12px;
+        font-family: Geologica;
+        font-size: 13px;
+        color: var(--semantic-text-primary);
+        border-bottom: 1px solid var(--semantic-border-default);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 0;
+    }
+
+    .projects-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .projects-table tr:hover td {
+        background-color: var(--semantic-fill-primary-hover);
+    }
+
+    .projects-table__checkbox {
+        width: 48px;
+        min-width: 48px;
+    }
+
+    .projects-table__name {
+        width: 240px;
+        min-width: 240px;
+        font-weight: 500;
+    }
+
+    .projects-table__name-link {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: Geologica;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--semantic-text-primary);
+        padding: 0;
+        text-align: left;
+        transition: color 0.15s;
+    }
+
+    .projects-table__name-link:hover {
+        color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .projects-table__description {
+        width: 432px;
+        min-width: 432px;
+        color: var(--semantic-text-secondary);
+    }
+
+    .projects-table__status {
+        width: 180px;
+        min-width: 180px;
+    }
+
+    .projects-table__versions {
+        width: 160px;
+        min-width: 160px;
+    }
+
+    .projects-table__tasks {
+        width: 120px;
+        min-width: 120px;
+    }
+
+    .projects-table__responsible {
+        width: 180px;
+        min-width: 180px;
+    }
+
+    .projects-table__created {
+        width: 160px;
+        min-width: 160px;
+    }
+
+    .projects-table__status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .projects-table__status-badge--active {
+        background-color: var(--green-100);
+        color: var(--green-700);
+    }
+
+    .projects-table__status-badge--archived {
+        background-color: var(--neutral-100);
+        color: var(--neutral-600);
+    }
+
+    .projects-table__status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .projects-table__status-dot--active {
+        background-color: var(--green-500);
+    }
+
+    .projects-table__status-dot--archived {
+        background-color: var(--neutral-400);
+    }
+
+    .projects-table__empty {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--semantic-text-secondary);
+        font-family: Geologica;
+        font-size: 14px;
+    }
+
+    .projects-page__columns-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 20px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: transparent;
+        color: var(--semantic-text-primary);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .projects-page__columns-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .projects-page__columns-btn:hover {
+        background-color: var(--semantic-fill-primary-hover);
+        border-color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .projects-page__columns-wrapper {
+        position: relative;
+    }
+
+    .projects-page__columns-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        min-width: 200px;
+        background-color: var(--semantic-bg-surface-elevated);
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        z-index: 100;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .projects-page__columns-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: Geologica;
+        font-size: 14px;
+        color: var(--semantic-text-primary);
+        transition: background-color 0.15s;
+        user-select: none;
+    }
+
+    .projects-page__columns-option:hover {
+        background-color: var(--semantic-fill-primary-hover);
+    }
+}

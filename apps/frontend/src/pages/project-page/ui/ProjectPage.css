@@ -1,0 +1,131 @@
+.project-page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.project-page__back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-secondary);
+    padding: 0;
+    margin-bottom: 24px;
+    transition: color 0.15s;
+}
+
+.project-page__back-btn:hover {
+    color: var(--semantic-text-primary);
+}
+
+.project-page__card {
+    background-color: var(--semantic-bg-surface);
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 12px;
+    padding: 32px;
+}
+
+.project-page__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.project-page__title-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.project-page__title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--semantic-text-primary);
+}
+
+.project-page__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.project-page__status--active {
+    background-color: var(--green-100);
+    color: var(--green-700);
+}
+
+.project-page__status--archived {
+    background-color: var(--neutral-100);
+    color: var(--neutral-600);
+}
+
+.project-page__edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.project-page__edit-btn:hover {
+    background-color: var(--semantic-fill-primary-hover);
+    border-color: var(--semantic-btn-accent-fill-hover-bg);
+}
+
+.project-page__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.project-page__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.project-page__field-label {
+    font-family: Geologica;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--semantic-text-secondary);
+    text-transform: uppercase;
+}
+
+.project-page__field-value {
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-primary);
+}
+
+.project-page__not-found {
+    text-align: center;
+    padding: 80px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.project-page__not-found h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--semantic-text-primary);
+    margin: 0;
+}

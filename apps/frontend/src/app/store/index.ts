@@ -13,8 +13,3 @@ export const store = configureStore({
     reducer: emptyRootReducer,
     middleware: getDefaultMiddleware => getDefaultMiddleware()
 });
-
-declare global {
-    type AppState = ReturnType<typeof store.getState>;
-    type AppDispatch = typeof store.dispatch;
-}
