@@ -8,8 +8,9 @@ import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
 import { useNavigate } from "react-router";
 
-import type { Project } from "@/entities/project";
-import { fetchProjects } from "@/entities/project";
+import type { Project, CreateProjectData } from "@/entities/project";
+import { fetchProjects, createProject } from "@/entities/project";
+import { ProjectForm } from "@/entities/project/ui/ProjectForm";
 
 import "./ProjectsPage.css";
 
@@ -41,6 +42,7 @@ export const ProjectsPage: FC = () => {
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set(ALL_COLUMNS.map(c => c.id)));
+    const [creating, setCreating] = useState(false);
     const [columnsOpen, setColumnsOpen] = useState(false);
     const columnsRef = useRef<HTMLDivElement>(null);
 
@@ -123,6 +125,13 @@ export const ProjectsPage: FC = () => {
         }
     };
 
+    const handleCreate = async (data: CreateProjectData) => {
+        await createProject(data);
+        setCreating(false);
+        const result = await fetchProjects();
+        setProjects(result.projects);
+    };
+
     const activeCount = projects.filter(p => p.status === "ACTIVE").length;
     const totalCount = projects.length;
 
@@ -136,7 +145,7 @@ export const ProjectsPage: FC = () => {
                     </p>
                 </div>
                 <div className="projects-page__actions">
-                    <button className="projects-page__create-btn" type="button">
+                    <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
                         <PlusIcon />
                         Создать проект
                     </button>
@@ -310,6 +319,18 @@ export const ProjectsPage: FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            {creating && (
+                <div className="projects-page__overlay">
+                    <div className="projects-page__modal">
+                        <h2 className="projects-page__modal-title">Создание проекта</h2>
+                        <ProjectForm
+                            onSubmit={handleCreate}
+                            onCancel={() => setCreating(false)}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

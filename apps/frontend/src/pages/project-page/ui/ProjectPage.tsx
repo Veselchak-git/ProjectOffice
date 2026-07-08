@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { FC } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import type { Project } from "@/entities/project";
-import { fetchProjects } from "@/entities/project";
+import type { Project, UpdateProjectData } from "@/entities/project";
+import { fetchProject, updateProject } from "@/entities/project";
+import { ProjectForm } from "@/entities/project/ui/ProjectForm";
 
 import "./ProjectPage.css";
 
@@ -13,16 +14,24 @@ export const ProjectPage: FC = () => {
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [editing, setEditing] = useState(false);
 
-    useEffect(() => {
-        fetchProjects()
-            .then(data => {
-                const found = data.projects.find(p => p.id === Number(id));
-                setProject(found ?? null);
-            })
+    const loadProject = () => {
+        setLoading(true);
+        setFetchError(null);
+        fetchProject(Number(id))
+            .then(setProject)
             .catch(err => setFetchError(err.message))
             .finally(() => setLoading(false));
-    }, [id]);
+    };
+
+    useEffect(loadProject, [id]);
+
+    const handleEdit = async (data: UpdateProjectData) => {
+        await updateProject(Number(id), data);
+        setEditing(false);
+        loadProject();
+    };
 
     if (loading) {
         return (
@@ -53,6 +62,24 @@ export const ProjectPage: FC = () => {
         );
     }
 
+    if (editing) {
+        return (
+            <div className="project-page">
+                <h1 className="project-form-title">Редактирование проекта</h1>
+                <ProjectForm
+                    initial={{
+                        name: project.name,
+                        description: project.description,
+                        status: project.status,
+                        versions: project.versions,
+                    }}
+                    onSubmit={handleEdit}
+                    onCancel={() => setEditing(false)}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="project-page">
             <button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
@@ -67,7 +94,7 @@ export const ProjectPage: FC = () => {
                             {project.status === "ACTIVE" ? "Активный" : "Архивный"}
                         </span>
                     </div>
-                    <button className="project-page__edit-btn" type="button">
+                    <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
                         Редактировать
                     </button>
                 </div>
@@ -79,7 +106,14 @@ export const ProjectPage: FC = () => {
                     </div>
                     <div className="project-page__field">
                         <span className="project-page__field-label">Версии продукта</span>
-                        <span className="project-page__field-value">{project.versionCount}</span>
+                        <div className="project-page__versions-list">
+                            {project.versions.length > 0
+                                ? project.versions.map(v => (
+                                      <span key={v} className="project-page__version-tag">{v}</span>
+                                  ))
+                                : <span className="project-page__field-value">—</span>
+                            }
+                        </div>
                     </div>
                     <div className="project-page__field">
                         <span className="project-page__field-label">Задачи</span>

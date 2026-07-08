@@ -3,10 +3,20 @@ import fp from "fastify-plugin";
 
 import { JWT_DECORATOR_AUTHENTICATE } from "@/plugins/jwt-plugin/index.js";
 
-import { PROJECTS_LIST_PATH } from "@/shared/routes.js";
+import { PROJECTS_LIST_PATH, PROJECT_PATH } from "@/shared/routes.js";
 
-import { getProjectsListSchema } from "./schema.js";
-import { getProjectsListService } from "./service.js";
+import {
+    getProjectsListSchema,
+    getProjectByIdSchema,
+    createProjectSchema,
+    updateProjectSchema,
+} from "./schema.js";
+import {
+    getProjectsListService,
+    getProjectByIdService,
+    createProjectService,
+    updateProjectService,
+} from "./service.js";
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.get(
@@ -16,6 +26,33 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [fastify.authenticate],
         },
         getProjectsListService,
+    );
+
+    fastify.get(
+        PROJECT_PATH,
+        {
+            schema: getProjectByIdSchema,
+            preHandler: [fastify.authenticate],
+        },
+        getProjectByIdService,
+    );
+
+    fastify.post(
+        PROJECTS_LIST_PATH,
+        {
+            schema: createProjectSchema,
+            preHandler: [fastify.authenticate],
+        },
+        createProjectService,
+    );
+
+    fastify.patch(
+        PROJECT_PATH,
+        {
+            schema: updateProjectSchema,
+            preHandler: [fastify.authenticate],
+        },
+        updateProjectService,
     );
 };
 

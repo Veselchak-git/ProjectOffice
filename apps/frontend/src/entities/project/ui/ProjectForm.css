@@ -1,0 +1,92 @@
+.project-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.project-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.project-form__label {
+    font-family: Geologica;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--semantic-text-secondary);
+    text-transform: uppercase;
+}
+
+.project-form__select {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background-color: var(--semantic-bg-surface);
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.project-form__select:focus {
+    border-color: var(--semantic-btn-accent-fill-hover-bg);
+}
+
+.project-form__versions-input {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.project-form__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.project-form__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background-color: var(--neutral-100);
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 12px;
+    line-height: 22px;
+}
+
+.project-form__tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--semantic-text-secondary);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    border-radius: 50%;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.project-form__tag-remove:hover {
+    background-color: var(--semantic-fill-primary-hover);
+    color: var(--semantic-text-primary);
+}
+
+.project-form__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
