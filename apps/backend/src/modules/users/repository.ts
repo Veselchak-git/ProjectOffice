@@ -17,6 +17,7 @@ export const USER_REPOSITORY_DECORATOR_NAME = "userRepository";
 // объявляем интерфейс для репозитория пользователей - нужно для переиспользования в других модулях и тестах
 export interface IUserRepository {
     findUserRecordByLogin(login: string): Promise<User | null>;
+    updateUserPassword(id: number, newHashPassword: string): Promise<User>;
 }
 // имплементируем интерфейс для репозитория пользователей
 export class UserRepository implements IUserRepository {
@@ -25,6 +26,13 @@ export class UserRepository implements IUserRepository {
     async findUserRecordByLogin(login: string) {
         return this.prisma.user.findUnique({
             where: { login }
+        });
+    }
+
+    async updateUserPassword(id: number, newHashPassword: string) {
+        return this.prisma.user.update({
+            where: { id },
+            data: { hashPassword: newHashPassword }
         });
     }
 }
