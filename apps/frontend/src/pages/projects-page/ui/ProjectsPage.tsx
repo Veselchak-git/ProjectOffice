@@ -126,22 +126,6 @@ export const ProjectsPage: FC = () => {
     const activeCount = projects.filter(p => p.status === "ACTIVE").length;
     const totalCount = projects.length;
 
-    if (loading) {
-        return (
-            <div className="projects-page">
-                <p className="projects-page__loading">Загрузка проектов…</p>
-            </div>
-        );
-    }
-
-    if (fetchError) {
-        return (
-            <div className="projects-page">
-                <p className="projects-page__error">{fetchError}</p>
-            </div>
-        );
-    }
-
     return (
         <div className="projects-page">
             <div className="projects-page__title-area">
@@ -190,7 +174,7 @@ export const ProjectsPage: FC = () => {
             <div className="projects-page__controls">
                 <Input
                     className="projects-page__controls-search"
-                    placeholder="Поиск по названию"
+                    placeholder="Найти проект..."
                     startIcon={<SearchIcon />}
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -265,7 +249,19 @@ export const ProjectsPage: FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filtered.length === 0 ? (
+                        {loading ? (
+                            <tr>
+                                <td colSpan={1 + ALL_COLUMNS.filter(c => visibleColumns.has(c.id)).length} className="projects-table__empty">
+                                    Загрузка проектов…
+                                </td>
+                            </tr>
+                        ) : fetchError ? (
+                            <tr>
+                                <td colSpan={1 + ALL_COLUMNS.filter(c => visibleColumns.has(c.id)).length} className="projects-table__empty">
+                                    {fetchError}
+                                </td>
+                            </tr>
+                        ) : filtered.length === 0 ? (
                             <tr>
                                 <td colSpan={1 + ALL_COLUMNS.filter(c => visibleColumns.has(c.id)).length} className="projects-table__empty">
                                     {searchQuery.trim() ? "Проекты по вашему запросу не найдены" : "Проекты не найдены"}
