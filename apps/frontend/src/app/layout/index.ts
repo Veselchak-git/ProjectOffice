@@ -5,5 +5,5 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-export { BaseLayout } from "./BaseLayout";
-export { LoginLayout } from "./LoginLayout";
+export { BaseLayout } from "./base-layout";
+export { LoginLayout } from "./login-layout";

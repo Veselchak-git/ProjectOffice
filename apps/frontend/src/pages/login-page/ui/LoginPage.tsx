@@ -9,12 +9,11 @@ import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import "./LoginPage.css";
+import { loginRequest } from "../api/login";
+import type { LoginFormValues } from "../model/login-form";
+import { LOGIN_EMAIL_RULES, LOGIN_PASSWORD_RULES } from "../model/login-form";
 
-interface LoginFormValues {
-    login: string;
-    password: string;
-}
+import "./LoginPage.css";
 
 export const LoginPage: FC = () => {
     const navigate = useNavigate();
@@ -43,27 +42,16 @@ export const LoginPage: FC = () => {
             setSubmitting(true);
 
             try {
-                const res = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data),
-                });
-
-                if (!res.ok) {
-                    const body = await res.json().catch(() => null);
-                    setServerError(body?.message ?? "Неверный логин или пароль");
-                    return;
-                }
-
-                const body = await res.json();
+                const body = await loginRequest(data);
 
                 if (body.accessToken) {
                     localStorage.setItem("accessToken", body.accessToken);
                 }
 
                 navigate("/", { replace: true });
-            } catch {
-                setServerError("Ошибка соединения с сервером");
+            } catch (err) {
+                const message = err instanceof Error ? err.message : "Ошибка соединения с сервером";
+                setServerError(message);
             } finally {
                 setSubmitting(false);
             }
@@ -91,13 +79,7 @@ export const LoginPage: FC = () => {
                 <Controller
                     name="login"
                     control={control}
-                    rules={{
-                        required: "Введите email",
-                        pattern: {
-                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                            message: "Некорректный формат email",
-                        },
-                    }}
+                    rules={LOGIN_EMAIL_RULES}
                     render={({ field }) => (
                         <Input
                             {...field}
@@ -123,13 +105,7 @@ export const LoginPage: FC = () => {
                 <Controller
                     name="password"
                     control={control}
-                    rules={{
-                        required: "Введите пароль",
-                        minLength: {
-                            value: 6,
-                            message: "Пароль должен содержать не менее 6 символов",
-                        },
-                    }}
+                    rules={LOGIN_PASSWORD_RULES}
                     render={({ field }) => (
                         <Input
                             {...field}

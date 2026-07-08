@@ -7,7 +7,7 @@
  */
 import type { FC, PropsWithChildren } from "react";
 
-import { FakeProvider } from "@/shared/lib/FakeProvider/FakeProvider";
+import { FakeProvider } from "@/shared/lib/fake-provider";
 
 export const FakeProviderWithValue: FC<PropsWithChildren> = ({ children }) => {
     return <FakeProvider foo={"top lvl context value"}>{children}</FakeProvider>;

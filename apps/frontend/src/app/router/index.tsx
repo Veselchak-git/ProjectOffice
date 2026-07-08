@@ -17,7 +17,7 @@ export const routes = createBrowserRouter([
             {
                 path: "/",
                 lazy: async () => {
-                    const { HomePage } = await import("@/pages/HomePage");
+                    const { HomePage } = await import("@/pages/home-page");
                     return {
                         Component: HomePage
                     };
@@ -32,7 +32,7 @@ export const routes = createBrowserRouter([
             {
                 index: true,
                 lazy: async () => {
-                    const { LoginPage } = await import("@/pages/LoginPage");
+                    const { LoginPage } = await import("@/pages/login-page");
                     return { Component: LoginPage };
                 }
             }
