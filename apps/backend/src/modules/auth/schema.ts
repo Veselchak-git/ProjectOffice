@@ -47,3 +47,18 @@ export const getCurrentUserSchema = {
         200: currentUserResponseSchema
     }
 };
+
+export const changePasswordBodySchema = Type.Object({
+    currentPassword: Type.String({ minLength: 1 }),
+    newPassword: Type.String({ minLength: 6 })
+});
+export type ChangePasswordRequest = Static<typeof changePasswordBodySchema>;
+
+export const changePasswordSchema = {
+    body: changePasswordBodySchema,
+    response: {
+        200: Type.Object({
+            message: Type.String()
+        })
+    }
+};
