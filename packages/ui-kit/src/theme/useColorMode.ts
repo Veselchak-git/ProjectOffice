@@ -5,7 +5,7 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 export type ColorMode = "light" | "dark";
 
@@ -33,6 +33,7 @@ const getInitialMode = (): ColorMode => {
 
 export const useColorModeState = (): ColorModeContextValue => {
     const [mode, setModeState] = useState<ColorMode>(getInitialMode);
+    const userExplicitlySet = useRef(!!localStorage.getItem(STORAGE_KEY));
 
     useEffect(() => {
         const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -47,11 +48,19 @@ export const useColorModeState = (): ColorModeContextValue => {
 
     useEffect(() => {
         document.documentElement.setAttribute("data-color-mode", mode);
-        localStorage.setItem(STORAGE_KEY, mode);
+        if (userExplicitlySet.current) {
+            localStorage.setItem(STORAGE_KEY, mode);
+        }
     }, [mode]);
 
-    const toggleMode = () => setModeState(prev => (prev === "light" ? "dark" : "light"));
-    const setMode = (next: ColorMode) => setModeState(next);
+    const toggleMode = () => {
+        userExplicitlySet.current = true;
+        setModeState(prev => (prev === "light" ? "dark" : "light"));
+    };
+    const setMode = (next: ColorMode) => {
+        userExplicitlySet.current = true;
+        setModeState(next);
+    };
 
     return { mode, toggleMode, setMode };
 };
