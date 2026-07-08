@@ -17,3 +17,4 @@ export const EXAMPLE_PROFILE_PATH = `${EXAMPLE_MODULE_PATH}/profile`;
 export const EXAMPLE_ADMIN_PATH = `${EXAMPLE_MODULE_PATH}/admin`;
 export const PROJECTS_PATH = "/projects";
 export const PROJECTS_LIST_PATH = PROJECTS_PATH;
+export const PROJECT_PATH = `${PROJECTS_PATH}/:id`;
