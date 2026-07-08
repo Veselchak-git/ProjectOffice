@@ -7,7 +7,7 @@
  */
 import { createBrowserRouter } from "react-router";
 
-import { BaseLayout } from "../layout";
+import { BaseLayout, LoginLayout } from "../layout";
 
 export const routes = createBrowserRouter([
     {
@@ -21,6 +21,19 @@ export const routes = createBrowserRouter([
                     return {
                         Component: HomePage
                     };
+                }
+            }
+        ]
+    },
+    {
+        path: "/login",
+        element: <LoginLayout />,
+        children: [
+            {
+                index: true,
+                lazy: async () => {
+                    const { LoginPage } = await import("@/pages/LoginPage");
+                    return { Component: LoginPage };
                 }
             }
         ]
