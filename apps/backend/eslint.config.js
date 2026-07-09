@@ -1,3 +1,3 @@
-import fastifyConfig from "@app-project-office-registry/eslint-config/fastify";
+import fastifyConfig from "@helpdesk-portal/eslint-config/fastify";
 
 export default fastifyConfig;
