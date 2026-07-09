@@ -65,6 +65,7 @@ model User {
   hashPassword String
   role      Role   @default(GUEST)
 
+  refreshTokens      RefreshToken[]
   projectMemberships ProjectMember[]
   createdIssues      Issue[]         @relation("reporter")
   assignedIssues     Issue[]         @relation("assignee")
@@ -133,6 +134,16 @@ model Issue {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
