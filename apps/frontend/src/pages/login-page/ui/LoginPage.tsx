@@ -9,7 +9,8 @@ import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { loginRequest } from "../api/login";
+import { useAuth } from "@/shared/lib/auth/auth-context";
+
 import type { LoginFormValues } from "../model/login-form";
 import { LOGIN_EMAIL_RULES, LOGIN_PASSWORD_RULES } from "../model/login-form";
 
@@ -17,6 +18,7 @@ import "./LoginPage.css";
 
 export const LoginPage: FC = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [serverError, setServerError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -42,12 +44,7 @@ export const LoginPage: FC = () => {
             setSubmitting(true);
 
             try {
-                const body = await loginRequest(data);
-
-                if (body.accessToken) {
-                    localStorage.setItem("accessToken", body.accessToken);
-                }
-
+                await login(data.login, data.password);
                 navigate("/", { replace: true });
             } catch (err) {
                 const message = err instanceof Error ? err.message : "Ошибка соединения с сервером";
@@ -56,7 +53,7 @@ export const LoginPage: FC = () => {
                 setSubmitting(false);
             }
         },
-        [navigate],
+        [login, navigate],
     );
 
     const emailError = errors.login?.message;
