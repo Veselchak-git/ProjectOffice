@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
 import { useNavigate } from "react-router";
 
+import { formatDate } from "@/shared/lib/format-date/format-date";
+
 import type { Project, CreateProjectData } from "@/entities/project";
 import { fetchProjects, createProject } from "@/entities/project";
 import { ProjectForm } from "@/entities/project/ui/ProjectForm";
@@ -302,7 +304,9 @@ export const ProjectsPage: FC = () => {
                                         </td>
                                     )}
                                     {visibleColumns.has("versions") && (
-                                        <td className="projects-table__versions">{project.versionCount}</td>
+                                        <td className="projects-table__versions">
+                                            {project.versions[0] ?? "-"}
+                                        </td>
                                     )}
                                     {visibleColumns.has("tasks") && (
                                         <td className="projects-table__tasks">{project.taskCount}</td>
@@ -311,7 +315,7 @@ export const ProjectsPage: FC = () => {
                                         <td className="projects-table__responsible">{project.responsible}</td>
                                     )}
                                     {visibleColumns.has("created") && (
-                                        <td className="projects-table__created">{project.createdAt}</td>
+                                        <td className="projects-table__created">{formatDate(project.createdAt)}</td>
                                     )}
                                 </tr>
                             ))

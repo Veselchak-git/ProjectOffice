@@ -1,4 +1,6 @@
-import type { CreateProjectData, Project, UpdateProjectData } from "../model/project";
+import { apiClient } from "@/shared/lib/auth/api-client";
+
+import type { CreateProjectData, Member, Project, UpdateProjectData, User } from "../model/project";
 
 export interface FetchProjectsResponse {
     projects: Project[];
@@ -7,7 +9,7 @@ export interface FetchProjectsResponse {
 }
 
 export async function fetchProjects(): Promise<FetchProjectsResponse> {
-    const res = await fetch("/api/projects");
+    const res = await apiClient("/api/projects");
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
@@ -18,7 +20,7 @@ export async function fetchProjects(): Promise<FetchProjectsResponse> {
 }
 
 export async function fetchProject(id: number): Promise<Project> {
-    const res = await fetch(`/api/projects/${id}`);
+    const res = await apiClient(`/api/projects/${id}`);
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
@@ -29,7 +31,7 @@ export async function fetchProject(id: number): Promise<Project> {
 }
 
 export async function createProject(data: CreateProjectData): Promise<{ id: number; name: string }> {
-    const res = await fetch("/api/projects", {
+    const res = await apiClient("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -44,7 +46,7 @@ export async function createProject(data: CreateProjectData): Promise<{ id: numb
 }
 
 export async function updateProject(id: number, data: UpdateProjectData): Promise<{ id: number; name: string }> {
-    const res = await fetch(`/api/projects/${id}`, {
+    const res = await apiClient(`/api/projects/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -56,4 +58,78 @@ export async function updateProject(id: number, data: UpdateProjectData): Promis
     }
 
     return res.json();
+}
+
+export async function fetchUsers(): Promise<User[]> {
+    const res = await apiClient("/api/users");
+
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? "Ошибка загрузки пользователей");
+    }
+
+    return res.json();
+}
+
+export async function fetchProjectMembers(projectId: number): Promise<Member[]> {
+    const res = await apiClient(`/api/projects/${projectId}/members`);
+
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? "Ошибка загрузки участников");
+    }
+
+    return res.json();
+}
+
+export async function addProjectMember(projectId: number, userId: number, role: string): Promise<Member> {
+    const res = await apiClient(`/api/projects/${projectId}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, role }),
+    });
+
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? "Ошибка добавления участника");
+    }
+
+    return res.json();
+}
+
+export async function updateProjectMember(projectId: number, userId: number, role: string): Promise<Member> {
+    const res = await apiClient(`/api/projects/${projectId}/members/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+    });
+
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? "Ошибка обновления участника");
+    }
+
+    return res.json();
+}
+
+export async function removeProjectMember(projectId: number, userId: number): Promise<void> {
+    const res = await apiClient(`/api/projects/${projectId}/members/${userId}`, {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? "Ошибка удаления участника");
+    }
+}
+
+export async function deleteProject(id: number): Promise<void> {
+    const res = await apiClient(`/api/projects/${id}`, {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? "Ошибка удаления проекта");
+    }
 }

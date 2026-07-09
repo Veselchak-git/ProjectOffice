@@ -55,7 +55,7 @@
     gap: 4px;
     padding: 2px 8px;
     border-radius: 4px;
-    background-color: var(--neutral-100);
+    background-color: var(--semantic-bg-surface-elevated);
     color: var(--semantic-text-primary);
     font-family: Geologica;
     font-size: 12px;

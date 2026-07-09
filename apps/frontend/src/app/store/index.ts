@@ -7,9 +7,11 @@
  */
 import { configureStore } from "@reduxjs/toolkit";
 
-import { emptyRootReducer } from "@/shared/lib/redux";
+import { authSlice } from "@/shared/lib/auth/auth-slice";
 
 export const store = configureStore({
-    reducer: emptyRootReducer,
+    reducer: {
+        auth: authSlice.reducer
+    },
     middleware: getDefaultMiddleware => getDefaultMiddleware()
 });

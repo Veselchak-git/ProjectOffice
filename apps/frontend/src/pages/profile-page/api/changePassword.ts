@@ -1,13 +1,11 @@
+import { apiClient } from "@/shared/lib/auth/api-client";
+
 import type { ChangePasswordFormValues } from "../model/change-password-form";
 
 export async function changePasswordRequest(data: ChangePasswordFormValues): Promise<void> {
-    const token = localStorage.getItem("accessToken");
-    const res = await fetch("/api/auth/me/password", {
+    const res = await apiClient("/api/auth/me/password", {
         method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             currentPassword: data.currentPassword,
             newPassword: data.newPassword,

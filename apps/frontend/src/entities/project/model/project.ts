@@ -1,3 +1,9 @@
+export interface Member {
+    userId: number;
+    login: string;
+    role: string;
+}
+
 export interface Project {
     id: number;
     name: string;
@@ -7,6 +13,7 @@ export interface Project {
     versions: string[];
     taskCount: number;
     responsible: string;
+    members?: Member[];
     createdAt: string;
 }
 
@@ -21,4 +28,10 @@ export interface UpdateProjectData {
     description?: string | null;
     status?: "ACTIVE" | "ARCHIVED";
     versions?: string[];
+}
+
+export interface User {
+    id: number;
+    login: string;
+    role: string;
 }

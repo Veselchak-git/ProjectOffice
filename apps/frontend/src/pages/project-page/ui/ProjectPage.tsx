@@ -1,36 +1,82 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { formatDateTime } from "@/shared/lib/format-date/format-date";
+
 import type { Project, UpdateProjectData } from "@/entities/project";
-import { fetchProject, updateProject } from "@/entities/project";
+import { fetchProject, updateProject, deleteProject } from "@/entities/project";
 import { ProjectForm } from "@/entities/project/ui/ProjectForm";
+import { MembersBlock } from "@/entities/project/ui/MembersBlock";
+import { useAuth } from "@/shared/lib/auth/auth-context";
 
 import "./ProjectPage.css";
+
+interface ProjectPageState {
+    project: Project | null;
+    loading: boolean;
+    fetchError: string | null;
+}
+
+type ProjectPageAction =
+    | { type: "start" }
+    | { type: "success"; project: Project }
+    | { type: "error"; message: string };
+
+const projectReducer = (_state: ProjectPageState, action: ProjectPageAction): ProjectPageState => {
+    switch (action.type) {
+        case "start":
+            return { project: null, loading: true, fetchError: null };
+        case "success":
+            return { project: action.project, loading: false, fetchError: null };
+        case "error":
+            return { project: null, loading: false, fetchError: action.message };
+    }
+};
 
 export const ProjectPage: FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [project, setProject] = useState<Project | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [fetchError, setFetchError] = useState<string | null>(null);
+    const { user } = useAuth();
+    const [{ project, loading, fetchError }, dispatch] = useReducer(projectReducer, {
+        project: null,
+        loading: true,
+        fetchError: null,
+    });
     const [editing, setEditing] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
-    const loadProject = () => {
-        setLoading(true);
-        setFetchError(null);
+    useEffect(() => {
+        dispatch({ type: "start" });
+        let cancelled = false;
         fetchProject(Number(id))
-            .then(setProject)
-            .catch(err => setFetchError(err.message))
-            .finally(() => setLoading(false));
-    };
-
-    useEffect(loadProject, [id]);
+            .then(data => {
+                if (!cancelled) dispatch({ type: "success", project: data });
+            })
+            .catch(err => {
+                if (!cancelled) dispatch({ type: "error", message: err.message });
+            });
+        return () => { cancelled = true; };
+    }, [id]);
 
     const handleEdit = async (data: UpdateProjectData) => {
         await updateProject(Number(id), data);
         setEditing(false);
-        loadProject();
+        dispatch({ type: "start" });
+        fetchProject(Number(id))
+            .then(data => dispatch({ type: "success", project: data }))
+            .catch(err => dispatch({ type: "error", message: err.message }));
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm("Вы уверены, что хотите удалить проект? Это действие необратимо.")) return;
+        setDeleting(true);
+        try {
+            await deleteProject(Number(id));
+            navigate("/projects", { replace: true });
+        } catch {
+            setDeleting(false);
+        }
     };
 
     if (loading) {
@@ -94,9 +140,21 @@ export const ProjectPage: FC = () => {
                             {project.status === "ACTIVE" ? "Активный" : "Архивный"}
                         </span>
                     </div>
-                    <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
-                        Редактировать
-                    </button>
+                    <div className="project-page__actions">
+                        <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
+                            Редактировать
+                        </button>
+                        {user?.role === "ADMIN" && (
+                            <button
+                                className="project-page__delete-btn"
+                                type="button"
+                                onClick={handleDelete}
+                                disabled={deleting}
+                            >
+                                {deleting ? "Удаление…" : "Удалить"}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="project-page__fields">
@@ -125,10 +183,12 @@ export const ProjectPage: FC = () => {
                     </div>
                     <div className="project-page__field">
                         <span className="project-page__field-label">Дата создания</span>
-                        <span className="project-page__field-value">{project.createdAt}</span>
+                        <span className="project-page__field-value">{formatDateTime(project.createdAt)}</span>
                     </div>
                 </div>
             </div>
+
+            <MembersBlock projectId={project.id} />
         </div>
     );
 };

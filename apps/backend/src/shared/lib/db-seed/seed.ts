@@ -19,28 +19,28 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
     const user1 = await prisma.user.upsert({
-        where: { login: "test-user-1" },
+        where: { login: "user@example.com" },
         update: {},
         create: {
-            login: "test-user-1",
+            login: "user@example.com",
             hashPassword: await hashPassword("Test123456", process.env.SALT_SECRET ?? ""),
             role: "GUEST"
         }
     });
     const user2 = await prisma.user.upsert({
-        where: { login: "test-user-2" },
+        where: { login: "manager@example.com" },
         update: {},
         create: {
-            login: "test-user-2",
+            login: "manager@example.com",
             hashPassword: await hashPassword("Test123456", process.env.SALT_SECRET ?? ""),
-            role: "GUEST"
+            role: "PROJECT_MANAGER"
         }
     });
     const user3 = await prisma.user.upsert({
-        where: { login: "test-user-3" },
+        where: { login: "admin@example.com" },
         update: {},
         create: {
-            login: "test-user-3",
+            login: "admin@example.com",
             hashPassword: await hashPassword("Test123456", process.env.SALT_SECRET ?? ""),
             role: "ADMIN"
         }

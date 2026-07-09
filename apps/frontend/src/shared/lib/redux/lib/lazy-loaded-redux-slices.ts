@@ -5,5 +5,8 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-// eslint-disable-next-line
-export interface LazyLoadedReduxSlices {}
+import type { AuthState } from "@/shared/lib/auth/auth-slice";
+
+export interface LazyLoadedReduxSlices {
+    auth: AuthState;
+}

@@ -1,0 +1,142 @@
+.members-block {
+    margin-top: 24px;
+    padding: 20px;
+    background-color: var(--semantic-bg-surface-elevated);
+    border-radius: 8px;
+}
+
+.members-block__title {
+    margin: 0 0 16px;
+    font-family: Geologica;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--semantic-text-primary);
+}
+
+.members-block__error {
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-btn-error-stroke-text);
+    margin-bottom: 12px;
+}
+
+.members-block__loading {
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-disabled);
+}
+
+.members-block__empty {
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-disabled);
+    font-style: italic;
+}
+
+.members-block__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.members-block__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background-color: var(--semantic-bg-surface);
+    border-radius: 6px;
+}
+
+.members-block__item-login {
+    flex: 1;
+    font-family: Geologica;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--semantic-text-primary);
+}
+
+.members-block__item-role {
+    padding: 4px 8px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 4px;
+    background-color: var(--semantic-bg-surface);
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.members-block__item-role:focus {
+    border-color: var(--semantic-btn-accent-stroke-border);
+}
+
+.members-block__item-remove {
+    padding: 2px 8px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--semantic-btn-error-stroke-text);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    transition: background-color 0.15s;
+}
+
+.members-block__item-remove:hover {
+    background-color: var(--semantic-btn-error-stroke-hover-bg);
+}
+
+.members-block__add {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.members-block__add-user,
+.members-block__add-role {
+    padding: 6px 10px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 4px;
+    background-color: var(--semantic-bg-surface);
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.members-block__add-user:focus,
+.members-block__add-role:focus {
+    border-color: var(--semantic-btn-accent-stroke-border);
+}
+
+.members-block__add-user {
+    flex: 1;
+}
+
+.members-block__add-btn {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--semantic-btn-accent-fill-bg);
+    color: var(--semantic-btn-accent-fill-text);
+    font-family: Geologica;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.members-block__add-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.members-block__add-btn:not(:disabled):hover {
+    background-color: var(--semantic-btn-accent-fill-hover-bg);
+}

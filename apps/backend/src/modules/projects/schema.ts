@@ -6,6 +6,7 @@ export const projectResponseSchema = Type.Object({
     description: Type.Union([Type.String(), Type.Null()]),
     status: Type.Union([Type.Literal("ACTIVE"), Type.Literal("ARCHIVED")]),
     versionCount: Type.Number(),
+    versions: Type.Array(Type.String()),
     taskCount: Type.Number(),
     responsible: Type.String(),
     createdAt: Type.String(),
@@ -47,6 +48,76 @@ export const getProjectByIdSchema = {
     }),
     response: {
         200: projectDetailResponseSchema,
+    },
+};
+
+export const memberResponseSchema = Type.Object({
+    userId: Type.Number(),
+    login: Type.String(),
+    role: Type.String(),
+});
+
+export type MemberResponse = Static<typeof memberResponseSchema>;
+
+export const getProjectMembersSchema = {
+    params: Type.Object({
+        id: Type.Number(),
+    }),
+    response: {
+        200: Type.Array(memberResponseSchema),
+    },
+};
+
+export const addMemberBodySchema = Type.Object({
+    userId: Type.Number(),
+    role: Type.String(),
+});
+
+export type AddMemberBody = Static<typeof addMemberBodySchema>;
+
+export const addProjectMemberSchema = {
+    params: Type.Object({
+        id: Type.Number(),
+    }),
+    body: addMemberBodySchema,
+    response: {
+        201: memberResponseSchema,
+    },
+};
+
+export const updateMemberRoleBodySchema = Type.Object({
+    role: Type.String(),
+});
+
+export type UpdateMemberRoleBody = Static<typeof updateMemberRoleBodySchema>;
+
+export const updateProjectMemberSchema = {
+    params: Type.Object({
+        id: Type.Number(),
+        userId: Type.Number(),
+    }),
+    body: updateMemberRoleBodySchema,
+    response: {
+        200: memberResponseSchema,
+    },
+};
+
+export const deleteProjectMemberSchema = {
+    params: Type.Object({
+        id: Type.Number(),
+        userId: Type.Number(),
+    }),
+    response: {
+        204: Type.Null(),
+    },
+};
+
+export const deleteProjectSchema = {
+    params: Type.Object({
+        id: Type.Number(),
+    }),
+    response: {
+        204: Type.Null(),
     },
 };
 

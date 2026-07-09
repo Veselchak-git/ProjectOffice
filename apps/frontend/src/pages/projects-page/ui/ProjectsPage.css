@@ -221,6 +221,7 @@
     .projects-table__versions {
         width: 160px;
         min-width: 160px;
+        color: var(--semantic-text-primary);
     }
 
     .projects-table__tasks {
@@ -254,8 +255,8 @@
     }
 
     .projects-table__status-badge--archived {
-        background-color: var(--neutral-100);
-        color: var(--neutral-600);
+        background-color: var(--semantic-bg-surface-elevated);
+        color: var(--semantic-text-tertiary);
     }
 
     .projects-table__status-dot {
