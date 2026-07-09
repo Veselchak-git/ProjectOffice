@@ -141,10 +141,12 @@ export const ProjectPage: FC = () => {
                         </span>
                     </div>
                     <div className="project-page__actions">
-                        <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
-                            Редактировать
-                        </button>
-                        {user?.role === "ADMIN" && (
+                        {(user?.role === "PROJECT_MANAGER" || user?.role === "ADMIN" || project.myRole === "MANAGER" || project.myRole === "ADMINISTRATOR") && (
+                            <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
+                                Редактировать
+                            </button>
+                        )}
+                        {(user?.role === "ADMIN" || project.myRole === "ADMINISTRATOR") && (
                             <button
                                 className="project-page__delete-btn"
                                 type="button"
@@ -188,7 +190,7 @@ export const ProjectPage: FC = () => {
                 </div>
             </div>
 
-            <MembersBlock projectId={project.id} />
+            <MembersBlock projectId={project.id} globalRole={user?.role} currentLogin={user?.login} projectRole={project.myRole} />
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/lib/auth/api-client";
 
-import type { CreateProjectData, Member, Project, UpdateProjectData, User } from "../model/project";
+import type { CreateProjectData, Member, Project, UpdateProjectData, User, ProjectMemberRole } from "../model/project";
 
 export interface FetchProjectsResponse {
     projects: Project[];
@@ -82,7 +82,7 @@ export async function fetchProjectMembers(projectId: number): Promise<Member[]> 
     return res.json();
 }
 
-export async function addProjectMember(projectId: number, userId: number, role: string): Promise<Member> {
+export async function addProjectMember(projectId: number, userId: number, role: ProjectMemberRole): Promise<Member> {
     const res = await apiClient(`/api/projects/${projectId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,7 +97,7 @@ export async function addProjectMember(projectId: number, userId: number, role: 
     return res.json();
 }
 
-export async function updateProjectMember(projectId: number, userId: number, role: string): Promise<Member> {
+export async function updateProjectMember(projectId: number, userId: number, role: ProjectMemberRole): Promise<Member> {
     const res = await apiClient(`/api/projects/${projectId}/members/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 
-import type { Member, User } from "../model/project";
+import type { Member, User, ProjectMemberRole } from "../model/project";
 import {
     fetchUsers,
     fetchProjectMembers,
@@ -12,9 +12,18 @@ import {
 
 import "./MembersBlock.css";
 
-const ROLES = ["VIEWER", "REPORTER", "UPDATER", "DEVELOPER", "MANAGER", "ADMINISTRATOR"];
+const ROLE_HIERARCHY: Record<ProjectMemberRole, number> = {
+    VIEWER: 0,
+    REPORTER: 1,
+    UPDATER: 2,
+    DEVELOPER: 3,
+    MANAGER: 4,
+    ADMINISTRATOR: 5,
+};
 
-const ROLE_LABELS: Record<string, string> = {
+const ROLES: ProjectMemberRole[] = ["VIEWER", "REPORTER", "UPDATER", "DEVELOPER", "MANAGER", "ADMINISTRATOR"];
+
+const ROLE_LABELS: Record<ProjectMemberRole, string> = {
     VIEWER: "Наблюдатель",
     REPORTER: "Репортёр",
     UPDATER: "Редактор",
@@ -25,6 +34,9 @@ const ROLE_LABELS: Record<string, string> = {
 
 interface MembersBlockProps {
     projectId: number;
+    globalRole: string | undefined;
+    currentLogin: string | undefined;
+    projectRole: ProjectMemberRole | undefined;
 }
 
 interface MembersState {
@@ -59,15 +71,31 @@ const membersReducer = (state: MembersState, action: MembersAction): MembersStat
     }
 };
 
-export const MembersBlock: FC<MembersBlockProps> = ({ projectId }) => {
+export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, currentLogin, projectRole }) => {
     const [{ members, users, loading, error }, dispatch] = useReducer(membersReducer, {
         members: [],
         users: [],
         loading: true,
         error: null,
     });
-    const [selectedUserId, setSelectedUserId] = useState<number | "">("");
-    const [selectedRole, setSelectedRole] = useState("VIEWER");
+
+    const canManage =
+        globalRole === "PROJECT_MANAGER" || globalRole === "ADMIN"
+        || projectRole === "MANAGER" || projectRole === "ADMINISTRATOR";
+
+    const maxAssignableRank =
+        globalRole === "PROJECT_MANAGER" || globalRole === "ADMIN"
+            ? 5
+            : ROLE_HIERARCHY[projectRole ?? "VIEWER"] ?? 0;
+
+    const assignableRoles = ROLES.filter(r => {
+        if ((ROLE_HIERARCHY[r] ?? 0) > maxAssignableRank) return false;
+        if (r === "ADMINISTRATOR" && globalRole !== "ADMIN") return false;
+        return true;
+    });
+
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const [selectedRole, setSelectedRole] = useState<ProjectMemberRole>("VIEWER");
 
     useEffect(() => {
         dispatch({ type: "start" });
@@ -90,18 +118,18 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId }) => {
     );
 
     const handleAdd = async () => {
-        if (selectedUserId === "") return;
+        if (selectedUserId === null) return;
         try {
-            const member = await addProjectMember(projectId, Number(selectedUserId), selectedRole);
+            const member = await addProjectMember(projectId, selectedUserId, selectedRole);
             dispatch({ type: "memberAdded", member });
-            setSelectedUserId("");
+            setSelectedUserId(null);
             setSelectedRole("VIEWER");
         } catch (err: unknown) {
             dispatch({ type: "error", message: err instanceof Error ? err.message : "Ошибка добавления" });
         }
     };
 
-    const handleRoleChange = async (userId: number, role: string) => {
+    const handleRoleChange = async (userId: number, role: ProjectMemberRole) => {
         try {
             const member = await updateProjectMember(projectId, userId, role);
             dispatch({ type: "memberUpdated", member });
@@ -111,6 +139,9 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId }) => {
     };
 
     const handleRemove = async (userId: number) => {
+        const member = members.find(m => m.userId === userId);
+        const name = member?.login ?? `#${userId}`;
+        if (!window.confirm(`Вы уверены, что хотите удалить участника «${name}»?`)) return;
         try {
             await removeProjectMember(projectId, userId);
             dispatch({ type: "memberRemoved", userId });
@@ -136,33 +167,39 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId }) => {
                         {members.map(m => (
                             <div key={m.userId} className="members-block__item">
                                 <span className="members-block__item-login">{m.login}</span>
-                                <select
-                                    className="members-block__item-role"
-                                    value={m.role}
-                                    onChange={e => handleRoleChange(m.userId, e.target.value)}
-                                >
-                                    {ROLES.map(r => (
-                                        <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
-                                    ))}
-                                </select>
-                                <button
-                                    className="members-block__item-remove"
-                                    type="button"
-                                    onClick={() => handleRemove(m.userId)}
-                                    title="Удалить участника"
-                                >
-                                    ✕
-                                </button>
+                                {canManage && m.login !== currentLogin ? (
+                                    <select
+                                        className="members-block__item-role"
+                                        value={m.role}
+                                        onChange={e => handleRoleChange(m.userId, e.target.value as ProjectMemberRole)}
+                                    >
+                                        {assignableRoles.map(r => (
+                                            <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <span className="members-block__item-role-text">{ROLE_LABELS[m.role] ?? m.role}</span>
+                                )}
+                                {canManage && m.login !== currentLogin && (
+                                    <button
+                                        className="members-block__item-remove"
+                                        type="button"
+                                        onClick={() => handleRemove(m.userId)}
+                                        title="Удалить участника"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>
 
-                    {availableUsers.length > 0 && (
+                    {canManage && availableUsers.length > 0 && (
                         <div className="members-block__add">
                             <select
                                 className="members-block__add-user"
-                                value={selectedUserId}
-                                onChange={e => setSelectedUserId(e.target.value ? Number(e.target.value) : "")}
+                                value={selectedUserId ?? ""}
+                                onChange={e => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
                             >
                                 <option value="">Выберите пользователя</option>
                                 {availableUsers.map(u => (
@@ -172,9 +209,9 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId }) => {
                             <select
                                 className="members-block__add-role"
                                 value={selectedRole}
-                                onChange={e => setSelectedRole(e.target.value)}
+                                onChange={e => setSelectedRole(e.target.value as ProjectMemberRole)}
                             >
-                                {ROLES.map(r => (
+                                {assignableRoles.map(r => (
                                     <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
                                 ))}
                             </select>
@@ -182,7 +219,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId }) => {
                                 className="members-block__add-btn"
                                 type="button"
                                 onClick={handleAdd}
-                                disabled={selectedUserId === ""}
+                                disabled={selectedUserId === null}
                             >
                                 Добавить
                             </button>

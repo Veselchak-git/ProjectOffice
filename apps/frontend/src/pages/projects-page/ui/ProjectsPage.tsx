@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
 import { useNavigate } from "react-router";
 
+import { useAuth } from "@/shared/lib/auth/auth-context";
 import { formatDate } from "@/shared/lib/format-date/format-date";
 
 import type { Project, CreateProjectData } from "@/entities/project";
@@ -36,6 +37,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
 
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
@@ -147,10 +149,12 @@ export const ProjectsPage: FC = () => {
                     </p>
                 </div>
                 <div className="projects-page__actions">
-                    <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
-                        <PlusIcon />
-                        Создать проект
-                    </button>
+                    {user?.role !== "GUEST" && (
+                        <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
+                            <PlusIcon />
+                            Создать проект
+                        </button>
+                    )}
                     <button className="projects-page__export-btn" type="button">
                         <ExportIcon />
                         Экспорт

@@ -1,7 +1,15 @@
+export type ProjectMemberRole =
+    | "VIEWER"
+    | "REPORTER"
+    | "UPDATER"
+    | "DEVELOPER"
+    | "MANAGER"
+    | "ADMINISTRATOR";
+
 export interface Member {
     userId: number;
     login: string;
-    role: string;
+    role: ProjectMemberRole;
 }
 
 export interface Project {
@@ -15,6 +23,7 @@ export interface Project {
     responsible: string;
     members?: Member[];
     createdAt: string;
+    myRole?: ProjectMemberRole;
 }
 
 export interface CreateProjectData {

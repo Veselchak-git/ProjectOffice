@@ -1,13 +1,11 @@
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
-import type { ProjectMemberRole } from "@/generated/prisma/enums.js";
+import { ProjectMemberRole } from "@/generated/prisma/enums.js";
+import { Prisma } from "@/generated/prisma/client.js";
+import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 
 import type {
     ProjectListResponse,
     ProjectDetailResponse,
-    CreateProjectBody,
-    UpdateProjectBody,
-    AddMemberBody,
-    UpdateMemberRoleBody,
     MemberResponse,
 } from "./schema.js";
 
@@ -24,8 +22,8 @@ import {
 } from "./schema.js";
 
 const findResponsible = (memberships: { user: { login: string }; role: string }[]): string => {
-    const manager = memberships.find(m => m.role === "MANAGER");
-    return manager?.user.login ?? memberships[0]?.user.login ?? "";
+    const admin = memberships.find(m => m.role === "ADMINISTRATOR");
+    return admin?.user.login ?? memberships[0]?.user.login ?? "";
 };
 
 const mapProject = (p: {
@@ -88,10 +86,12 @@ export const getProjectByIdService = async (
     });
 
     if (!project) {
-        const httpError = new Error("Проект не найден") as Error & { statusCode?: number };
-        httpError.statusCode = 404;
-        throw httpError;
+        throw new AppError(HTTP_STATUS.NOT_FOUND, "Проект не найден", "PROJECT_NOT_FOUND");
     }
+
+    const myMembership = project.memberships.find(
+        m => m.user.login === request.user.login,
+    );
 
     return {
         id: project.id,
@@ -103,6 +103,7 @@ export const getProjectByIdService = async (
         taskCount: project._count.issues,
         responsible: findResponsible(project.memberships),
         createdAt: project.createdAt.toISOString(),
+        ...(myMembership ? { myRole: myMembership.role } : {}),
     };
 };
 
@@ -110,7 +111,7 @@ export const createProjectService = async (
     request: FastifyRequestTypeBox<typeof createProjectSchema>
 ): Promise<{ id: number; name: string }> => {
     const prisma = request.server.prisma;
-    const { name, description, versions } = request.body as CreateProjectBody;
+    const { name, description, versions } = request.body;
 
     const project = await prisma.project.create({
         data: {
@@ -122,6 +123,16 @@ export const createProjectService = async (
         },
     });
 
+    const creatorId = Number(request.user.sub);
+
+    await prisma.projectMember.create({
+        data: {
+            userId: creatorId,
+            projectId: project.id,
+            role: ProjectMemberRole.ADMINISTRATOR,
+        },
+    });
+
     return { id: project.id, name: project.name };
 };
 
@@ -130,13 +141,11 @@ export const updateProjectService = async (
 ): Promise<{ id: number; name: string }> => {
     const prisma = request.server.prisma;
     const { id } = request.params;
-    const body = request.body as UpdateProjectBody;
+    const body = request.body;
 
     const existing = await prisma.project.findUnique({ where: { id } });
     if (!existing) {
-        const httpError = new Error("Проект не найден") as Error & { statusCode?: number };
-        httpError.statusCode = 404;
-        throw httpError;
+        throw new AppError(HTTP_STATUS.NOT_FOUND, "Проект не найден", "PROJECT_NOT_FOUND");
     }
 
     const updateData: Record<string, unknown> = {};
@@ -145,10 +154,12 @@ export const updateProjectService = async (
     if (body.status !== undefined) updateData.status = body.status;
 
     if (body.versions !== undefined) {
-        await prisma.productVersion.deleteMany({ where: { projectId: id } });
-        await prisma.productVersion.createMany({
-            data: body.versions.map(v => ({ projectId: id, version: v })),
-        });
+        await prisma.$transaction([
+            prisma.productVersion.deleteMany({ where: { projectId: id } }),
+            ...body.versions.map(v =>
+                prisma.productVersion.create({ data: { projectId: id, version: v } }),
+            ),
+        ]);
     }
 
     if (Object.keys(updateData).length > 0) {
@@ -160,7 +171,11 @@ export const updateProjectService = async (
         select: { id: true, name: true },
     });
 
-    return { id: project!.id, name: project!.name };
+    if (!project) {
+        throw new AppError(HTTP_STATUS.NOT_FOUND, "Проект не найден", "PROJECT_NOT_FOUND");
+    }
+
+    return { id: project.id, name: project.name };
 };
 
 export const getUsersService = async (
@@ -190,34 +205,26 @@ export const addProjectMemberService = async (
 ): Promise<MemberResponse> => {
     const prisma = request.server.prisma;
     const { id } = request.params;
-    const { userId, role } = request.body as AddMemberBody;
+    const { userId, role } = request.body;
 
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { login: true } });
     if (!user) {
-        const httpError = new Error("Пользователь не найден") as Error & { statusCode?: number };
-        httpError.statusCode = 404;
-        throw httpError;
+        throw new AppError(HTTP_STATUS.NOT_FOUND, "Пользователь не найден", "USER_NOT_FOUND");
     }
 
     const existing = await prisma.projectMember.findUnique({
         where: { userId_projectId: { userId, projectId: id } },
     });
     if (existing) {
-        const httpError = new Error("Участник уже добавлен в проект") as Error & { statusCode?: number };
-        httpError.statusCode = 409;
-        throw httpError;
+        throw new AppError(HTTP_STATUS.CONFLICT, "Участник уже добавлен в проект", "MEMBER_ALREADY_EXISTS");
     }
 
-    await prisma.projectMember.create({
-        data: { userId, projectId: id, role: role as ProjectMemberRole },
-    });
-
-    const member = await prisma.projectMember.findUnique({
-        where: { userId_projectId: { userId, projectId: id } },
+    const member = await prisma.projectMember.create({
+        data: { userId, projectId: id, role },
         select: { userId: true, role: true, user: { select: { login: true } } },
     });
 
-    return { userId: member!.userId, login: member!.user.login, role: member!.role };
+    return { userId: member.userId, login: member.user.login, role: member.role };
 };
 
 export const updateProjectMemberService = async (
@@ -225,28 +232,33 @@ export const updateProjectMemberService = async (
 ): Promise<MemberResponse> => {
     const prisma = request.server.prisma;
     const { id, userId } = request.params;
-    const { role } = request.body as UpdateMemberRoleBody;
+    const { role } = request.body;
 
-    const existing = await prisma.projectMember.findUnique({
-        where: { userId_projectId: { userId, projectId: id } },
-    });
-    if (!existing) {
-        const httpError = new Error("Участник не найден в проекте") as Error & { statusCode?: number };
-        httpError.statusCode = 404;
-        throw httpError;
-    }
+    const member = await prisma.$transaction(async tx => {
+        const existing = await tx.projectMember.findUnique({
+            where: { userId_projectId: { userId, projectId: id } },
+        });
+        if (!existing) {
+            throw new AppError(HTTP_STATUS.NOT_FOUND, "Участник не найден в проекте", "MEMBER_NOT_FOUND");
+        }
 
-    await prisma.projectMember.update({
-        where: { userId_projectId: { userId, projectId: id } },
-        data: { role: role as ProjectMemberRole },
-    });
+        if (existing.role === "ADMINISTRATOR" && role !== "ADMINISTRATOR") {
+            const adminCount = await tx.projectMember.count({
+                where: { projectId: id, role: "ADMINISTRATOR" },
+            });
+            if (adminCount <= 1) {
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить администратора проекта", "LAST_ADMIN");
+            }
+        }
 
-    const member = await prisma.projectMember.findUnique({
-        where: { userId_projectId: { userId, projectId: id } },
-        select: { userId: true, role: true, user: { select: { login: true } } },
-    });
+        return tx.projectMember.update({
+            where: { userId_projectId: { userId, projectId: id } },
+            data: { role },
+            select: { userId: true, role: true, user: { select: { login: true } } },
+        });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
-    return { userId: member!.userId, login: member!.user.login, role: member!.role };
+    return { userId: member.userId, login: member.user.login, role: member.role };
 };
 
 export const deleteProjectService = async (
@@ -257,15 +269,15 @@ export const deleteProjectService = async (
 
     const existing = await prisma.project.findUnique({ where: { id } });
     if (!existing) {
-        const httpError = new Error("Проект не найден") as Error & { statusCode?: number };
-        httpError.statusCode = 404;
-        throw httpError;
+        throw new AppError(HTTP_STATUS.NOT_FOUND, "Проект не найден", "PROJECT_NOT_FOUND");
     }
 
-    await prisma.productVersion.deleteMany({ where: { projectId: id } });
-    await prisma.projectMember.deleteMany({ where: { projectId: id } });
-    await prisma.issue.deleteMany({ where: { projectId: id } });
-    await prisma.project.delete({ where: { id } });
+    await prisma.$transaction([
+        prisma.productVersion.deleteMany({ where: { projectId: id } }),
+        prisma.projectMember.deleteMany({ where: { projectId: id } }),
+        prisma.issue.deleteMany({ where: { projectId: id } }),
+        prisma.project.delete({ where: { id } }),
+    ]);
 
     return null;
 };
@@ -276,18 +288,27 @@ export const removeProjectMemberService = async (
     const prisma = request.server.prisma;
     const { id, userId } = request.params;
 
-    const existing = await prisma.projectMember.findUnique({
-        where: { userId_projectId: { userId, projectId: id } },
-    });
-    if (!existing) {
-        const httpError = new Error("Участник не найден в проекте") as Error & { statusCode?: number };
-        httpError.statusCode = 404;
-        throw httpError;
-    }
+    await prisma.$transaction(async tx => {
+        const existing = await tx.projectMember.findUnique({
+            where: { userId_projectId: { userId, projectId: id } },
+        });
+        if (!existing) {
+            throw new AppError(HTTP_STATUS.NOT_FOUND, "Участник не найден в проекте", "MEMBER_NOT_FOUND");
+        }
 
-    await prisma.projectMember.delete({
-        where: { userId_projectId: { userId, projectId: id } },
-    });
+        if (existing.role === "ADMINISTRATOR") {
+            const adminCount = await tx.projectMember.count({
+                where: { projectId: id, role: "ADMINISTRATOR" },
+            });
+            if (adminCount <= 1) {
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить администратора проекта", "LAST_ADMIN");
+            }
+        }
+
+        await tx.projectMember.delete({
+            where: { userId_projectId: { userId, projectId: id } },
+        });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     return null;
 };

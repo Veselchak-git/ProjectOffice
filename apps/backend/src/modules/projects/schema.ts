@@ -1,5 +1,14 @@
 import { type Static, Type } from "@fastify/type-provider-typebox";
 
+const projectMemberRoleSchema = Type.Union([
+    Type.Literal("VIEWER"),
+    Type.Literal("REPORTER"),
+    Type.Literal("UPDATER"),
+    Type.Literal("DEVELOPER"),
+    Type.Literal("MANAGER"),
+    Type.Literal("ADMINISTRATOR"),
+]);
+
 export const projectResponseSchema = Type.Object({
     id: Type.Number(),
     name: Type.String(),
@@ -38,6 +47,7 @@ const projectDetailResponseSchema = Type.Object({
     taskCount: Type.Number(),
     responsible: Type.String(),
     createdAt: Type.String(),
+    myRole: Type.Optional(Type.String()),
 });
 
 export type ProjectDetailResponse = Static<typeof projectDetailResponseSchema>;
@@ -54,7 +64,7 @@ export const getProjectByIdSchema = {
 export const memberResponseSchema = Type.Object({
     userId: Type.Number(),
     login: Type.String(),
-    role: Type.String(),
+    role: projectMemberRoleSchema,
 });
 
 export type MemberResponse = Static<typeof memberResponseSchema>;
@@ -70,7 +80,7 @@ export const getProjectMembersSchema = {
 
 export const addMemberBodySchema = Type.Object({
     userId: Type.Number(),
-    role: Type.String(),
+    role: projectMemberRoleSchema,
 });
 
 export type AddMemberBody = Static<typeof addMemberBodySchema>;
@@ -86,7 +96,7 @@ export const addProjectMemberSchema = {
 };
 
 export const updateMemberRoleBodySchema = Type.Object({
-    role: Type.String(),
+    role: projectMemberRoleSchema,
 });
 
 export type UpdateMemberRoleBody = Static<typeof updateMemberRoleBodySchema>;
