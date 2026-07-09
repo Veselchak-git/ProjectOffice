@@ -1,10 +1,5 @@
-/*
- * Copyright (c) 2016-2026 Tecom LLC
- * All rights reserved
- *
- * Исключительное право (c) 2016-2026 принадлежит ООО Теком
- * Все права защищены
- */
+import ms from "ms";
+
 import type { Role } from "@/generated/prisma/enums.js";
 
 import type { UserRepository } from "@/modules/users/repository.js";
@@ -13,10 +8,21 @@ import type { JwtPayload } from "@/plugins/jwt-plugin/model.js";
 
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { hashPassword, verifyPassword } from "@/shared/lib/hash-password/index.js";
-import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
+import { generateRefreshToken, hashRefreshToken } from "@/shared/lib/refresh-token/index.js";
+import type { FastifyReplyTypeBox, FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 
-import type { changePasswordSchema, getCurrentUserSchema, postLoginSchema } from "./schema.js";
-import type { AuthUser, CurrentUserResponse, LoginResponse } from "./schema.js";
+import type {
+    changePasswordSchema,
+    getCurrentUserSchema,
+    logoutSchema,
+    postLoginSchema,
+    refreshSchema,
+    AuthUser,
+    CurrentUserResponse,
+    LoginResponse,
+    RefreshResponse,
+    LogoutResponse
+} from "./schema.js";
 
 const normalizeLogin = (login: string) => login.trim().toLowerCase();
 
@@ -34,7 +40,38 @@ const createJwtPayload = (user: AuthUser): JwtPayload => ({
     role: user.role
 });
 
-export const loginService = async (request: FastifyRequestTypeBox<typeof postLoginSchema>): Promise<LoginResponse> => {
+const REFRESH_COOKIE = "refreshToken";
+
+function setRefreshCookie(
+    reply: FastifyReplyTypeBox<typeof postLoginSchema | typeof refreshSchema | typeof logoutSchema>,
+    token: string,
+    ttlMs: number
+): void {
+    reply.setCookie(REFRESH_COOKIE, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/auth",
+        maxAge: Math.floor(ttlMs / 1000)
+    });
+}
+
+function clearRefreshCookie(
+    reply: FastifyReplyTypeBox<typeof postLoginSchema | typeof refreshSchema | typeof logoutSchema>
+): void {
+    reply.setCookie(REFRESH_COOKIE, "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/auth",
+        maxAge: 0
+    });
+}
+
+export const loginService = async (
+    request: FastifyRequestTypeBox<typeof postLoginSchema>,
+    reply: FastifyReplyTypeBox<typeof postLoginSchema>
+): Promise<LoginResponse> => {
     const login = normalizeLogin(request.body.login);
     const userRecord = await request.server.userRepository.findUserRecordByLogin(login);
 
@@ -58,6 +95,14 @@ export const loginService = async (request: FastifyRequestTypeBox<typeof postLog
         expiresIn: request.server.config.JWT_ACCESS_TTL
     });
 
+    const rawRefreshToken = generateRefreshToken();
+    const tokenHash = hashRefreshToken(rawRefreshToken);
+    const ttlMs = ms(request.server.config.REFRESH_TOKEN_TTL as ms.StringValue);
+    await request.server.userRepository.deleteAllUserRefreshTokens(userRecord.id);
+    await request.server.userRepository.createRefreshToken(userRecord.id, tokenHash, new Date(Date.now() + ttlMs));
+
+    setRefreshCookie(reply, rawRefreshToken, ttlMs);
+
     return {
         accessToken,
         expiresIn: request.server.config.JWT_ACCESS_TTL,
@@ -75,6 +120,73 @@ export const getCurrentUserService = async (
             role: request.user.role
         }
     };
+};
+
+export const refreshService = async (
+    request: FastifyRequestTypeBox<typeof refreshSchema>,
+    reply: FastifyReplyTypeBox<typeof refreshSchema>
+): Promise<RefreshResponse> => {
+    const rawRefreshToken = request.cookies[REFRESH_COOKIE];
+    if (!rawRefreshToken) {
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "No refresh token", "AUTH_NO_REFRESH_TOKEN");
+    }
+
+    const tokenHash = hashRefreshToken(rawRefreshToken);
+    const storedToken = await request.server.userRepository.findRefreshToken(tokenHash);
+
+    if (!storedToken) {
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid refresh token", "AUTH_INVALID_REFRESH_TOKEN");
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+        await request.server.userRepository.deleteRefreshToken(storedToken.id);
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Refresh token expired", "AUTH_REFRESH_TOKEN_EXPIRED");
+    }
+
+    await request.server.userRepository.deleteRefreshToken(storedToken.id);
+    const newRawRefreshToken = generateRefreshToken();
+    const newTokenHash = hashRefreshToken(newRawRefreshToken);
+    const ttlMs = ms(request.server.config.REFRESH_TOKEN_TTL as ms.StringValue);
+    await request.server.userRepository.createRefreshToken(
+        storedToken.userId,
+        newTokenHash,
+        new Date(Date.now() + ttlMs)
+    );
+
+    setRefreshCookie(reply, newRawRefreshToken, ttlMs);
+
+    const userRecord = await request.server.userRepository.findUserById(storedToken.userId);
+    if (!userRecord) {
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "User not found", "AUTH_USER_NOT_FOUND");
+    }
+
+    const user = toAuthUser(userRecord);
+    const accessToken = await request.server.jwt.sign(createJwtPayload(user), {
+        expiresIn: request.server.config.JWT_ACCESS_TTL
+    });
+
+    return {
+        accessToken,
+        expiresIn: request.server.config.JWT_ACCESS_TTL
+    };
+};
+
+export const logoutService = async (
+    request: FastifyRequestTypeBox<typeof logoutSchema>,
+    reply: FastifyReplyTypeBox<typeof logoutSchema>
+): Promise<LogoutResponse> => {
+    const rawRefreshToken = request.cookies[REFRESH_COOKIE];
+    if (rawRefreshToken) {
+        const tokenHash = hashRefreshToken(rawRefreshToken);
+        const storedToken = await request.server.userRepository.findRefreshToken(tokenHash);
+        if (storedToken) {
+            await request.server.userRepository.deleteRefreshToken(storedToken.id);
+        }
+    }
+
+    clearRefreshCookie(reply);
+
+    return { message: "Logged out successfully" };
 };
 
 export const changePasswordService = async (

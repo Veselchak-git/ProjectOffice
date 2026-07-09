@@ -10,11 +10,11 @@ import fp from "fastify-plugin";
 
 import { JWT_DECORATOR_AUTHENTICATE } from "@/plugins/jwt-plugin/index.js";
 
-import { AUTH_LOGIN_PATH, AUTH_ME_PATH, AUTH_ME_PASSWORD_PATH } from "@/shared/routes.js";
+import { AUTH_LOGIN_PATH, AUTH_LOGOUT_PATH, AUTH_ME_PATH, AUTH_ME_PASSWORD_PATH, AUTH_REFRESH_PATH } from "@/shared/routes.js";
 
 import { USER_REPOSITORY_DECORATOR_NAME } from "../users/repository.js";
-import { changePasswordSchema, getCurrentUserSchema, postLoginSchema } from "./schema.js";
-import { changePasswordService, getCurrentUserService, loginService } from "./service.js";
+import { changePasswordSchema, getCurrentUserSchema, logoutSchema, postLoginSchema, refreshSchema } from "./schema.js";
+import { changePasswordService, getCurrentUserService, loginService, logoutService, refreshService } from "./service.js";
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.post(
@@ -23,6 +23,22 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: postLoginSchema
         },
         loginService
+    );
+
+    fastify.post(
+        AUTH_REFRESH_PATH,
+        {
+            schema: refreshSchema
+        },
+        refreshService
+    );
+
+    fastify.post(
+        AUTH_LOGOUT_PATH,
+        {
+            schema: logoutSchema
+        },
+        logoutService
     );
 
     fastify.get(

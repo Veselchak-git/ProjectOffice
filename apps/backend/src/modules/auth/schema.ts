@@ -19,7 +19,7 @@ export type AuthUser = Static<typeof authUserSchema>;
 
 export const loginBodySchema = Type.Object({
     login: Type.String(),
-    password: Type.String({ minLength: 1 })
+    password: Type.String({ minLength: 6 })
 });
 export type LoginRequest = Static<typeof loginBodySchema>;
 
@@ -45,6 +45,29 @@ export const postLoginSchema = {
 export const getCurrentUserSchema = {
     response: {
         200: currentUserResponseSchema
+    }
+};
+
+export const refreshResponseSchema = Type.Object({
+    accessToken: Type.String(),
+    expiresIn: Type.String()
+});
+export type RefreshResponse = Static<typeof refreshResponseSchema>;
+
+export const refreshSchema = {
+    response: {
+        200: refreshResponseSchema
+    }
+};
+
+export const logoutResponseSchema = Type.Object({
+    message: Type.String()
+});
+export type LogoutResponse = Static<typeof logoutResponseSchema>;
+
+export const logoutSchema = {
+    response: {
+        200: logoutResponseSchema
     }
 };
 
