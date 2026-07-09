@@ -21,6 +21,8 @@ const defaultTestConfig = {
     DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/office_registry",
     JWT_ACCESS_SECRET: "test-access-secret",
     JWT_ACCESS_TTL: "15m",
+    REFRESH_TOKEN_SECRET: "test-refresh-secret",
+    REFRESH_TOKEN_TTL: "7d",
     SALT_SECRET: "test-salt-secret"
 } satisfies TestAppConfig;
 
