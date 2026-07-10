@@ -15,5 +15,6 @@ export interface ISelectProps {
     options: ISelectOption[];
     disabled?: boolean;
     startIcon?: React.ReactNode;
+    usePortal?: boolean;
     onValueChange?: (value: string) => void;
 }

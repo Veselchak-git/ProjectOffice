@@ -18,6 +18,7 @@ export const Select: FC<ISelectProps> = ({
     options,
     disabled = false,
     startIcon,
+    usePortal = true,
     onValueChange
 }) => {
     return (
@@ -50,7 +51,13 @@ export const Select: FC<ISelectProps> = ({
                     <BaseSelect.Value
                         className="ui-kit-select__value"
                         placeholder={placeholder}
-                    />
+                    >
+                        {(currentValue) => {
+                            if (currentValue == null) return null;
+                            const option = options.find(o => o.value === currentValue);
+                            return option?.label ?? currentValue;
+                        }}
+                    </BaseSelect.Value>
                     <BaseSelect.Icon
                         className="ui-kit-select__icon"
                         data-test="select-arrow"
@@ -72,7 +79,25 @@ export const Select: FC<ISelectProps> = ({
                 ) : null}
             </div>
 
-            <BaseSelect.Portal>
+            {usePortal ? (
+                <BaseSelect.Portal>
+                    <BaseSelect.Positioner>
+                        <BaseSelect.Popup className="ui-kit-select__popup">
+                            <BaseSelect.List className="ui-kit-select__list">
+                                {options.map((option) => (
+                                    <BaseSelect.Item
+                                        key={option.value}
+                                        value={option.value}
+                                        className="ui-kit-select__item"
+                                    >
+                                        {option.label}
+                                    </BaseSelect.Item>
+                                ))}
+                            </BaseSelect.List>
+                        </BaseSelect.Popup>
+                    </BaseSelect.Positioner>
+                </BaseSelect.Portal>
+            ) : (
                 <BaseSelect.Positioner>
                     <BaseSelect.Popup className="ui-kit-select__popup">
                         <BaseSelect.List className="ui-kit-select__list">
@@ -88,7 +113,7 @@ export const Select: FC<ISelectProps> = ({
                         </BaseSelect.List>
                     </BaseSelect.Popup>
                 </BaseSelect.Positioner>
-            </BaseSelect.Portal>
+            )}
         </BaseSelect.Root>
     );
 };

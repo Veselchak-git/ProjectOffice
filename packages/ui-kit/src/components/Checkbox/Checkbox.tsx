@@ -16,12 +16,12 @@ export const Checkbox: FC<ICheckboxProps> = ({
     disabled = false,
     onCheckedChange
 }) => {
-    return (
+    const checkbox = (
         <BaseCheckbox.Root
             className={clsx(
                 "ui-kit-checkbox",
                 `ui-kit-checkbox-size-${inputSize}`,
-                className
+                !label && className
             )}
             checked={checked}
             defaultChecked={defaultChecked}
@@ -51,4 +51,6 @@ export const Checkbox: FC<ICheckboxProps> = ({
             ) : null}
         </BaseCheckbox.Root>
     );
+
+    return checkbox;
 };

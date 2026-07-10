@@ -89,6 +89,8 @@
     --semantic-bg-base: var(--neutral-50);
     --semantic-bg-surface: var(--neutral-100);
     --semantic-bg-surface-elevated: #ffffff;
+    --semantic-fill-primary-hover: var(--accent-50);
+    --semantic-fill-disabled: var(--neutral-200);
     --semantic-border-default: var(--neutral-400);
     --semantic-focus: var(--accent-300);
 
@@ -148,6 +150,8 @@
     --semantic-bg-base: var(--neutral-950);
     --semantic-bg-surface: var(--neutral-900);
     --semantic-bg-surface-elevated: var(--neutral-800);
+    --semantic-fill-primary-hover: var(--accent-950);
+    --semantic-fill-disabled: var(--neutral-950);
     --semantic-border-default: var(--neutral-700);
     --semantic-focus: var(--accent-300);
 

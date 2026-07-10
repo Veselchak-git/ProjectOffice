@@ -1,12 +1,12 @@
 @layer components {
     .ui-kit-select {
         --select-gap: 4px;
-        --select-label-text: var(--neutral-900);
+        --select-label-text: var(--semantic-text-primary, var(--neutral-900));
         --select-label-font-size: var(--font-size-label-s, 11px);
         --select-label-font-weight: var(--font-weight-light, 300);
-        --select-bg: var(--neutral-100);
-        --select-text: var(--neutral-900);
-        --select-placeholder: var(--neutral-500);
+        --select-bg: var(--semantic-bg-surface, var(--neutral-100));
+        --select-text: var(--semantic-text-primary, var(--neutral-900));
+        --select-placeholder: var(--semantic-text-tertiary, var(--neutral-500));
         --select-border-color: transparent;
         --select-border-width: 2px;
         --select-min-height: 40px;
@@ -17,25 +17,25 @@
         --select-font-weight: var(--font-weight-regular, 400);
         --select-icon-size: 16px;
         --select-focus-outline-color: var(--semantic-focus);
-        --select-hover-bg: var(--neutral-50);
+        --select-hover-bg: var(--semantic-fill-primary-hover, var(--neutral-50));
         --select-error-bg: var(--red-100);
         --select-error-border-color: var(--red-500);
         --select-error-text: var(--red-500);
         --select-disabled-opacity: 0.4;
         --select-list-padding: 4px;
-        --select-list-bg: #ffffff;
-        --select-list-border: 1px solid var(--neutral-300);
+        --select-list-bg: var(--semantic-bg-surface-elevated, #ffffff);
+        --select-list-border: 1px solid var(--semantic-border-default, var(--neutral-300));
         --select-list-border-radius: 8px;
         --select-list-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         --select-list-max-height: 300px;
         --select-item-padding: 8px 12px;
         --select-item-font-size: var(--font-size-body-m, 14px);
         --select-item-font-weight: var(--font-weight-regular, 400);
-        --select-item-color: var(--neutral-900);
+        --select-item-color: var(--semantic-text-primary, var(--neutral-900));
         --select-item-border-radius: 6px;
-        --select-item-hover-bg: var(--neutral-100);
-        --select-item-highlighted-bg: var(--neutral-200);
-        --select-item-selected-color: var(--accent-600);
+        --select-item-hover-bg: var(--semantic-fill-primary-hover, var(--neutral-100));
+        --select-item-highlighted-bg: var(--semantic-fill-primary-hover, var(--neutral-200));
+        --select-item-selected-color: var(--semantic-text-accent, var(--accent-600));
         --select-item-selected-bg: var(--accent-50);
 
         display: flex;
@@ -140,9 +140,23 @@
         --select-icon-size: 20px;
     }
 
-    /* Popup */
+    /* Popup – vars must be declared here too because Portal renders outside .ui-kit-select */
     .ui-kit-select__popup {
-        z-index: 50;
+        --select-list-padding: 4px;
+        --select-list-bg: var(--semantic-bg-surface-elevated, #ffffff);
+        --select-list-border: 1px solid var(--semantic-border-default, var(--neutral-300));
+        --select-list-border-radius: 8px;
+        --select-list-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --select-list-max-height: 300px;
+        --select-item-padding: 8px 12px;
+        --select-item-font-size: var(--font-size-body-m, 14px);
+        --select-item-font-weight: var(--font-weight-regular, 400);
+        --select-item-color: var(--semantic-text-primary, var(--neutral-900));
+        --select-item-border-radius: 6px;
+        --select-item-hover-bg: var(--semantic-fill-primary-hover, var(--neutral-100));
+        --select-item-highlighted-bg: var(--semantic-fill-primary-hover, var(--neutral-200));
+        --select-item-selected-color: var(--semantic-text-accent, var(--accent-600));
+        --select-item-selected-bg: var(--accent-50);
     }
 
     .ui-kit-select__list {

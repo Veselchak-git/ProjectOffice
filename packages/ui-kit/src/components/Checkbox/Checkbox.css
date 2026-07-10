@@ -12,7 +12,7 @@
         --checkbox-indeterminate-border-color: var(--accent-600);
         --checkbox-hover-border-color: var(--accent-600);
         --checkbox-disabled-opacity: 0.4;
-        --checkbox-icon-color: #ffffff;
+        --checkbox-icon-color: var(--neutral-50);
         --checkbox-label-color: var(--neutral-900);
         --checkbox-label-font-size: var(--font-size-body-m, 14px);
         --checkbox-label-font-weight: var(--font-weight-regular, 400);

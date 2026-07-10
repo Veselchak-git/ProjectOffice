@@ -4,9 +4,9 @@
         --input-label-text: var(--semantic-text-primary);
         --input-label-font-size: var(--font-size-label-s, 11px);
         --input-label-font-weight: var(--font-weight-light, 300);
-        --input-bg: var(--neutral-100);
-        --input-text: var(--neutral-900);
-        --input-placeholder: var(--neutral-500);
+        --input-bg: var(--semantic-bg-surface);
+        --input-text: var(--semantic-text-primary);
+        --input-placeholder: var(--semantic-text-tertiary);
         --input-border-color: var(--semantic-border-default);
         --input-border-width: 2px;
         --input-min-height: 40px;
@@ -18,12 +18,12 @@
         --input-icon-size: 16px;
         --input-focus-outline-color: var(--semantic-focus);
         --input-focus-outline-offset: 2px;
-        --input-hover-bg: var(--neutral-50);
+        --input-hover-bg: var(--semantic-bg-base);
         --input-error-bg: var(--red-100);
         --input-error-border-color: var(--red-500);
         --input-error-text: var(--red-500);
-        --input-disabled-bg: var(--neutral-200);
-        --input-disabled-text: var(--neutral-400);
+        --input-disabled-bg: var(--semantic-fill-disabled);
+        --input-disabled-text: var(--semantic-text-disabled);
         --input-disabled-border-color: transparent;
 
         display: flex;

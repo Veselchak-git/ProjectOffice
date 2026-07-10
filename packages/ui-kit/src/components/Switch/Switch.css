@@ -8,7 +8,7 @@
         --switch-track-checked-bg: var(--accent-600);
         --switch-thumb-size: 16px;
         --switch-thumb-radius: 50%;
-        --switch-thumb-bg: #ffffff;
+        --switch-thumb-bg: var(--neutral-50);
         --switch-thumb-offset: 2px;
         --switch-disabled-opacity: 0.4;
         --switch-label-color: var(--neutral-900);
