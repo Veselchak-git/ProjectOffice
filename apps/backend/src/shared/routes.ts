@@ -23,3 +23,4 @@ export const PROJECT_PATH = `${PROJECTS_PATH}/:id`;
 export const PROJECT_MEMBERS_PATH = `${PROJECT_PATH}/members`;
 export const PROJECT_MEMBER_PATH = `${PROJECT_PATH}/members/:userId`;
 export const USERS_PATH = "/users";
+export const USER_PATH = `${USERS_PATH}/:id`;

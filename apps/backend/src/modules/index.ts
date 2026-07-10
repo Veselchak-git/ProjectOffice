@@ -11,6 +11,7 @@ import { authModulePlugin } from "./auth/index.js";
 import { exampleModulePlugin } from "./example-module/index.js";
 import { pingModulePlugin } from "./ping/index.js";
 import { projectsPlugin } from "./projects/index.js";
+import { usersPagePlugin } from "./users-page/index.js";
 
 //тут используем без fp т.к. не будет работать префикс
 export const modules: FastifyPluginAsync = async fastify => {
@@ -18,4 +19,5 @@ export const modules: FastifyPluginAsync = async fastify => {
     await fastify.register(exampleModulePlugin);
     await fastify.register(pingModulePlugin);
     await fastify.register(projectsPlugin);
+    await fastify.register(usersPagePlugin);
 };
