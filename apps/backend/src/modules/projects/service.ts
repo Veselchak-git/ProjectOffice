@@ -178,14 +178,6 @@ export const updateProjectService = async (
     return { id: project.id, name: project.name };
 };
 
-export const getUsersService = async (
-    request: FastifyRequestTypeBox<never>
-): Promise<{ id: number; login: string; role: string }[]> => {
-    const prisma = request.server.prisma;
-    const users = await prisma.user.findMany({ select: { id: true, login: true, role: true } });
-    return users;
-};
-
 export const getProjectMembersService = async (
     request: FastifyRequestTypeBox<typeof getProjectMembersSchema>
 ): Promise<MemberResponse[]> => {

@@ -11,7 +11,6 @@ import {
     PROJECT_PATH,
     PROJECT_MEMBERS_PATH,
     PROJECT_MEMBER_PATH,
-    USERS_PATH,
 } from "@/shared/routes.js";
 
 import {
@@ -30,7 +29,6 @@ import {
     getProjectByIdService,
     createProjectService,
     updateProjectService,
-    getUsersService,
     getProjectMembersService,
     addProjectMemberService,
     updateProjectMemberService,
@@ -159,14 +157,6 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             ],
         },
         updateProjectService,
-    );
-
-    fastify.get(
-        USERS_PATH,
-        {
-            preHandler: [fastify.authenticate],
-        },
-        getUsersService,
     );
 
     fastify.get(
