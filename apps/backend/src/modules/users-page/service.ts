@@ -11,20 +11,42 @@ import type {
     UserResponse,
 } from "./schema.js";
 
+const USER_SORT_FIELDS = new Set(["login", "role", "createdAt"]);
+
 export const getUsersService = async (
     request: FastifyRequestTypeBox<typeof getUsersSchema>
-): Promise<UserResponse[]> => {
-    const users = await request.server.prisma.user.findMany({
-        select: { id: true, login: true, role: true, createdAt: true },
-        orderBy: { id: "asc" },
-    });
+): Promise<{ users: UserResponse[]; total: number; page: number; perPage: number }> => {
+    const { q, page = 1, perPage = 20, sortBy, sortOrder = "asc" } = request.query;
 
-    return users.map(u => ({
-        id: u.id,
-        login: u.login,
-        role: u.role as Role,
-        createdAt: u.createdAt.toISOString(),
-    }));
+    const where = q ? { login: { contains: q } } : {};
+    const orderBy = sortBy && USER_SORT_FIELDS.has(sortBy)
+        ? { [sortBy]: sortOrder }
+        : { id: "asc" as const };
+
+    const skip = (page - 1) * perPage;
+
+    const [users, total] = await request.server.prisma.$transaction([
+        request.server.prisma.user.findMany({
+            where,
+            orderBy,
+            skip,
+            take: perPage,
+            select: { id: true, login: true, role: true, createdAt: true },
+        }),
+        request.server.prisma.user.count({ where }),
+    ]);
+
+    return {
+        users: users.map(u => ({
+            id: u.id,
+            login: u.login,
+            role: u.role as Role,
+            createdAt: u.createdAt.toISOString(),
+        })),
+        total,
+        page,
+        perPage,
+    };
 };
 
 export const createUserService = async (

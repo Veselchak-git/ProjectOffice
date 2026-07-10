@@ -1,24 +1,26 @@
-import { Button, Checkbox, Input, Select } from "@helpdesk-portal/ui-kit";
+import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
-import SortAscendingIcon from "@helpdesk-portal/icons/SortAscending.svg?react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FC } from "react";
+import {
+    createColumnHelper,
+    getCoreRowModel,
+    useReactTable,
+    type OnChangeFn,
+    type PaginationState,
+    type SortingState,
+} from "@tanstack/react-table";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { formatDate } from "@/shared/lib/format-date/format-date";
+import { DataTable, DataTablePagination } from "@/shared/components/data-table";
+import { formatDate } from "@/shared/lib/format-date";
+import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
 import { createUser, deleteUser, fetchUsers, updateUserRole } from "../api/users";
-import type { CreateUserData, User } from "../model/users";
+import type { CreateUserData, FetchUsersParams, User } from "../model/users";
 
 import "./UsersPage.css";
-
-type SortKey = "login" | "role" | "createdAt";
-
-const ROLE_ORDER: Record<string, number> = {
-    GUEST: 0,
-    PROJECT_MANAGER: 1,
-    ADMIN: 2,
-};
 
 const ROLE_OPTIONS = [
     { value: "GUEST", label: "Гость" },
@@ -26,93 +28,154 @@ const ROLE_OPTIONS = [
     { value: "ADMIN", label: "Администратор" },
 ];
 
+const columnHelper = createColumnHelper<User>();
+
 export const UsersPage: FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [fetchError, setFetchError] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortKey, setSortKey] = useState<SortKey | null>(null);
-    const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+    const queryClient = useQueryClient();
+    const [paginationState, setPaginationState] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [searchInput, setSearchInput] = useState("");
+    const [debouncedQ, setDebouncedQ] = useState("");
     const [creating, setCreating] = useState(false);
-    const [updating, setUpdating] = useState<Record<number, boolean>>({});
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const { perPage, ready } = useDynamicPerPage(containerRef, {
+        rowHeight: 57,
+        theadHeight: 41,
+        paginationHeight: 36,
+        min: 5,
+    });
+
+    const pagination = useMemo<PaginationState>(() => {
+        if (perPage === paginationState.pageSize) return paginationState;
+        const oldOffset = paginationState.pageIndex * paginationState.pageSize;
+        const newPageIndex = Math.floor(oldOffset / perPage);
+        return { pageIndex: newPageIndex, pageSize: perPage };
+    }, [paginationState, perPage]);
 
     useEffect(() => {
-        fetchUsers()
-            .then(data => { setUsers(data); setFetchError(null); })
-            .catch(err => setFetchError(err instanceof Error ? err.message : "Ошибка загрузки"))
-            .finally(() => setLoading(false));
-    }, []);
+        const timer = setTimeout(() => setDebouncedQ(searchInput), 400);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
 
-    const handleSort = (key: SortKey) => {
-        if (sortKey === key) {
-            setSortDir(d => (d === "asc" ? "desc" : "asc"));
-        } else {
-            setSortKey(key);
-            setSortDir("asc");
-        }
+    useEffect(() => {
+        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
+    }, [debouncedQ]);
+
+    const sortBy = sorting[0]?.id;
+    const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
+    const page = pagination.pageIndex + 1;
+
+    const userParams = {
+        ...(debouncedQ ? { q: debouncedQ } : {}),
+        page,
+        perPage,
+        ...(sortBy ? { sortBy } : {}),
+        ...(sortOrder ? { sortOrder } : {}),
+    } satisfies FetchUsersParams;
+
+    const { data, isPending, isError, error } = useQuery({
+        queryKey: ["users", userParams],
+        queryFn: () => fetchUsers(userParams),
+        enabled: ready,
+        placeholderData: keepPreviousData,
+    });
+
+    const users = data?.users ?? [];
+    const total = data?.total ?? 0;
+
+    const { mutateAsync: createUserMutate } = useMutation({
+        mutationFn: (dto: CreateUserData) => createUser(dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            setCreating(false);
+        },
+    });
+
+    const { mutate: deleteUserMutate } = useMutation({
+        mutationFn: (id: number) => deleteUser(id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    });
+
+    const { mutate: updateRoleMutate } = useMutation({
+        mutationFn: ({ id, role }: { id: number; role: User["role"] }) => updateUserRole(id, { role }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    });
+
+    const handleSortingChange: OnChangeFn<SortingState> = updater => {
+        setSorting(updater);
+        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
     };
 
-    const searched = searchQuery.trim()
-        ? users.filter(u => u.login.toLowerCase().includes(searchQuery.toLowerCase().trim()))
-        : users;
+    const columns = [
+        columnHelper.accessor("login", {
+            header: "ЛОГИН",
+            enableSorting: true,
+        }),
+        columnHelper.accessor("role", {
+            header: "РОЛЬ",
+            enableSorting: true,
+            cell: info => (
+                <Select
+                    options={ROLE_OPTIONS}
+                    value={info.getValue()}
+                    onValueChange={value =>
+                        updateRoleMutate({
+                            id: info.row.original.id,
+                            role: value as User["role"],
+                        })
+                    }
+                />
+            ),
+        }),
+        columnHelper.accessor("createdAt", {
+            header: "СОЗДАН",
+            enableSorting: true,
+            cell: info => formatDate(info.getValue()),
+        }),
+        columnHelper.display({
+            id: "actions",
+            header: "",
+            cell: info => (
+                <Button
+                    variant="stroke"
+                    color="error"
+                    size="s"
+                    onClick={() => {
+                        if (confirm(`Удалить пользователя «${info.row.original.login}»?`))
+                            deleteUserMutate(info.row.original.id);
+                    }}
+                >
+                    Удалить
+                </Button>
+            ),
+        }),
+    ];
 
-    const sorted = sortKey
-        ? [...searched].sort((a, b) => {
-              let cmp: number;
-              if (sortKey === "role") {
-                  cmp = (ROLE_ORDER[a.role] ?? 0) - (ROLE_ORDER[b.role] ?? 0);
-              } else {
-                  cmp = String(a[sortKey]).localeCompare(String(b[sortKey]));
-              }
-              return sortDir === "asc" ? cmp : -cmp;
-          })
-        : searched;
-
-    const handleCreate = async (data: CreateUserData) => {
-        const created = await createUser(data);
-        setUsers(prev => [...prev, created]);
-        setCreating(false);
-        setFetchError(null);
-    };
-
-    const handleRoleChange = async (userId: number, newRole: string) => {
-        setUpdating(prev => ({ ...prev, [userId]: true }));
-        try {
-            const updated = await updateUserRole(userId, { role: newRole as User["role"] });
-            setUsers(prev => prev.map(u => (u.id === userId ? { ...updated, createdAt: u.createdAt } : u)));
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : "Ошибка";
-            alert(msg);
-        } finally {
-            setUpdating(prev => ({ ...prev, [userId]: false }));
-        }
-    };
-
-    const handleDelete = async (userId: number, login: string) => {
-        if (!confirm(`Удалить пользователя «${login}»?`)) return;
-        try {
-            await deleteUser(userId);
-            setUsers(prev => prev.filter(u => u.id !== userId));
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : "Ошибка удаления";
-            alert(msg);
-        }
-    };
-
-    if (loading) {
-        return <div className="users-page"><p className="users-page__empty">Загрузка пользователей…</p></div>;
-    }
-
-    if (fetchError && users.length === 0) {
-        return <div className="users-page"><p className="users-page__empty">{fetchError}</p></div>;
-    }
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const table = useReactTable({
+        data: users,
+        columns,
+        state: { pagination, sorting },
+        onPaginationChange: updater => {
+            setPaginationState(prev => {
+                const next = typeof updater === "function" ? updater(prev) : updater;
+                return { pageIndex: next.pageIndex, pageSize: perPage };
+            });
+        },
+        onSortingChange: handleSortingChange,
+        manualPagination: true,
+        pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
+        manualSorting: true,
+        getCoreRowModel: getCoreRowModel(),
+    });
 
     return (
         <div className="users-page">
             <div className="users-page__title-area">
                 <div className="users-page__title-text">
                     <h1 className="users-page__title-heading">Пользователи</h1>
-                    <p className="users-page__title-subtitle">Всего пользователей: {users.length}</p>
+                    <p className="users-page__title-subtitle">Всего пользователей: {total}</p>
                 </div>
                 <div className="users-page__actions">
                     <button className="users-page__create-btn" type="button" onClick={() => setCreating(true)}>
@@ -127,87 +190,21 @@ export const UsersPage: FC = () => {
                     className="users-page__controls-search"
                     placeholder="Найти пользователя..."
                     startIcon={<SearchIcon />}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
                 />
             </div>
 
-            <div className="users-table-wrapper">
-                <table className="users-table">
-                    <thead>
-                        <tr>
-                            <SortableTh
-                                className="users-table__login"
-                                sortKey="login"
-                                currentKey={sortKey}
-                                dir={sortDir}
-                                onClick={handleSort}
-                            >
-                                ЛОГИН
-                            </SortableTh>
-                            <SortableTh
-                                className="users-table__role"
-                                sortKey="role"
-                                currentKey={sortKey}
-                                dir={sortDir}
-                                onClick={handleSort}
-                            >
-                                РОЛЬ
-                            </SortableTh>
-                            <SortableTh
-                                className="users-table__created"
-                                sortKey="createdAt"
-                                currentKey={sortKey}
-                                dir={sortDir}
-                                onClick={handleSort}
-                            >
-                                СОЗДАН
-                            </SortableTh>
-                            <th className="users-table__actions"> </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sorted.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="users-table__empty">
-                                    {searchQuery.trim()
-                                        ? "Пользователи по вашему запросу не найдены"
-                                        : "Пользователи не найдены"}
-                                </td>
-                            </tr>
-                        ) : (
-                            sorted.map(user => (
-                                <tr key={user.id}>
-                                    <td className="users-table__login">{user.login}</td>
-                                    <td className="users-table__role">
-                                        <div className="users-table__role-cell">
-                                            {updating[user.id] ? (
-                                                <span className="users-table__role-saving">Сохранение…</span>
-                                            ) : (
-                                                <Select
-                                                    options={ROLE_OPTIONS}
-                                                    value={user.role}
-                                                    onValueChange={value => handleRoleChange(user.id, value)}
-                                                />
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="users-table__created">{formatDate(user.createdAt)}</td>
-                                    <td className="users-table__actions">
-                                        <Button
-                                            variant="stroke"
-                                            color="error"
-                                            size="s"
-                                            onClick={() => handleDelete(user.id, user.login)}
-                                        >
-                                            Удалить
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+            <div className="users-page__table-area" ref={containerRef}>
+                {isPending && !data ? (
+                    <p className="users-page__empty">Загрузка пользователей…</p>
+                ) : isError && !data ? (
+                    <p className="users-page__empty">{error instanceof Error ? error.message : "Ошибка загрузки"}</p>
+                ) : (
+                    <DataTable table={table}>
+                        <DataTablePagination table={table} total={total} />
+                    </DataTable>
+                )}
             </div>
 
             {creating && (
@@ -215,7 +212,7 @@ export const UsersPage: FC = () => {
                     <div className="users-page__modal">
                         <h2 className="users-page__modal-title">Создание пользователя</h2>
                         <CreateUserForm
-                            onSubmit={handleCreate}
+                            onSubmit={data => createUserMutate(data).then(() => {})}
                             onCancel={() => setCreating(false)}
                         />
                     </div>
@@ -242,8 +239,14 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
         e.preventDefault();
         if (submitting) return;
         setError(null);
-        if (!login.trim()) { setError("Введите логин"); return; }
-        if (password.length < 6) { setError("Пароль должен содержать не менее 6 символов"); return; }
+        if (!login.trim()) {
+            setError("Введите логин");
+            return;
+        }
+        if (password.length < 6) {
+            setError("Пароль должен содержать не менее 6 символов");
+            return;
+        }
         setSubmitting(true);
         try {
             await onSubmit({ login: login.trim(), password, role: role as CreateUserData["role"] });
@@ -274,10 +277,10 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     required
                 />
                 <label className="users-page__checkbox-row">
-                    <Checkbox
-                        inputSize="m"
+                    <input
+                        type="checkbox"
                         checked={showPassword}
-                        onCheckedChange={setShowPassword}
+                        onChange={e => setShowPassword(e.target.checked)}
                     />
                     <span>Показать пароль</span>
                 </label>
@@ -298,30 +301,5 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                 </Button>
             </div>
         </form>
-    );
-};
-
-interface SortableThProps {
-    className: string;
-    sortKey: SortKey;
-    currentKey: SortKey | null;
-    dir: "asc" | "desc";
-    onClick: (key: SortKey) => void;
-    children: string;
-}
-
-const SortableTh: FC<SortableThProps> = ({ className, sortKey, currentKey, dir, onClick, children }) => {
-    const isActive = currentKey === sortKey;
-
-    return (
-        <th
-            className={`${className} users-table__header--sortable${isActive ? " users-table__header--sorted" : ""}`}
-            onClick={() => onClick(sortKey)}
-        >
-            {children}
-            <span className={`users-table__sort-icon${isActive ? ` users-table__sort-icon--${dir}` : ""}`}>
-                <SortAscendingIcon />
-            </span>
-        </th>
     );
 };

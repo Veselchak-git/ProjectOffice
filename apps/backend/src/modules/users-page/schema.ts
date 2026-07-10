@@ -10,9 +10,29 @@ export const userResponseSchema = Type.Object({
 
 export type UserResponse = Static<typeof userResponseSchema>;
 
+export const getUsersQuerySchema = Type.Object({
+    q: Type.Optional(Type.String()),
+    page: Type.Optional(Type.Number({ default: 1 })),
+    perPage: Type.Optional(Type.Number({ default: 20 })),
+    sortBy: Type.Optional(Type.String({ default: "id" })),
+    sortOrder: Type.Optional(Type.String({ default: "asc" })),
+});
+
+export type GetUsersQuery = Static<typeof getUsersQuerySchema>;
+
+export const getUsersResponseSchema = Type.Object({
+    users: Type.Array(userResponseSchema),
+    total: Type.Number(),
+    page: Type.Number(),
+    perPage: Type.Number(),
+});
+
+export type GetUsersResponse = Static<typeof getUsersResponseSchema>;
+
 export const getUsersSchema = {
+    querystring: getUsersQuerySchema,
     response: {
-        200: Type.Array(userResponseSchema),
+        200: getUsersResponseSchema,
     },
 };
 

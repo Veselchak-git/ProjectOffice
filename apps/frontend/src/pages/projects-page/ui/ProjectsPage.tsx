@@ -3,29 +3,31 @@ import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
-import SortAscendingIcon from "@helpdesk-portal/icons/SortAscending.svg?react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FC } from "react";
 import { useNavigate } from "react-router";
+import {
+    createColumnHelper,
+    getCoreRowModel,
+    useReactTable,
+    type OnChangeFn,
+    type PaginationState,
+    type SortingState,
+} from "@tanstack/react-table";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useAuth } from "@/shared/lib/auth/auth-context";
-import { formatDate } from "@/shared/lib/format-date/format-date";
+import { DataTable, DataTablePagination } from "@/shared/components/data-table";
+import { useAuth } from "@/shared/lib/auth";
+import { formatDate } from "@/shared/lib/format-date";
+import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
-import type { Project, CreateProjectData } from "@/entities/project";
-import { fetchProjects, createProject } from "@/entities/project";
-import { ProjectForm } from "@/entities/project/ui/ProjectForm";
+import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities/project";
+import { createProject, fetchProjects } from "@/entities/project";
+import { ProjectForm } from "@/entities/project";
 
 import "./ProjectsPage.css";
 
-type SortKey = "name" | "status" | "taskCount" | "createdAt";
-
-interface ColumnConfig {
-    id: string;
-    label: string;
-    always?: boolean;
-}
-
-const ALL_COLUMNS: ColumnConfig[] = [
+const ALL_COLUMNS = [
     { id: "name", label: "НАЗВАНИЕ" },
     { id: "description", label: "ОПИСАНИЕ" },
     { id: "status", label: "СТАТУС" },
@@ -35,17 +37,20 @@ const ALL_COLUMNS: ColumnConfig[] = [
     { id: "created", label: "СОЗДАН" },
 ];
 
+const columnHelper = createColumnHelper<Project>();
+
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [fetchError, setFetchError] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortKey, setSortKey] = useState<SortKey | null>(null);
-    const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-    const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set(ALL_COLUMNS.map(c => c.id)));
+    const queryClient = useQueryClient();
+    const [paginationState, setPaginationState] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [searchInput, setSearchInput] = useState("");
+    const [debouncedQ, setDebouncedQ] = useState("");
+    const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(
+        Object.fromEntries(ALL_COLUMNS.map(col => [col.id, true])),
+    );
+    const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
     const [creating, setCreating] = useState(false);
     const [columnsOpen, setColumnsOpen] = useState(false);
     const columnsRef = useRef<HTMLDivElement>(null);
@@ -61,83 +66,158 @@ export const ProjectsPage: FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchProjects()
-            .then(data => setProjects(data.projects))
-            .catch(err => setFetchError(err.message))
-            .finally(() => setLoading(false));
-    }, []);
+        const timer = setTimeout(() => setDebouncedQ(searchInput), 400);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
 
-    const toggleColumn = (id: string) => {
-        setVisibleColumns(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
+    useEffect(() => {
+        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
+    }, [debouncedQ]);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { perPage, ready } = useDynamicPerPage(containerRef, {
+        rowHeight: 57,
+        theadHeight: 41,
+        paginationHeight: 36,
+        min: 5,
+    });
+
+    const pagination = useMemo<PaginationState>(() => {
+        if (perPage === paginationState.pageSize) return paginationState;
+        const oldOffset = paginationState.pageIndex * paginationState.pageSize;
+        const newPageIndex = Math.floor(oldOffset / perPage);
+        return { pageIndex: newPageIndex, pageSize: perPage };
+    }, [paginationState, perPage]);
+
+    const sortBy = sorting[0]?.id === "tasks" ? "taskCount" : sorting[0]?.id;
+    const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
+    const page = pagination.pageIndex + 1;
+
+    const projectParams = {
+        ...(debouncedQ ? { q: debouncedQ } : {}),
+        page,
+        perPage,
+        ...(sortBy ? { sortBy } : {}),
+        ...(sortOrder ? { sortOrder } : {}),
+    } satisfies FetchProjectsParams;
+
+    const { data, isPending, isError, error } = useQuery({
+        queryKey: ["projects", projectParams],
+        queryFn: () => fetchProjects(projectParams),
+        enabled: ready,
+        placeholderData: keepPreviousData,
+    });
+
+    const projects = data?.projects ?? [];
+    const total = data?.total ?? 0;
+    const active = data?.active ?? 0;
+
+    const { mutateAsync: createProjectMutate } = useMutation({
+        mutationFn: (dto: CreateProjectData) => createProject(dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            setCreating(false);
+        },
+    });
+
+    const handleSortingChange: OnChangeFn<SortingState> = updater => {
+        setSorting(updater);
+        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
     };
 
-    const toggleSelect = (id: number) => {
-        setSelectedIds(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    };
+    const columns = [
+        columnHelper.display({
+            id: "select",
+            size: 48,
+            enableSorting: false,
+            enableHiding: false,
+            header: ({ table }) => (
+                <Checkbox
+                    inputSize="m"
+                    checked={table.getIsAllRowsSelected()}
+                    indeterminate={table.getIsSomeRowsSelected()}
+                    onCheckedChange={table.getToggleAllRowsSelectedHandler()}
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox
+                    inputSize="m"
+                    checked={row.getIsSelected()}
+                    onCheckedChange={row.getToggleSelectedHandler()}
+                />
+            ),
+        }),
+        columnHelper.accessor("name", {
+            header: "НАЗВАНИЕ",
+            enableSorting: true,
+            cell: info => (
+                <button
+                    className="projects-table__name-link"
+                    type="button"
+                    onClick={() => navigate(`/projects/${info.row.original.id}`)}
+                >
+                    {info.getValue()}
+                </button>
+            ),
+        }),
+        columnHelper.accessor("description", {
+            header: "ОПИСАНИЕ",
+            enableSorting: false,
+            cell: info => info.getValue(),
+        }),
+        columnHelper.accessor("status", {
+            header: "СТАТУС",
+            enableSorting: true,
+            cell: info => <StatusBadge status={info.getValue()} />,
+        }),
+        columnHelper.accessor("versions", {
+            header: "ВЕРСИИ",
+            enableSorting: false,
+            cell: info => info.getValue()[0] ?? "-",
+        }),
+        columnHelper.accessor("taskCount", {
+            id: "tasks",
+            header: "ЗАДАЧИ",
+            enableSorting: true,
+        }),
+        columnHelper.accessor("responsible", {
+            header: "ОТВЕТСТВЕННЫЙ",
+            enableSorting: false,
+        }),
+        columnHelper.accessor("createdAt", {
+            id: "created",
+            header: "СОЗДАН",
+            enableSorting: true,
+            cell: info => formatDate(info.getValue()),
+        }),
+    ];
 
-    const handleSort = (key: SortKey) => {
-        if (sortKey === key) {
-            setSortDir(d => (d === "asc" ? "desc" : "asc"));
-        } else {
-            setSortKey(key);
-            setSortDir("asc");
-        }
-    };
-
-    const searched = searchQuery.trim()
-        ? projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase().trim()))
-        : projects;
-
-    const filtered = sortKey
-        ? [...searched].sort((a, b) => {
-              const aVal = a[sortKey];
-              const bVal = b[sortKey];
-              const cmp =
-                  typeof aVal === "number" && typeof bVal === "number"
-                      ? aVal - bVal
-                      : String(aVal).localeCompare(String(bVal));
-              return sortDir === "asc" ? cmp : -cmp;
-          })
-        : searched;
-
-    const allFilteredSelected = filtered.length > 0 && filtered.every(p => selectedIds.has(p.id));
-    const someFilteredSelected = filtered.some(p => selectedIds.has(p.id));
-
-    const toggleAll = () => {
-        if (allFilteredSelected) {
-            setSelectedIds(prev => {
-                const next = new Set(prev);
-                filtered.forEach(p => next.delete(p.id));
-                return next;
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const table = useReactTable({
+        data: projects,
+        columns,
+        state: {
+            pagination,
+            sorting,
+            columnVisibility,
+            rowSelection,
+        },
+        onPaginationChange: updater => {
+            setPaginationState(prev => {
+                const next = typeof updater === "function" ? updater(prev) : updater;
+                return { pageIndex: next.pageIndex, pageSize: perPage };
             });
-        } else {
-            setSelectedIds(prev => {
-                const next = new Set(prev);
-                filtered.forEach(p => next.add(p.id));
-                return next;
-            });
-        }
-    };
-
-    const handleCreate = async (data: CreateProjectData) => {
-        await createProject(data);
-        setCreating(false);
-        const result = await fetchProjects();
-        setProjects(result.projects);
-    };
-
-    const activeCount = projects.filter(p => p.status === "ACTIVE").length;
-    const totalCount = projects.length;
+        },
+        onSortingChange: handleSortingChange,
+        onColumnVisibilityChange: setColumnVisibility,
+        onRowSelectionChange: setRowSelection,
+        getRowId: row => String(row.id),
+        manualPagination: true,
+        pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
+        manualSorting: true,
+        getCoreRowModel: getCoreRowModel(),
+        enableRowSelection: true,
+    });
 
     return (
         <div className="projects-page">
@@ -145,7 +225,7 @@ export const ProjectsPage: FC = () => {
                 <div className="projects-page__title-text">
                     <h1 className="projects-page__title-heading">Проекты</h1>
                     <p className="projects-page__title-subtitle">
-                        Все проекты, доступные в Вашей роли — {activeCount} активных из {totalCount}
+                        Все проекты, доступные в Вашей роли — {active} активных из {total}
                     </p>
                 </div>
                 <div className="projects-page__actions">
@@ -174,8 +254,8 @@ export const ProjectsPage: FC = () => {
                                     <label key={col.id} className="projects-page__columns-option">
                                         <Checkbox
                                             inputSize="m"
-                                            checked={visibleColumns.has(col.id)}
-                                            onCheckedChange={() => toggleColumn(col.id)}
+                                            checked={table.getColumn(col.id)?.getIsVisible() ?? true}
+                                            onCheckedChange={() => table.getColumn(col.id)?.toggleVisibility()}
                                         />
                                         {col.label}
                                     </label>
@@ -191,141 +271,23 @@ export const ProjectsPage: FC = () => {
                     className="projects-page__controls-search"
                     placeholder="Найти проект..."
                     startIcon={<SearchIcon />}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
                 />
             </div>
 
-            <div className="projects-table-wrapper">
-                <table className="projects-table">
-                    <thead>
-                        <tr>
-                            <th className="projects-table__checkbox">
-                                <Checkbox
-                                    inputSize="m"
-                                    checked={allFilteredSelected}
-                                    indeterminate={someFilteredSelected && !allFilteredSelected}
-                                    onCheckedChange={toggleAll}
-                                />
-                            </th>
-                            {visibleColumns.has("name") && (
-                                <SortableTh
-                                    className="projects-table__name"
-                                    sortKey="name"
-                                    currentKey={sortKey}
-                                    dir={sortDir}
-                                    onClick={handleSort}
-                                >
-                                    НАЗВАНИЕ
-                                </SortableTh>
-                            )}
-                            {visibleColumns.has("description") && (
-                                <th className="projects-table__description">ОПИСАНИЕ</th>
-                            )}
-                            {visibleColumns.has("status") && (
-                                <SortableTh
-                                    className="projects-table__status"
-                                    sortKey="status"
-                                    currentKey={sortKey}
-                                    dir={sortDir}
-                                    onClick={handleSort}
-                                >
-                                    СТАТУС
-                                </SortableTh>
-                            )}
-                            {visibleColumns.has("versions") && (
-                                <th className="projects-table__versions">ВЕРСИИ</th>
-                            )}
-                            {visibleColumns.has("tasks") && (
-                                <SortableTh
-                                    className="projects-table__tasks"
-                                    sortKey="taskCount"
-                                    currentKey={sortKey}
-                                    dir={sortDir}
-                                    onClick={handleSort}
-                                >
-                                    ЗАДАЧИ
-                                </SortableTh>
-                            )}
-                            {visibleColumns.has("responsible") && (
-                                <th className="projects-table__responsible">ОТВЕТСТВЕННЫЙ</th>
-                            )}
-                            {visibleColumns.has("created") && (
-                                <SortableTh
-                                    className="projects-table__created"
-                                    sortKey="createdAt"
-                                    currentKey={sortKey}
-                                    dir={sortDir}
-                                    onClick={handleSort}
-                                >
-                                    СОЗДАН
-                                </SortableTh>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan={1 + ALL_COLUMNS.filter(c => visibleColumns.has(c.id)).length} className="projects-table__empty">
-                                    Загрузка проектов…
-                                </td>
-                            </tr>
-                        ) : fetchError ? (
-                            <tr>
-                                <td colSpan={1 + ALL_COLUMNS.filter(c => visibleColumns.has(c.id)).length} className="projects-table__empty">
-                                    {fetchError}
-                                </td>
-                            </tr>
-                        ) : filtered.length === 0 ? (
-                            <tr>
-                                <td colSpan={1 + ALL_COLUMNS.filter(c => visibleColumns.has(c.id)).length} className="projects-table__empty">
-                                    {searchQuery.trim() ? "Проекты по вашему запросу не найдены" : "Проекты не найдены"}
-                                </td>
-                            </tr>
-                        ) : (
-                            filtered.map(project => (
-                                <tr key={project.id}>
-                                    <td className="projects-table__checkbox">
-                                        <Checkbox
-                                            inputSize="m"
-                                            checked={selectedIds.has(project.id)}
-                                            onCheckedChange={() => toggleSelect(project.id)}
-                                        />
-                                    </td>
-                                    {visibleColumns.has("name") && (
-                                        <td className="projects-table__name">
-                                            <button className="projects-table__name-link" type="button" onClick={() => navigate(`/projects/${project.id}`)}>
-                                                {project.name}
-                                            </button>
-                                        </td>
-                                    )}
-                                    {visibleColumns.has("description") && (
-                                        <td className="projects-table__description">{project.description}</td>
-                                    )}
-                                    {visibleColumns.has("status") && (
-                                        <td className="projects-table__status">
-                                            <StatusBadge status={project.status} />
-                                        </td>
-                                    )}
-                                    {visibleColumns.has("versions") && (
-                                        <td className="projects-table__versions">
-                                            {project.versions[0] ?? "-"}
-                                        </td>
-                                    )}
-                                    {visibleColumns.has("tasks") && (
-                                        <td className="projects-table__tasks">{project.taskCount}</td>
-                                    )}
-                                    {visibleColumns.has("responsible") && (
-                                        <td className="projects-table__responsible">{project.responsible}</td>
-                                    )}
-                                    {visibleColumns.has("created") && (
-                                        <td className="projects-table__created">{formatDate(project.createdAt)}</td>
-                                    )}
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+            <div className="projects-page__table-area" ref={containerRef}>
+                {isPending && !data ? (
+                    <p className="projects-page__empty">Загрузка проектов…</p>
+                ) : isError && !data ? (
+                    <p className="projects-page__empty">
+                        {error instanceof Error ? error.message : "Ошибка загрузки"}
+                    </p>
+                ) : (
+                    <DataTable table={table}>
+                        <DataTablePagination table={table} total={total} />
+                    </DataTable>
+                )}
             </div>
 
             {creating && (
@@ -333,7 +295,7 @@ export const ProjectsPage: FC = () => {
                     <div className="projects-page__modal">
                         <h2 className="projects-page__modal-title">Создание проекта</h2>
                         <ProjectForm
-                            onSubmit={handleCreate}
+                            onSubmit={data => createProjectMutate(data as CreateProjectData).then(() => {})}
                             onCancel={() => setCreating(false)}
                         />
                     </div>
@@ -347,34 +309,13 @@ const StatusBadge: FC<{ status: Project["status"] }> = ({ status }) => {
     const isActive = status === "ACTIVE";
 
     return (
-        <span className={`projects-table__status-badge projects-table__status-badge--${isActive ? "active" : "archived"}`}>
-            <span className={`projects-table__status-dot projects-table__status-dot--${isActive ? "active" : "archived"}`} />
+        <span
+            className={`projects-table__status-badge projects-table__status-badge--${isActive ? "active" : "archived"}`}
+        >
+            <span
+                className={`projects-table__status-dot projects-table__status-dot--${isActive ? "active" : "archived"}`}
+            />
             {isActive ? "Активный" : "Архивный"}
         </span>
-    );
-};
-
-interface SortableThProps {
-    className: string;
-    sortKey: SortKey;
-    currentKey: SortKey | null;
-    dir: "asc" | "desc";
-    onClick: (key: SortKey) => void;
-    children: string;
-}
-
-const SortableTh: FC<SortableThProps> = ({ className, sortKey, currentKey, dir, onClick, children }) => {
-    const isActive = currentKey === sortKey;
-
-    return (
-        <th
-            className={`${className} projects-table__header--sortable${isActive ? " projects-table__header--sorted" : ""}`}
-            onClick={() => onClick(sortKey)}
-        >
-            {children}
-            <span className={`projects-table__sort-icon${isActive ? ` projects-table__sort-icon--${dir}` : ""}`}>
-                <SortAscendingIcon />
-            </span>
-        </th>
     );
 };

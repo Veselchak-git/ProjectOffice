@@ -2,13 +2,12 @@ import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import { formatDateTime } from "@/shared/lib/format-date/format-date";
+import { formatDateTime } from "@/shared/lib/format-date";
 
 import type { Project, UpdateProjectData } from "@/entities/project";
 import { fetchProject, updateProject, deleteProject } from "@/entities/project";
-import { ProjectForm } from "@/entities/project/ui/ProjectForm";
-import { MembersBlock } from "@/entities/project/ui/MembersBlock";
-import { useAuth } from "@/shared/lib/auth/auth-context";
+import { ProjectForm, MembersBlock } from "@/entities/project";
+import { useAuth } from "@/shared/lib/auth";
 
 import "./ProjectPage.css";
 

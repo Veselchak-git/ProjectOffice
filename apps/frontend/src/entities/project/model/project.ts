@@ -26,6 +26,14 @@ export interface Project {
     myRole?: ProjectMemberRole;
 }
 
+export interface FetchProjectsParams {
+    q?: string;
+    page?: number;
+    perPage?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+}
+
 export interface CreateProjectData {
     name: string;
     description?: string;

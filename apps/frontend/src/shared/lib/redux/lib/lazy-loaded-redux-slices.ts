@@ -5,7 +5,7 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import type { AuthState } from "@/shared/lib/auth/auth-slice";
+import type { AuthState } from "@/shared/lib/auth";
 
 export interface LazyLoadedReduxSlices {
     auth: AuthState;

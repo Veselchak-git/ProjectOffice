@@ -8,7 +8,7 @@
 import { UiKitThemeProvider } from "@helpdesk-portal/ui-kit";
 import type { FC, PropsWithChildren } from "react";
 
-import { AuthProvider } from "@/shared/lib/auth/auth-context";
+import { AuthProvider } from "@/shared/lib/auth";
 
 import { FakeProviderWithValue } from "./FakeProviderWithValue";
 import { QueryProvider } from "./Query";

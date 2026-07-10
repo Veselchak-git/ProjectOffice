@@ -1,9 +1,17 @@
-import { apiClient } from "@/shared/lib/auth/api-client";
+import { apiClient } from "@/shared/lib/auth";
 
-import type { CreateUserData, UpdateUserRoleData, User } from "../model/users";
+import type { CreateUserData, FetchUsersParams, FetchUsersResponse, UpdateUserRoleData, User } from "../model/users";
 
-export async function fetchUsers(): Promise<User[]> {
-    const res = await apiClient("/api/users");
+export async function fetchUsers(params?: FetchUsersParams): Promise<FetchUsersResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.q) searchParams.set("q", params.q);
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.perPage) searchParams.set("perPage", String(params.perPage));
+    if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+    if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+
+    const query = searchParams.toString();
+    const res = await apiClient(`/api/users${query ? `?${query}` : ""}`);
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);

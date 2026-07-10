@@ -10,9 +10,7 @@ import UserIcon from "@helpdesk-portal/icons/User.svg?react";
 import { useColorMode } from "@helpdesk-portal/ui-kit";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-
-import { RequireAuth } from "@/shared/lib/auth/require-auth";
-import { useAuth } from "@/shared/lib/auth/auth-context";
+import { RequireAuth, useAuth } from "@/shared/lib/auth";
 
 import "./BaseLayout.css";
 

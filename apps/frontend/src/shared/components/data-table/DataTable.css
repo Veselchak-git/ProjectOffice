@@ -1,0 +1,99 @@
+.data-table-wrapper {
+    overflow: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table__th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.data-table__th--sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.data-table__th--sortable:hover {
+    opacity: 0.8;
+}
+
+.data-table__sort-icon {
+    margin-left: 4px;
+    font-size: 0.75em;
+}
+
+.data-table__row--clickable {
+    cursor: pointer;
+}
+
+.data-table__row--clickable:hover {
+    opacity: 0.8;
+}
+
+.data-table__empty {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.data-table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--semantic-border-default);
+    background-color: var(--semantic-bg-surface);
+    color: var(--semantic-text-secondary);
+}
+
+.data-table-pagination__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    min-width: 32px;
+    min-height: 32px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 6px;
+    background-color: var(--semantic-bg-surface-elevated);
+    color: var(--semantic-text-primary);
+    cursor: pointer;
+    font-size: inherit;
+    line-height: 1;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.data-table-pagination__btn svg {
+    fill: var(--semantic-text-secondary);
+}
+
+.data-table-pagination__btn:hover:not(:disabled) {
+    background-color: var(--semantic-btn-accent-stroke-hover-bg);
+    border-color: var(--semantic-btn-accent-stroke-hover-border);
+    color: var(--semantic-btn-accent-stroke-hover-text);
+}
+
+.data-table-pagination__btn:disabled {
+    cursor: default;
+    color: var(--semantic-text-disabled);
+    border-color: var(--semantic-btn-accent-stroke-disabled-border);
+    background-color: var(--semantic-bg-surface-elevated);
+}
+
+.data-table-pagination__info {
+    padding: 0 12px;
+    font-size: 0.875em;
+    color: var(--semantic-text-secondary);
+    white-space: nowrap;
+}

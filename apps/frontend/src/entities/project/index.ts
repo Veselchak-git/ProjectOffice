@@ -1,4 +1,4 @@
-export type { Project, CreateProjectData, UpdateProjectData, Member, User } from "./model/project";
+export type { Project, CreateProjectData, UpdateProjectData, FetchProjectsParams, Member, User } from "./model/project";
 export {
     fetchProjects,
     fetchProject,
@@ -12,3 +12,5 @@ export {
     removeProjectMember,
 } from "./api/projects";
 export type { FetchProjectsResponse } from "./api/projects";
+export { ProjectForm } from "./ui/ProjectForm";
+export { MembersBlock } from "./ui/MembersBlock";

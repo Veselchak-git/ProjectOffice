@@ -9,7 +9,7 @@ import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { useAuth } from "@/shared/lib/auth/auth-context";
+import { useAuth } from "@/shared/lib/auth";
 
 import type { LoginFormValues } from "../model/login-form";
 import { LOGIN_EMAIL_RULES, LOGIN_PASSWORD_RULES } from "../model/login-form";

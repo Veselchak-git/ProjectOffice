@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/lib/auth/api-client";
+import { apiClient } from "@/shared/lib/auth";
 
 import type { LoginFormValues } from "../model/login-form";
 

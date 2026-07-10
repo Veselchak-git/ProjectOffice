@@ -26,6 +26,17 @@ const findResponsible = (memberships: { user: { login: string }; role: string }[
     return admin?.user.login ?? memberships[0]?.user.login ?? "";
 };
 
+const PROJECT_SORT_FIELDS = new Set(["name", "status", "createdAt", "taskCount", "versionCount"]);
+
+const buildProjectOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> => {
+    if (!sortBy || !PROJECT_SORT_FIELDS.has(sortBy)) {
+        return { createdAt: "desc" };
+    }
+    if (sortBy === "taskCount") return { issues: { _count: sortOrder } };
+    if (sortBy === "versionCount") return { versions: { _count: sortOrder } };
+    return { [sortBy]: sortOrder };
+};
+
 const mapProject = (p: {
     id: number;
     name: string;
@@ -51,22 +62,30 @@ export const getProjectsListService = async (
     request: FastifyRequestTypeBox<typeof getProjectsListSchema>
 ): Promise<ProjectListResponse> => {
     const prisma = request.server.prisma;
+    const { q, page = 1, perPage = 20, sortBy, sortOrder = "desc" } = request.query;
 
-    const projects = await prisma.project.findMany({
-        include: {
-            _count: { select: { versions: true, issues: true } },
-            memberships: { select: { role: true, user: { select: { login: true } } } },
-            versions: { select: { version: true }, orderBy: { id: "desc" } },
-        },
-        orderBy: { createdAt: "desc" },
-    });
+    const where = q ? { name: { contains: q } } : {};
+    const orderBy = buildProjectOrderBy(sortBy, sortOrder);
+    const skip = (page - 1) * perPage;
 
-    const mapped = projects.map(mapProject);
+    const include = {
+        _count: { select: { versions: true, issues: true } },
+        memberships: { select: { role: true, user: { select: { login: true } } } },
+        versions: { select: { version: true }, orderBy: { id: "desc" as const } },
+    } as const;
+
+    const [projects, total, active] = await prisma.$transaction([
+        prisma.project.findMany({ where, orderBy, skip, take: perPage, include }),
+        prisma.project.count({ where }),
+        prisma.project.count({ where: { ...where, status: "ACTIVE" } }),
+    ]);
 
     return {
-        projects: mapped,
-        total: mapped.length,
-        active: mapped.filter(p => p.status === "ACTIVE").length,
+        projects: projects.map(mapProject),
+        total,
+        active,
+        page,
+        perPage,
     };
 };
 

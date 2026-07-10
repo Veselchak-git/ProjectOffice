@@ -1,15 +1,25 @@
-import { apiClient } from "@/shared/lib/auth/api-client";
+import { apiClient } from "@/shared/lib/auth";
 
-import type { CreateProjectData, Member, Project, UpdateProjectData, User, ProjectMemberRole } from "../model/project";
+import type { CreateProjectData, FetchProjectsParams, Member, Project, UpdateProjectData, User, ProjectMemberRole } from "../model/project";
 
 export interface FetchProjectsResponse {
     projects: Project[];
     total: number;
     active: number;
+    page: number;
+    perPage: number;
 }
 
-export async function fetchProjects(): Promise<FetchProjectsResponse> {
-    const res = await apiClient("/api/projects");
+export async function fetchProjects(params?: FetchProjectsParams): Promise<FetchProjectsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.q) searchParams.set("q", params.q);
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.perPage) searchParams.set("perPage", String(params.perPage));
+    if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+    if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+
+    const query = searchParams.toString();
+    const res = await apiClient(`/api/projects${query ? `?${query}` : ""}`);
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);

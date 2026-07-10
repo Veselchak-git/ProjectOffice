@@ -27,11 +27,24 @@ export const projectListResponseSchema = Type.Object({
     projects: Type.Array(projectResponseSchema),
     total: Type.Number(),
     active: Type.Number(),
+    page: Type.Number(),
+    perPage: Type.Number(),
 });
 
 export type ProjectListResponse = Static<typeof projectListResponseSchema>;
 
+export const getProjectsListQuerySchema = Type.Object({
+    q: Type.Optional(Type.String()),
+    page: Type.Optional(Type.Number({ default: 1 })),
+    perPage: Type.Optional(Type.Number({ default: 20 })),
+    sortBy: Type.Optional(Type.String({ default: "createdAt" })),
+    sortOrder: Type.Optional(Type.String({ default: "desc" })),
+});
+
+export type GetProjectsListQuery = Static<typeof getProjectsListQuerySchema>;
+
 export const getProjectsListSchema = {
+    querystring: getProjectsListQuerySchema,
     response: {
         200: projectListResponseSchema,
     },
