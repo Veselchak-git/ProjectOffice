@@ -7,11 +7,13 @@ import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import SunIcon from "@helpdesk-portal/icons/Sun.svg?react";
 import TecomLogoIcon from "@helpdesk-portal/icons/TecomLogo.svg?react";
 import UserIcon from "@helpdesk-portal/icons/User.svg?react";
+import { Select, useColorMode } from "@helpdesk-portal/ui-kit";
 import { useQuery } from "@tanstack/react-query";
-import { useColorMode } from "@helpdesk-portal/ui-kit";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { RequireAuth, useAuth, apiClient } from "@/shared/lib/auth";
+
+import { RequireAuth, apiClient, useAuth } from "@/shared/lib/auth";
+import { i18n } from "@/shared/lib/i18n";
 
 import "./BaseLayout.css";
 
@@ -27,13 +29,13 @@ const menuItems: MenuItem[] = [
     { label: "Проекты", path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
     { label: "Задачи", path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
     { label: "Аудит-лог", path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
-    { label: "Пользователи", path: "/users", icon: UserIcon, roles: ["ADMIN"] },
+    { label: "Пользователи", path: "/users", icon: UserIcon, roles: ["ADMIN"] }
 ];
 
 const roleLabels: Record<string, string> = {
     ADMIN: "Администратор",
     USER: "Пользователь",
-    GUEST: "Гость",
+    GUEST: "Гость"
 };
 
 export const BaseLayout: FC = () => {
@@ -64,7 +66,7 @@ export const BaseLayout: FC = () => {
         queryKey: ["audit-log-available"],
         queryFn: () => apiClient("/api/audit-log/available").then(r => r.json()),
         enabled: user?.role === "USER",
-        staleTime: 0,
+        staleTime: 0
     });
 
     const auditLogAvailable = user?.role === "ADMIN" || (auditLogData?.available ?? false);
@@ -85,16 +87,38 @@ export const BaseLayout: FC = () => {
             <div className="base-layout">
                 <aside className={`sidebar${sidebarOpen ? "" : " sidebar--closed"}`}>
                     <div className="sidebar__logo">
-                        <button className="sidebar__logo-icon" type="button" aria-label="Toggle menu" onClick={() => setSidebarOpen(v => !v)}>
-                            {sidebarOpen ? <ResetInputIcon /> : (
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 7H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                                    <path d="M4 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                                    <path d="M4 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <button
+                            className="sidebar__logo-icon"
+                            type="button"
+                            aria-label="Toggle menu"
+                            onClick={() => setSidebarOpen(v => !v)}
+                        >
+                            {sidebarOpen ? (
+                                <ResetInputIcon />
+                            ) : (
+                                <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path d="M4 7H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                    <path
+                                        d="M4 12H20"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                    />
+                                    <path
+                                        d="M4 17H20"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                    />
                                 </svg>
                             )}
                         </button>
-
                     </div>
 
                     <nav className="sidebar__nav">
@@ -135,9 +159,23 @@ export const BaseLayout: FC = () => {
                                 </label>
                                 <MoonIcon />
                             </div>
+                            <div className="header__locale-switch">
+                                <Select
+                                    options={[
+                                        { value: "ru", label: "RU" },
+                                        { value: "en", label: "EN" }
+                                    ]}
+                                    value={i18n.language}
+                                    onValueChange={val => i18n.changeLanguage(val)}
+                                />
+                            </div>
                             <div className="header__divider" />
                             <div className="header__profile-wrapper" ref={profileRef}>
-                                <button className="header__profile-btn" type="button" onClick={() => setProfileMenuOpen(v => !v)}>
+                                <button
+                                    className="header__profile-btn"
+                                    type="button"
+                                    onClick={() => setProfileMenuOpen(v => !v)}
+                                >
                                     <div className="header__avatar">
                                         <UserIcon />
                                     </div>
@@ -148,10 +186,21 @@ export const BaseLayout: FC = () => {
                                 </button>
                                 {profileMenuOpen && (
                                     <div className="header__profile-menu">
-                                        <button className="header__profile-menu-item" type="button" onClick={() => { navigate("/profile"); setProfileMenuOpen(false); }}>
+                                        <button
+                                            className="header__profile-menu-item"
+                                            type="button"
+                                            onClick={() => {
+                                                navigate("/profile");
+                                                setProfileMenuOpen(false);
+                                            }}
+                                        >
                                             Редактировать
                                         </button>
-                                        <button className="header__profile-menu-item header__profile-menu-item--danger" type="button" onClick={handleLogout}>
+                                        <button
+                                            className="header__profile-menu-item header__profile-menu-item--danger"
+                                            type="button"
+                                            onClick={handleLogout}
+                                        >
                                             Выйти
                                         </button>
                                     </div>

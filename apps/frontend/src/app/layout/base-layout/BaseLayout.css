@@ -335,6 +335,10 @@
         background-color: #0974f1;
     }
 
+    .header__locale-switch {
+        flex-shrink: 0;
+    }
+
     .content {
         display: flex;
         flex-direction: column;
