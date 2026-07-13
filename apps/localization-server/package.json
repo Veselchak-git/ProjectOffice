@@ -1,26 +1,26 @@
 {
-  "name": "localization-server",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
-    "type-check": "tsc --noEmit -p tsconfig.json",
-    "lint": "eslint .",
-    "format": "prettier --write ."
-  },
-  "dependencies": {
-    "@fastify/cors": "11.3.0",
-    "@fastify/static": "10.1.0",
-    "fastify": "5.8.5"
-  },
-  "devDependencies": {
-    "@helpdesk-portal/eslint-config": "*",
-    "@helpdesk-portal/prettier-config": "*",
-    "@helpdesk-portal/typescript-config": "*",
-    "@types/node": "24.12.3",
-    "tsx": "4.22.4",
-    "typescript": "6.0.3"
-  }
+    "name": "localization-server",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc -p tsconfig.build.json",
+        "type-check": "tsc --noEmit -p tsconfig.json",
+        "lint": "eslint .",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "@fastify/cors": "11.3.0",
+        "@fastify/static": "10.1.0",
+        "fastify": "5.8.5"
+    },
+    "devDependencies": {
+        "@helpdesk-portal/eslint-config": "*",
+        "@helpdesk-portal/prettier-config": "*",
+        "@helpdesk-portal/typescript-config": "*",
+        "@types/node": "24.12.3",
+        "tsx": "4.22.4",
+        "typescript": "6.0.3"
+    }
 }
