@@ -1,0 +1,23 @@
+import i18n from "i18next";
+import HttpBackend from "i18next-http-backend";
+import { initReactI18next } from "react-i18next";
+
+i18n.use(HttpBackend)
+    .use(initReactI18next)
+    .init({
+        backend: {
+            loadPath: "http://localhost:3001/locales/{{lng}}/{{ns}}.json"
+        },
+        fallbackLng: "ru",
+        supportedLngs: ["ru", "en"],
+        ns: ["common", "auth", "navigation", "users", "projects", "audit", "validation"],
+        defaultNS: "common",
+        load: "currentOnly",
+        interpolation: {
+            escapeValue: false
+        }
+    });
+
+export { i18n };
+export { localeSlice, setLocale } from "./locale-slice";
+export type { Locale, LocaleState } from "./locale-slice";
