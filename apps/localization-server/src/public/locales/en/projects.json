@@ -17,7 +17,9 @@
         "archived": "Archived"
     },
     "actions": {
-        "create": "Create project"
+        "create": "Create project",
+        "export": "Export",
+        "columns": "Columns"
     },
     "create": {
         "title": "Create project",
