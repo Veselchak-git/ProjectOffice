@@ -1,1 +1,16 @@
-{}
+{
+    "required": {
+        "email": "Email is required",
+        "password": "Password is required"
+    },
+    "invalid": {
+        "email": "Invalid email format"
+    },
+    "minLength": {
+        "password": "Password must be at least 6 characters"
+    },
+    "passwords": {
+        "notMatch": "Passwords do not match"
+    },
+    "noChanges": "No changes to save"
+}

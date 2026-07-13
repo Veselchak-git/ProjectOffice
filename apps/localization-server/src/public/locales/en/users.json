@@ -1,1 +1,80 @@
-{}
+{
+    "page": {
+        "title": "Users",
+        "subtitle": "Total users: {{count}}"
+    },
+    "table": {
+        "login": "LOGIN",
+        "role": "ROLE",
+        "created": "CREATED",
+        "edit": "Edit"
+    },
+    "search": {
+        "placeholder": "Search users…"
+    },
+    "actions": {
+        "create": "Create user"
+    },
+    "create": {
+        "title": "Create user",
+        "submit": "Create",
+        "submitting": "Creating…",
+        "error": "Error creating user"
+    },
+    "edit": {
+        "title": "Edit user",
+        "currentData": "Current data",
+        "loginLabel": "Login:",
+        "roleLabel": "Role:",
+        "newLogin": "New login",
+        "newLoginPlaceholder": "Leave empty to keep unchanged",
+        "newPassword": "New password",
+        "newPasswordPlaceholder": "Leave empty to keep unchanged",
+        "showPassword": "Show password",
+        "save": "Save",
+        "saving": "Saving…",
+        "noChanges": "No changes to save",
+        "error": "Error updating user"
+    },
+    "delete": {
+        "confirm": "Delete user «{{login}}»?",
+        "delete": "Delete",
+        "error": "Error deleting user"
+    },
+    "loading": "Loading users…",
+    "error": {
+        "loading": "Error loading users",
+        "create": "Error creating user",
+        "update": "Error updating user",
+        "delete": "Error deleting user"
+    },
+    "form": {
+        "login": {
+            "label": "Login",
+            "placeholder": "Enter email"
+        },
+        "password": {
+            "label": "Password",
+            "placeholder": "At least 6 characters"
+        },
+        "showPassword": "Show password",
+        "role": "Role"
+    },
+    "roles": {
+        "guest": "Guest",
+        "user": "User",
+        "admin": "Administrator"
+    },
+    "validation": {
+        "required": {
+            "email": "Email is required",
+            "password": "Password is required"
+        },
+        "invalid": {
+            "email": "Invalid email format"
+        },
+        "minLength": {
+            "password": "Password must be at least 6 characters"
+        }
+    }
+}

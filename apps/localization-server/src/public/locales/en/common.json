@@ -1,1 +1,25 @@
-{}
+{
+    "save": "Save",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "back": "Back",
+    "backToList": "Back to list",
+    "loading": "Loading…",
+    "export": "Export",
+    "columns": "Columns",
+    "noData": "No data",
+    "showing": "{{from}}–{{to}} of {{total}}",
+    "pagination": {
+        "of": "of"
+    },
+    "confirm": {
+        "delete": "Are you sure you want to delete?"
+    },
+    "error": {
+        "loading": "Loading error",
+        "connection": "Connection error"
+    }
+}

@@ -1,1 +1,14 @@
-{}
+{
+    "menu": {
+        "home": "Home",
+        "projects": "Projects",
+        "tasks": "Tasks",
+        "audit-log": "Audit Log",
+        "users": "Users"
+    },
+    "role": {
+        "admin": "Administrator",
+        "user": "User",
+        "guest": "Guest"
+    }
+}

@@ -1,1 +1,93 @@
-{}
+{
+    "page": {
+        "title": "Projects",
+        "subtitle": "All projects available in your role — {{active}} active out of {{total}}"
+    },
+    "table": {
+        "name": "NAME",
+        "description": "DESCRIPTION",
+        "status": "STATUS",
+        "versions": "VERSIONS",
+        "tasks": "TASKS",
+        "responsible": "RESPONSIBLE",
+        "created": "CREATED"
+    },
+    "status": {
+        "active": "Active",
+        "archived": "Archived"
+    },
+    "actions": {
+        "create": "Create project"
+    },
+    "create": {
+        "title": "Create project",
+        "submit": "Create"
+    },
+    "detail": {
+        "notFound": "Project not found",
+        "backToList": "Back to list",
+        "back": "← Back to projects",
+        "editTitle": "Edit project",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleting": "Deleting…",
+        "confirmDelete": "Are you sure you want to delete the project? This action cannot be undone.",
+        "info": {
+            "description": "Description",
+            "versions": "Product versions",
+            "tasks": "Tasks",
+            "responsible": "Responsible",
+            "created": "Created date"
+        }
+    },
+    "form": {
+        "name": {
+            "label": "Project name",
+            "placeholder": "Enter name"
+        },
+        "description": {
+            "label": "Description",
+            "placeholder": "Enter description"
+        },
+        "status": {
+            "label": "Status"
+        },
+        "versions": {
+            "label": "Product versions",
+            "placeholder": "Enter version and press Enter"
+        },
+        "submit": "Create",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "loading": "Loading projects…",
+    "error": {
+        "loading": "Error loading projects",
+        "loadOne": "Error loading project",
+        "create": "Error creating project",
+        "update": "Error updating project",
+        "delete": "Error deleting project"
+    },
+    "members": {
+        "title": "Project members",
+        "loading": "Loading…",
+        "empty": "No members",
+        "deleteTooltip": "Delete member",
+        "confirmDelete": "Are you sure you want to remove member «{{name}}»?",
+        "add": "Add",
+        "placeholder": "Select a user",
+        "roles": {
+            "viewer": "Viewer",
+            "reporter": "Reporter",
+            "updater": "Editor",
+            "developer": "Developer",
+            "manager": "Manager"
+        },
+        "error": {
+            "add": "Error adding member",
+            "update": "Error updating member",
+            "delete": "Error deleting member",
+            "load": "Error loading members"
+        }
+    }
+}
