@@ -17,14 +17,14 @@ import { DataTable, DataTablePagination } from "@/shared/components/data-table";
 import { formatDate } from "@/shared/lib/format-date";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
-import { createUser, deleteUser, fetchUsers, updateUserRole } from "../api/users";
-import type { CreateUserData, FetchUsersParams, User } from "../model/users";
+import { createUser, deleteUser, fetchUsers, updateUser } from "../api/users";
+import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../model/users";
 
 import "./UsersPage.css";
 
 const ROLE_OPTIONS = [
     { value: "GUEST", label: "Гость" },
-    { value: "PROJECT_MANAGER", label: "Проджект Менеджер" },
+    { value: "USER", label: "Пользователь" },
     { value: "ADMIN", label: "Администратор" },
 ];
 
@@ -37,6 +37,7 @@ export const UsersPage: FC = () => {
     const [searchInput, setSearchInput] = useState("");
     const [debouncedQ, setDebouncedQ] = useState("");
     const [creating, setCreating] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const { perPage, ready } = useDynamicPerPage(containerRef, {
@@ -98,8 +99,16 @@ export const UsersPage: FC = () => {
     });
 
     const { mutate: updateRoleMutate } = useMutation({
-        mutationFn: ({ id, role }: { id: number; role: User["role"] }) => updateUserRole(id, { role }),
+        mutationFn: ({ id, role }: { id: number; role: User["role"] }) => updateUser(id, { role }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    });
+
+    const { mutateAsync: editUserMutate } = useMutation({
+        mutationFn: ({ id, data }: { id: number; data: UpdateUserData }) => updateUser(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            setEditingUser(null);
+        },
     });
 
     const handleSortingChange: OnChangeFn<SortingState> = updater => {
@@ -136,18 +145,29 @@ export const UsersPage: FC = () => {
         columnHelper.display({
             id: "actions",
             header: "",
+            size: 200,
+            minSize: 200,
             cell: info => (
-                <Button
-                    variant="stroke"
-                    color="error"
-                    size="s"
-                    onClick={() => {
-                        if (confirm(`Удалить пользователя «${info.row.original.login}»?`))
-                            deleteUserMutate(info.row.original.id);
-                    }}
-                >
-                    Удалить
-                </Button>
+                <div className="users-page__actions-cell">
+                    <Button
+                        variant="stroke"
+                        size="s"
+                        onClick={() => setEditingUser(info.row.original)}
+                    >
+                        Редактировать
+                    </Button>
+                    <Button
+                        variant="stroke"
+                        color="error"
+                        size="s"
+                        onClick={() => {
+                            if (confirm(`Удалить пользователя «${info.row.original.login}»?`))
+                                deleteUserMutate(info.row.original.id);
+                        }}
+                    >
+                        Удалить
+                    </Button>
+                </div>
             ),
         }),
     ];
@@ -218,6 +238,19 @@ export const UsersPage: FC = () => {
                     </div>
                 </div>
             )}
+
+            {editingUser && (
+                <div className="users-page__overlay">
+                    <div className="users-page__modal">
+                        <h2 className="users-page__modal-title">Редактирование пользователя</h2>
+                        <EditUserForm
+                            user={editingUser}
+                            onSubmit={data => editUserMutate({ id: editingUser.id, data }).then(() => {})}
+                            onCancel={() => setEditingUser(null)}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -227,44 +260,58 @@ interface CreateUserFormProps {
     onCancel(): void;
 }
 
+const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateLogin(value: string): string | undefined {
+    if (!value.trim()) return "Введите email";
+    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return "Некорректный формат email";
+}
+
+function validatePasswordCreate(value: string): string | undefined {
+    if (!value) return "Введите пароль";
+    if (value.length < 6) return "Пароль должен содержать не менее 6 символов";
+}
+
 const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("GUEST");
-    const [error, setError] = useState<string | null>(null);
+    const [serverError, setServerError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    const loginError = validateLogin(login);
+    const passwordError = validatePasswordCreate(password);
+    const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
+    const canSubmit = !submitting && !hasFieldErrors;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (submitting) return;
-        setError(null);
-        if (!login.trim()) {
-            setError("Введите логин");
-            return;
-        }
-        if (password.length < 6) {
-            setError("Пароль должен содержать не менее 6 символов");
-            return;
-        }
+        if (!canSubmit) return;
+        setServerError(null);
         setSubmitting(true);
         try {
             await onSubmit({ login: login.trim(), password, role: role as CreateUserData["role"] });
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка создания пользователя");
+            setServerError(err instanceof Error ? err.message : "Ошибка создания пользователя");
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <form className="users-page__form" onSubmit={handleSubmit}>
-            {error && <div className="users-page__form-error">{error}</div>}
+        <form className="users-page__form" onSubmit={handleSubmit} onChange={() => { if (serverError) setServerError(null); }}>
+            {serverError ? (
+                <div className="users-page__form-error">{serverError}</div>
+            ) : null}
             <Input
                 label="Логин"
-                placeholder="Введите логин"
+                type="email"
+                placeholder="Введите почту"
                 value={login}
                 onChange={e => setLogin(e.target.value)}
+                color={loginError ? "error" : "default"}
+                errorMessage={loginError}
                 required
             />
             <div className="users-page__password-field">
@@ -274,6 +321,8 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     placeholder="Минимум 6 символов"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
+                    color={passwordError ? "error" : "default"}
+                    errorMessage={passwordError}
                     required
                 />
                 <label className="users-page__checkbox-row">
@@ -293,8 +342,117 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                 onValueChange={setRole}
             />
             <div className="users-page__form-actions">
-                <Button type="submit" disabled={!login.trim() || password.length < 6 || submitting}>
+                <Button type="submit" disabled={!canSubmit}>
                     {submitting ? "Создание…" : "Создать"}
+                </Button>
+                <Button type="button" variant="stroke" onClick={onCancel}>
+                    Отмена
+                </Button>
+            </div>
+        </form>
+    );
+};
+
+interface EditUserFormProps {
+    user: User;
+    onSubmit(data: UpdateUserData): Promise<void>;
+    onCancel(): void;
+}
+
+const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
+    const [login, setLogin] = useState("");
+    const [password, setPassword] = useState("");
+    const [role, setRole] = useState<string>(user.role);
+    const [showPassword, setShowPassword] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const loginError = login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim()) ? "Некорректный формат email" : undefined;
+    const passwordError = password.length > 0 && password.length < 6 ? "Пароль должен содержать не менее 6 символов" : undefined;
+    const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
+    const canSubmit = !submitting && !hasFieldErrors;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!canSubmit) return;
+        setServerError(null);
+        setSubmitting(true);
+        try {
+            const data: UpdateUserData = {};
+            if (login.trim()) data.login = login.trim();
+            if (password) data.password = password;
+            if (role !== user.role) data.role = role as User["role"];
+            if (Object.keys(data).length === 0) {
+                setServerError("Нет изменений для сохранения");
+                setSubmitting(false);
+                return;
+            }
+            await onSubmit(data);
+        } catch (err) {
+            setServerError(err instanceof Error ? err.message : "Ошибка обновления пользователя");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <form className="users-page__form" onSubmit={handleSubmit} onChange={() => { if (serverError) setServerError(null); }}>
+            {serverError ? (
+                <div className="users-page__form-error">{serverError}</div>
+            ) : null}
+
+            <div className="users-page__old-data">
+                <span className="users-page__old-data-label">Текущие данные</span>
+                <div className="users-page__old-data-row">
+                    <span className="users-page__old-data-key">Логин:</span>
+                    <span className="users-page__old-data-value">{user.login}</span>
+                </div>
+                <div className="users-page__old-data-row">
+                    <span className="users-page__old-data-key">Роль:</span>
+                    <span className="users-page__old-data-value">
+                        {ROLE_OPTIONS.find(o => o.value === user.role)?.label ?? user.role}
+                    </span>
+                </div>
+            </div>
+
+            <Input
+                label="Новый логин"
+                type="email"
+                placeholder="Оставьте пустым, чтобы не менять"
+                value={login}
+                onChange={e => setLogin(e.target.value)}
+                color={loginError ? "error" : "default"}
+                errorMessage={loginError}
+            />
+            <div className="users-page__password-field">
+                <Input
+                    label="Новый пароль"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Оставьте пустым, чтобы не менять"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    color={passwordError ? "error" : "default"}
+                    errorMessage={passwordError}
+                />
+                <label className="users-page__checkbox-row">
+                    <input
+                        type="checkbox"
+                        checked={showPassword}
+                        onChange={e => setShowPassword(e.target.checked)}
+                    />
+                    <span>Показать пароль</span>
+                </label>
+            </div>
+            <Select
+                label="Роль"
+                options={ROLE_OPTIONS}
+                value={role}
+                usePortal={false}
+                onValueChange={setRole}
+            />
+            <div className="users-page__form-actions">
+                <Button type="submit" disabled={!canSubmit}>
+                    {submitting ? "Сохранение…" : "Сохранить"}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
                     Отмена

@@ -7,10 +7,11 @@ import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import SunIcon from "@helpdesk-portal/icons/Sun.svg?react";
 import TecomLogoIcon from "@helpdesk-portal/icons/TecomLogo.svg?react";
 import UserIcon from "@helpdesk-portal/icons/User.svg?react";
+import { useQuery } from "@tanstack/react-query";
 import { useColorMode } from "@helpdesk-portal/ui-kit";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { RequireAuth, useAuth } from "@/shared/lib/auth";
+import { RequireAuth, useAuth, apiClient } from "@/shared/lib/auth";
 
 import "./BaseLayout.css";
 
@@ -23,15 +24,15 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
     { label: "Главная", path: "/", icon: HouseIcon },
-    { label: "Проекты", path: "/projects", icon: FolderIcon },
-    { label: "Задачи", path: "/tasks", icon: ListChecksIcon },
-    { label: "Аудит-лог", path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "PROJECT_MANAGER"] },
+    { label: "Проекты", path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
+    { label: "Задачи", path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
+    { label: "Аудит-лог", path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
     { label: "Пользователи", path: "/users", icon: UserIcon, roles: ["ADMIN"] },
 ];
 
 const roleLabels: Record<string, string> = {
     ADMIN: "Администратор",
-    PROJECT_MANAGER: "Менеджер",
+    USER: "Пользователь",
     GUEST: "Гость",
 };
 
@@ -59,9 +60,21 @@ export const BaseLayout: FC = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const { data: auditLogData } = useQuery({
+        queryKey: ["audit-log-available"],
+        queryFn: () => apiClient("/api/audit-log/available").then(r => r.json()),
+        enabled: user?.role === "USER",
+        staleTime: 0,
+    });
+
+    const auditLogAvailable = user?.role === "ADMIN" || (auditLogData?.available ?? false);
+
     const visibleItems = menuItems.filter(item => {
         if (!item.roles) return true;
-        return user && item.roles.includes(user.role);
+        if (!user) return false;
+        if (!item.roles.includes(user.role)) return false;
+        if (item.path === "/audit-log" && !auditLogAvailable) return false;
+        return true;
     });
 
     const displayName = user?.login?.split("@")[0] ?? "Пользователь";
@@ -81,11 +94,7 @@ export const BaseLayout: FC = () => {
                                 </svg>
                             )}
                         </button>
-                        {sidebarOpen && (
-                            <div className="sidebar__logo-img">
-                                <TecomLogoIcon />
-                            </div>
-                        )}
+
                     </div>
 
                     <nav className="sidebar__nav">
@@ -114,6 +123,9 @@ export const BaseLayout: FC = () => {
 
                 <div className="content-area">
                     <header className="header">
+                        <div className="header__logo">
+                            <TecomLogoIcon />
+                        </div>
                         <div className="header__right">
                             <div className="header__theme-switch">
                                 <SunIcon />

@@ -6,7 +6,6 @@ const projectMemberRoleSchema = Type.Union([
     Type.Literal("UPDATER"),
     Type.Literal("DEVELOPER"),
     Type.Literal("MANAGER"),
-    Type.Literal("ADMINISTRATOR"),
 ]);
 
 export const projectResponseSchema = Type.Object({

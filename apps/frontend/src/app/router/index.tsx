@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter } from "react-router";
 
 import { BaseLayout, LoginLayout } from "../layout";
 
@@ -9,48 +9,93 @@ export const routes = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to="/projects" replace />,
+                lazy: async () => {
+                    const { HomePage } = await import("@/pages/home-page");
+                    return { Component: HomePage };
+                },
             },
             {
                 path: "projects",
                 lazy: async () => {
                     const { ProjectsPage } = await import("@/pages/projects-page");
-                    return { Component: ProjectsPage };
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN", "USER"]}>
+                                <ProjectsPage />
+                            </RequireRole>
+                        ),
+                    };
                 },
             },
             {
                 path: "projects/:id",
                 lazy: async () => {
                     const { ProjectPage } = await import("@/pages/project-page");
-                    return { Component: ProjectPage };
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN", "USER"]}>
+                                <ProjectPage />
+                            </RequireRole>
+                        ),
+                    };
                 },
             },
             {
                 path: "tasks",
                 lazy: async () => {
                     const { HomePage } = await import("@/pages/home-page");
-                    return { Component: HomePage };
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN", "USER"]}>
+                                <HomePage />
+                            </RequireRole>
+                        ),
+                    };
                 },
             },
             {
                 path: "audit-log",
                 lazy: async () => {
                     const { HomePage } = await import("@/pages/home-page");
-                    return { Component: HomePage };
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN", "USER"]}>
+                                <HomePage />
+                            </RequireRole>
+                        ),
+                    };
                 },
             },
             {
                 path: "users",
                 lazy: async () => {
                     const { UsersPage } = await import("@/pages/users-page");
-                    return { Component: UsersPage };
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN"]}>
+                                <UsersPage />
+                            </RequireRole>
+                        ),
+                    };
                 },
             },
             {
                 path: "profile",
                 lazy: async () => {
                     const { ProfilePage } = await import("@/pages/profile-page");
-                    return { Component: ProfilePage };
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN", "USER"]}>
+                                <ProfilePage />
+                            </RequireRole>
+                        ),
+                    };
                 },
             },
         ],

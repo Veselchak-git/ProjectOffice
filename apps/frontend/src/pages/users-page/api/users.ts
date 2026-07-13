@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/lib/auth";
 
-import type { CreateUserData, FetchUsersParams, FetchUsersResponse, UpdateUserRoleData, User } from "../model/users";
+import type { CreateUserData, FetchUsersParams, FetchUsersResponse, UpdateUserData, User } from "../model/users";
 
 export async function fetchUsers(params?: FetchUsersParams): Promise<FetchUsersResponse> {
     const searchParams = new URLSearchParams();
@@ -47,16 +47,21 @@ export async function deleteUser(id: number): Promise<void> {
     }
 }
 
-export async function updateUserRole(id: number, data: UpdateUserRoleData): Promise<User> {
+export async function updateUser(id: number, data: UpdateUserData): Promise<User> {
+    const body: Record<string, unknown> = {};
+    if (data.login !== undefined) body.login = data.login;
+    if (data.password !== undefined && data.password !== "") body.password = data.password;
+    if (data.role !== undefined) body.role = data.role;
+
     const res = await apiClient(`/api/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
     });
 
     if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? "Ошибка обновления роли");
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.message ?? "Ошибка обновления пользователя");
     }
 
     return res.json();

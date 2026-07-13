@@ -1,11 +1,10 @@
-export type { Project, CreateProjectData, UpdateProjectData, FetchProjectsParams, Member, User } from "./model/project";
+export type { Project, CreateProjectData, UpdateProjectData, FetchProjectsParams, Member } from "./model/project";
 export {
     fetchProjects,
     fetchProject,
     createProject,
     updateProject,
     deleteProject,
-    fetchUsers,
     fetchProjectMembers,
     addProjectMember,
     updateProjectMember,

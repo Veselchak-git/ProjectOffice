@@ -38,6 +38,14 @@
     opacity: 0.8;
 }
 
+.data-table__row--selected {
+    background-color: var(--semantic-fill-primary-selected);
+}
+
+.data-table__row--selected:hover {
+    background-color: var(--semantic-fill-primary-selected);
+}
+
 .data-table__empty {
     text-align: center;
     padding: 2rem 1rem;

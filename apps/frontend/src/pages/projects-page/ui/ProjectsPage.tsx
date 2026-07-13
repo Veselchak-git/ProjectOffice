@@ -1,8 +1,18 @@
-import { Checkbox, Input } from "@helpdesk-portal/ui-kit";
+import { Checkbox } from "@helpdesk-portal/ui-kit";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
-import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
+import {
+    DndContext,
+    closestCenter,
+    type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FC } from "react";
 import { useNavigate } from "react-router";
@@ -20,22 +30,27 @@ import { DataTable, DataTablePagination } from "@/shared/components/data-table";
 import { useAuth } from "@/shared/lib/auth";
 import { formatDate } from "@/shared/lib/format-date";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
+import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 
 import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities/project";
 import { createProject, fetchProjects } from "@/entities/project";
 import { ProjectForm } from "@/entities/project";
 
-import "./ProjectsPage.css";
+import { ALL_COLUMNS } from "../model/columns";
+import {
+    projectsPageSlice,
+    selectColumnOrder,
+    selectColumnVisibility,
+    selectRowSelection,
+    setColumnOrder,
+    setColumnVisibility,
+    setRowSelection,
+} from "../model/projects-page-slice";
 
-const ALL_COLUMNS = [
-    { id: "name", label: "НАЗВАНИЕ" },
-    { id: "description", label: "ОПИСАНИЕ" },
-    { id: "status", label: "СТАТУС" },
-    { id: "versions", label: "ВЕРСИИ" },
-    { id: "tasks", label: "ЗАДАЧИ" },
-    { id: "responsible", label: "ОТВЕТСТВЕННЫЙ" },
-    { id: "created", label: "СОЗДАН" },
-];
+import { rootReducer } from "@/app/store";
+rootReducer.inject(projectsPageSlice);
+
+import "./ProjectsPage.css";
 
 const columnHelper = createColumnHelper<Project>();
 
@@ -43,14 +58,12 @@ export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const dispatch = useAppDispatch();
+    const columnVisibility = useAppSelector(selectColumnVisibility);
+    const columnOrder = useAppSelector(selectColumnOrder);
+    const rowSelection = useAppSelector(selectRowSelection);
     const [paginationState, setPaginationState] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [searchInput, setSearchInput] = useState("");
-    const [debouncedQ, setDebouncedQ] = useState("");
-    const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(
-        Object.fromEntries(ALL_COLUMNS.map(col => [col.id, true])),
-    );
-    const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
     const [creating, setCreating] = useState(false);
     const [columnsOpen, setColumnsOpen] = useState(false);
     const columnsRef = useRef<HTMLDivElement>(null);
@@ -64,15 +77,6 @@ export const ProjectsPage: FC = () => {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedQ(searchInput), 400);
-        return () => clearTimeout(timer);
-    }, [searchInput]);
-
-    useEffect(() => {
-        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
-    }, [debouncedQ]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { perPage, ready } = useDynamicPerPage(containerRef, {
@@ -94,7 +98,6 @@ export const ProjectsPage: FC = () => {
     const page = pagination.pageIndex + 1;
 
     const projectParams = {
-        ...(debouncedQ ? { q: debouncedQ } : {}),
         page,
         perPage,
         ...(sortBy ? { sortBy } : {}),
@@ -116,6 +119,7 @@ export const ProjectsPage: FC = () => {
         mutationFn: (dto: CreateProjectData) => createProject(dto),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             setCreating(false);
         },
     });
@@ -136,7 +140,7 @@ export const ProjectsPage: FC = () => {
                     inputSize="m"
                     checked={table.getIsAllRowsSelected()}
                     indeterminate={table.getIsSomeRowsSelected()}
-                    onCheckedChange={table.getToggleAllRowsSelectedHandler()}
+                    onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
                 />
             ),
             cell: ({ row }) => (
@@ -150,15 +154,7 @@ export const ProjectsPage: FC = () => {
         columnHelper.accessor("name", {
             header: "НАЗВАНИЕ",
             enableSorting: true,
-            cell: info => (
-                <button
-                    className="projects-table__name-link"
-                    type="button"
-                    onClick={() => navigate(`/projects/${info.row.original.id}`)}
-                >
-                    {info.getValue()}
-                </button>
-            ),
+            cell: info => info.getValue(),
         }),
         columnHelper.accessor("description", {
             header: "ОПИСАНИЕ",
@@ -192,11 +188,26 @@ export const ProjectsPage: FC = () => {
         }),
     ];
 
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const prev = columnOrder;
+        const oldIndex = prev.indexOf(String(active.id));
+        const newIndex = prev.indexOf(String(over.id));
+        if (oldIndex === -1 || newIndex === -1) return;
+
+        const next = [...prev];
+        next.splice(newIndex, 0, ...next.splice(oldIndex, 1));
+        dispatch(setColumnOrder(next));
+    }
+
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data: projects,
         columns,
         state: {
+            columnOrder,
             pagination,
             sorting,
             columnVisibility,
@@ -209,8 +220,18 @@ export const ProjectsPage: FC = () => {
             });
         },
         onSortingChange: handleSortingChange,
-        onColumnVisibilityChange: setColumnVisibility,
-        onRowSelectionChange: setRowSelection,
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        },
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
+        onRowSelectionChange: updater => {
+            const next = typeof updater === "function" ? updater(rowSelection) : updater;
+            dispatch(setRowSelection(next));
+        },
         getRowId: row => String(row.id),
         manualPagination: true,
         pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
@@ -249,31 +270,28 @@ export const ProjectsPage: FC = () => {
                             Колонки
                         </button>
                         {columnsOpen && (
-                            <div className="projects-page__columns-dropdown">
-                                {ALL_COLUMNS.map(col => (
-                                    <label key={col.id} className="projects-page__columns-option">
-                                        <Checkbox
-                                            inputSize="m"
-                                            checked={table.getColumn(col.id)?.getIsVisible() ?? true}
-                                            onCheckedChange={() => table.getColumn(col.id)?.toggleVisibility()}
-                                        />
-                                        {col.label}
-                                    </label>
-                                ))}
-                            </div>
+                            <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                                <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
+                                    <div className="projects-page__columns-dropdown">
+                                        {columnOrder.filter(id => id !== "select").map(id => {
+                                            const col = ALL_COLUMNS.find(c => c.id === id);
+                                            if (!col) return null;
+                                            return (
+                                                <SortableColumnItem
+                                                    key={col.id}
+                                                    id={col.id}
+                                                    label={col.label}
+                                                    isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
+                                                    onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
                         )}
                     </div>
                 </div>
-            </div>
-
-            <div className="projects-page__controls">
-                <Input
-                    className="projects-page__controls-search"
-                    placeholder="Найти проект..."
-                    startIcon={<SearchIcon />}
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                />
             </div>
 
             <div className="projects-page__table-area" ref={containerRef}>
@@ -284,7 +302,7 @@ export const ProjectsPage: FC = () => {
                         {error instanceof Error ? error.message : "Ошибка загрузки"}
                     </p>
                 ) : (
-                    <DataTable table={table}>
+                    <DataTable table={table} onRowDoubleClick={row => navigate(`/projects/${row.id}`)}>
                         <DataTablePagination table={table} total={total} />
                     </DataTable>
                 )}
@@ -301,6 +319,53 @@ export const ProjectsPage: FC = () => {
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
+
+const GripIcon: FC = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <circle cx="5" cy="4" r="1.5" />
+        <circle cx="11" cy="4" r="1.5" />
+        <circle cx="5" cy="8" r="1.5" />
+        <circle cx="11" cy="8" r="1.5" />
+        <circle cx="5" cy="12" r="1.5" />
+        <circle cx="11" cy="12" r="1.5" />
+    </svg>
+);
+
+const SortableColumnItem: FC<{
+    id: string;
+    label: string;
+    isVisible: boolean;
+    onToggle: () => void;
+}> = ({ id, label, isVisible, onToggle }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+    const style: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`projects-page__columns-option${isDragging ? " projects-page__columns-option--dragging" : ""}`}
+        >
+            <button
+                className="projects-page__columns-drag-btn"
+                type="button"
+                {...attributes}
+                {...listeners}
+            >
+                <GripIcon />
+            </button>
+            <Checkbox inputSize="m" checked={isVisible} onCheckedChange={onToggle} />
+            <span className="projects-page__columns-label" onClick={onToggle}>
+                {label}
+            </span>
         </div>
     );
 };

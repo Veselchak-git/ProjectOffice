@@ -41,6 +41,28 @@
         gap: 8px;
     }
 
+    .users-page__actions-cell {
+        display: flex;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .users-page__actions-cell {
+        position: relative;
+    }
+
+    .users-page__actions-cell .ui-kit-btn {
+        background-color: var(--semantic-bg-surface);
+    }
+
+    .users-page__actions-cell .ui-kit-btn-stroke.ui-kit-btn-accent:hover:not(:disabled) {
+        background-color: var(--semantic-btn-accent-stroke-hover-bg);
+    }
+
+    .users-page__actions-cell .ui-kit-btn-stroke.ui-kit-btn-error:hover:not(:disabled) {
+        background-color: var(--semantic-btn-error-stroke-hover-bg);
+    }
+
     .users-page__create-btn {
         display: inline-flex;
         align-items: center;
@@ -238,6 +260,39 @@
         line-height: 1.4;
     }
 
+    .users-page__old-data {
+        padding: 12px 14px;
+        border-radius: 8px;
+        background-color: var(--semantic-bg-secondary, var(--gray-50));
+        border: 1px solid var(--semantic-border-default);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .users-page__old-data-label {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--semantic-text-secondary);
+    }
+
+    .users-page__old-data-row {
+        display: flex;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .users-page__old-data-key {
+        color: var(--semantic-text-secondary);
+    }
+
+    .users-page__old-data-value {
+        color: var(--semantic-text-primary);
+        font-weight: 500;
+    }
+
     .users-page__form-actions {
         display: flex;
         gap: 12px;
@@ -287,7 +342,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        max-width: 0;
+    }
+
+    .users-page__table-area .data-table td:last-child {
+        overflow: visible;
     }
 
     .users-page__table-area .data-table tr:last-child td {

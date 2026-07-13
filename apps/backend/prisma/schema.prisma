@@ -9,7 +9,7 @@ datasource db {
 
 enum Role {
   GUEST
-  PROJECT_MANAGER
+  USER
   ADMIN
 }
 
@@ -24,7 +24,6 @@ enum ProjectMemberRole {
   UPDATER
   DEVELOPER
   MANAGER
-  ADMINISTRATOR
 }
 
 enum IssueCategory {

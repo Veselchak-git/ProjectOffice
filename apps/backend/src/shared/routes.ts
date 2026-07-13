@@ -22,5 +22,7 @@ export const PROJECTS_LIST_PATH = PROJECTS_PATH;
 export const PROJECT_PATH = `${PROJECTS_PATH}/:id`;
 export const PROJECT_MEMBERS_PATH = `${PROJECT_PATH}/members`;
 export const PROJECT_MEMBER_PATH = `${PROJECT_PATH}/members/:userId`;
+export const AUDIT_LOG_PATH = "/audit-log";
+export const AUDIT_LOG_AVAILABLE_PATH = `${AUDIT_LOG_PATH}/available`;
 export const USERS_PATH = "/users";
 export const USER_PATH = `${USERS_PATH}/:id`;

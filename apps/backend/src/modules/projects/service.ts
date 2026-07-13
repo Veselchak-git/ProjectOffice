@@ -1,5 +1,5 @@
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
-import { ProjectMemberRole } from "@/generated/prisma/enums.js";
+import { ProjectMemberRole, Role } from "@/generated/prisma/enums.js";
 import { Prisma } from "@/generated/prisma/client.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 
@@ -22,8 +22,8 @@ import {
 } from "./schema.js";
 
 const findResponsible = (memberships: { user: { login: string }; role: string }[]): string => {
-    const admin = memberships.find(m => m.role === "ADMINISTRATOR");
-    return admin?.user.login ?? memberships[0]?.user.login ?? "";
+    const manager = memberships.find(m => m.role === "MANAGER");
+    return manager?.user.login ?? memberships[0]?.user.login ?? "";
 };
 
 const PROJECT_SORT_FIELDS = new Set(["name", "status", "createdAt", "taskCount", "versionCount"]);
@@ -64,7 +64,14 @@ export const getProjectsListService = async (
     const prisma = request.server.prisma;
     const { q, page = 1, perPage = 20, sortBy, sortOrder = "desc" } = request.query;
 
-    const where = q ? { name: { contains: q } } : {};
+    const userId = Number(request.user.sub);
+    const userRole = request.user.role;
+
+    const where: Record<string, unknown> = {};
+    if (q) where.name = { contains: q };
+    if (userRole !== Role.ADMIN) {
+        where.memberships = { some: { userId } };
+    }
     const orderBy = buildProjectOrderBy(sortBy, sortOrder);
     const skip = (page - 1) * perPage;
 
@@ -148,7 +155,7 @@ export const createProjectService = async (
         data: {
             userId: creatorId,
             projectId: project.id,
-            role: ProjectMemberRole.ADMINISTRATOR,
+            role: ProjectMemberRole.MANAGER,
         },
     });
 
@@ -218,9 +225,12 @@ export const addProjectMemberService = async (
     const { id } = request.params;
     const { userId, role } = request.body;
 
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { login: true } });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { login: true, role: true } });
     if (!user) {
         throw new AppError(HTTP_STATUS.NOT_FOUND, "Пользователь не найден", "USER_NOT_FOUND");
+    }
+    if (user.role === "GUEST") {
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя добавить гостя в проект", "GUEST_NOT_ALLOWED");
     }
 
     const existing = await prisma.projectMember.findUnique({
@@ -253,12 +263,12 @@ export const updateProjectMemberService = async (
             throw new AppError(HTTP_STATUS.NOT_FOUND, "Участник не найден в проекте", "MEMBER_NOT_FOUND");
         }
 
-        if (existing.role === "ADMINISTRATOR" && role !== "ADMINISTRATOR") {
-            const adminCount = await tx.projectMember.count({
-                where: { projectId: id, role: "ADMINISTRATOR" },
+        if (existing.role === "MANAGER" && role !== "MANAGER") {
+            const managerCount = await tx.projectMember.count({
+                where: { projectId: id, role: "MANAGER" },
             });
-            if (adminCount <= 1) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить администратора проекта", "LAST_ADMIN");
+            if (managerCount <= 1) {
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя понизить единственного менеджера проекта", "LAST_MANAGER");
             }
         }
 
@@ -307,12 +317,12 @@ export const removeProjectMemberService = async (
             throw new AppError(HTTP_STATUS.NOT_FOUND, "Участник не найден в проекте", "MEMBER_NOT_FOUND");
         }
 
-        if (existing.role === "ADMINISTRATOR") {
-            const adminCount = await tx.projectMember.count({
-                where: { projectId: id, role: "ADMINISTRATOR" },
+        if (existing.role === "MANAGER") {
+            const managerCount = await tx.projectMember.count({
+                where: { projectId: id, role: "MANAGER" },
             });
-            if (adminCount <= 1) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить администратора проекта", "LAST_ADMIN");
+            if (managerCount <= 1) {
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить единственного менеджера проекта", "LAST_MANAGER");
             }
         }
 

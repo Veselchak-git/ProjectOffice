@@ -42,7 +42,7 @@
 Роли описаны в Prisma enum `Role`:
 
 - `GUEST`
-- `PROJECT_MANAGER`
+- `USER`
 - `ADMIN`
 
 В текущем модуле `auth` используется только проверка аутентификации для `GET /api/auth/me`.

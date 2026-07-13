@@ -6,7 +6,9 @@
  * Все права защищены
  */
 import type { AuthState } from "@/shared/lib/auth";
+import type { ProjectsPageState } from "@/pages/projects-page/model/projects-page-slice";
 
 export interface LazyLoadedReduxSlices {
     auth: AuthState;
+    projectsPage: ProjectsPageState;
 }

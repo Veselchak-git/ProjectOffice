@@ -1,11 +1,14 @@
+﻿-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('GUEST', 'PROJECT_MANAGER', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('GUEST', 'USER', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "ProjectStatus" AS ENUM ('ACTIVE', 'ARCHIVED');
 
 -- CreateEnum
-CREATE TYPE "ProjectMemberRole" AS ENUM ('VIEWER', 'REPORTER', 'UPDATER', 'DEVELOPER', 'MANAGER', 'ADMINISTRATOR');
+CREATE TYPE "ProjectMemberRole" AS ENUM ('VIEWER', 'REPORTER', 'UPDATER', 'DEVELOPER', 'MANAGER');
 
 -- CreateEnum
 CREATE TYPE "IssueCategory" AS ENUM ('BUG', 'FEATURE', 'TASK', 'IMPROVEMENT', 'QUESTION');
@@ -30,9 +33,6 @@ CREATE TABLE "User" (
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_login_key" ON "User"("login");
 
 -- CreateTable
 CREATE TABLE "Project" (
@@ -87,6 +87,17 @@ CREATE TABLE "Issue" (
 );
 
 -- CreateTable
+CREATE TABLE "RefreshToken" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "tokenHash" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "AuditLog" (
     "id" SERIAL NOT NULL,
     "eventType" TEXT NOT NULL,
@@ -100,6 +111,9 @@ CREATE TABLE "AuditLog" (
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_login_key" ON "User"("login");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProjectMember_userId_projectId_key" ON "ProjectMember"("userId", "projectId");
@@ -129,4 +143,8 @@ ALTER TABLE "Issue" ADD CONSTRAINT "Issue_assigneeId_fkey" FOREIGN KEY ("assigne
 ALTER TABLE "Issue" ADD CONSTRAINT "Issue_reporterId_fkey" FOREIGN KEY ("reporterId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

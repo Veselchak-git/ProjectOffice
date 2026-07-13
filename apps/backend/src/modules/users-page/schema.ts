@@ -60,17 +60,19 @@ export const deleteUserSchema = {
     },
 };
 
-export const updateUserRoleBodySchema = Type.Object({
-    role: Type.Enum(Role),
+export const updateUserBodySchema = Type.Object({
+    login: Type.Optional(Type.String({ minLength: 1 })),
+    password: Type.Optional(Type.String({ minLength: 6 })),
+    role: Type.Optional(Type.Enum(Role)),
 });
 
-export type UpdateUserRoleBody = Static<typeof updateUserRoleBodySchema>;
+export type UpdateUserBody = Static<typeof updateUserBodySchema>;
 
-export const updateUserRoleSchema = {
+export const updateUserSchema = {
     params: Type.Object({
         id: Type.Number(),
     }),
-    body: updateUserRoleBodySchema,
+    body: updateUserBodySchema,
     response: {
         200: userResponseSchema,
     },

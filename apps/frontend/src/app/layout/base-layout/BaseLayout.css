@@ -77,15 +77,6 @@
         height: 20px;
     }
 
-    .sidebar__logo-img {
-        width: 102px;
-        height: 24px;
-    }
-
-    .sidebar__logo-img path {
-        fill: var(--semantic-text-primary);
-    }
-
     .sidebar__nav {
         display: flex;
         flex-direction: column;
@@ -166,6 +157,16 @@
 
     .header__search {
         width: 320px;
+    }
+
+    .header__logo {
+        width: 102px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .header__logo path {
+        fill: var(--semantic-text-primary);
     }
 
     .header__divider {

@@ -6,11 +6,12 @@ import "./DataTable.css";
 interface DataTableProps<TData> {
     table: Table<TData>;
     onRowClick?: (row: TData) => void;
+    onRowDoubleClick?: (row: TData) => void;
     className?: string;
     children?: ReactNode;
 }
 
-export function DataTable<TData>({ table, onRowClick, className, children }: DataTableProps<TData>) {
+export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, className, children }: DataTableProps<TData>) {
     return (
         <>
             <div className={`data-table-wrapper${className ? ` ${className}` : ""}`}>
@@ -64,8 +65,12 @@ export function DataTable<TData>({ table, onRowClick, className, children }: Dat
                             table.getRowModel().rows.map(row => (
                                 <tr
                                     key={row.id}
-                                    className={onRowClick ? "data-table__row--clickable" : ""}
+                                    className={[
+                                        onRowClick || onRowDoubleClick ? "data-table__row--clickable" : "",
+                                        row.getIsSelected() ? "data-table__row--selected" : "",
+                                    ].filter(Boolean).join(" ")}
                                     onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                                    onDoubleClick={onRowDoubleClick ? () => onRowDoubleClick(row.original) : undefined}
                                 >
                                     {row.getVisibleCells().map(cell => (
                                         <td key={cell.id}>

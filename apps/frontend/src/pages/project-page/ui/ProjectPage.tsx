@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -37,6 +38,7 @@ export const ProjectPage: FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const queryClient = useQueryClient();
     const [{ project, loading, fetchError }, dispatch] = useReducer(projectReducer, {
         project: null,
         loading: true,
@@ -72,6 +74,7 @@ export const ProjectPage: FC = () => {
         setDeleting(true);
         try {
             await deleteProject(Number(id));
+            queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             navigate("/projects", { replace: true });
         } catch {
             setDeleting(false);
@@ -140,12 +143,12 @@ export const ProjectPage: FC = () => {
                         </span>
                     </div>
                     <div className="project-page__actions">
-                        {(user?.role === "PROJECT_MANAGER" || user?.role === "ADMIN" || project.myRole === "MANAGER" || project.myRole === "ADMINISTRATOR") && (
+                        {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
                             <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
                                 Редактировать
                             </button>
                         )}
-                        {(user?.role === "ADMIN" || project.myRole === "ADMINISTRATOR") && (
+                        {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
                             <button
                                 className="project-page__delete-btn"
                                 type="button"
@@ -189,7 +192,7 @@ export const ProjectPage: FC = () => {
                 </div>
             </div>
 
-            <MembersBlock projectId={project.id} globalRole={user?.role} currentLogin={user?.login} projectRole={project.myRole} />
+            <MembersBlock projectId={project.id} globalRole={user?.role} currentLogin={user?.login} currentUserId={user?.id ? Number(user.id) : undefined} projectRole={project.myRole} />
         </div>
     );
 };

@@ -1,14 +1,16 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 
-import type { Member, User, ProjectMemberRole } from "../model/project";
+import type { Member, ProjectMemberRole } from "../model/project";
 import {
-    fetchUsers,
     fetchProjectMembers,
     addProjectMember,
     updateProjectMember,
     removeProjectMember,
 } from "../api/projects";
+import { fetchUsers } from "@/entities/user";
+import type { User } from "@/entities/user";
 
 import "./MembersBlock.css";
 
@@ -18,10 +20,9 @@ const ROLE_HIERARCHY: Record<ProjectMemberRole, number> = {
     UPDATER: 2,
     DEVELOPER: 3,
     MANAGER: 4,
-    ADMINISTRATOR: 5,
 };
 
-const ROLES: ProjectMemberRole[] = ["VIEWER", "REPORTER", "UPDATER", "DEVELOPER", "MANAGER", "ADMINISTRATOR"];
+const ROLES: ProjectMemberRole[] = ["VIEWER", "REPORTER", "UPDATER", "DEVELOPER", "MANAGER"];
 
 const ROLE_LABELS: Record<ProjectMemberRole, string> = {
     VIEWER: "Наблюдатель",
@@ -29,13 +30,13 @@ const ROLE_LABELS: Record<ProjectMemberRole, string> = {
     UPDATER: "Редактор",
     DEVELOPER: "Разработчик",
     MANAGER: "Менеджер",
-    ADMINISTRATOR: "Администратор",
 };
 
 interface MembersBlockProps {
     projectId: number;
     globalRole: string | undefined;
     currentLogin: string | undefined;
+    currentUserId: number | undefined;
     projectRole: ProjectMemberRole | undefined;
 }
 
@@ -71,7 +72,8 @@ const membersReducer = (state: MembersState, action: MembersAction): MembersStat
     }
 };
 
-export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, currentLogin, projectRole }) => {
+export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, currentLogin, currentUserId, projectRole }) => {
+    const queryClient = useQueryClient();
     const [{ members, users, loading, error }, dispatch] = useReducer(membersReducer, {
         members: [],
         users: [],
@@ -80,17 +82,16 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, cur
     });
 
     const canManage =
-        globalRole === "PROJECT_MANAGER" || globalRole === "ADMIN"
-        || projectRole === "MANAGER" || projectRole === "ADMINISTRATOR";
+        globalRole === "ADMIN"
+        || projectRole === "MANAGER";
 
     const maxAssignableRank =
-        globalRole === "PROJECT_MANAGER" || globalRole === "ADMIN"
-            ? 5
+        globalRole === "ADMIN"
+            ? 4
             : ROLE_HIERARCHY[projectRole ?? "VIEWER"] ?? 0;
 
     const assignableRoles = ROLES.filter(r => {
         if ((ROLE_HIERARCHY[r] ?? 0) > maxAssignableRank) return false;
-        if (r === "ADMINISTRATOR" && globalRole !== "ADMIN") return false;
         return true;
     });
 
@@ -114,7 +115,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, cur
     }, [projectId]);
 
     const availableUsers = users.filter(
-        u => !members.some(m => m.userId === u.id),
+        u => !members.some(m => m.userId === u.id) && u.role !== "GUEST",
     );
 
     const handleAdd = async () => {
@@ -133,6 +134,9 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, cur
         try {
             const member = await updateProjectMember(projectId, userId, role);
             dispatch({ type: "memberUpdated", member });
+            if (userId === currentUserId) {
+                queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
+            }
         } catch (err: unknown) {
             dispatch({ type: "error", message: err instanceof Error ? err.message : "Ошибка обновления" });
         }
@@ -145,6 +149,9 @@ export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, cur
         try {
             await removeProjectMember(projectId, userId);
             dispatch({ type: "memberRemoved", userId });
+            if (userId === currentUserId) {
+                queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
+            }
         } catch (err: unknown) {
             dispatch({ type: "error", message: err instanceof Error ? err.message : "Ошибка удаления" });
         }

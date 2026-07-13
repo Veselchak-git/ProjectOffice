@@ -3,8 +3,7 @@ export type ProjectMemberRole =
     | "REPORTER"
     | "UPDATER"
     | "DEVELOPER"
-    | "MANAGER"
-    | "ADMINISTRATOR";
+    | "MANAGER";
 
 export interface Member {
     userId: number;
@@ -47,8 +46,4 @@ export interface UpdateProjectData {
     versions?: string[];
 }
 
-export interface User {
-    id: number;
-    login: string;
-    role: string;
-}
+

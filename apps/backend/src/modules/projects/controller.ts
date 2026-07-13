@@ -42,13 +42,11 @@ const ROLE_HIERARCHY: Record<string, number> = {
     UPDATER: 2,
     DEVELOPER: 3,
     MANAGER: 4,
-    ADMINISTRATOR: 5,
 };
 
 interface CheckProjectAccessOptions {
     requireProjectRoles?: string[];
     allowGlobalAdmin?: boolean;
-    allowGlobalProjectManager?: boolean;
     checkSelfModification?: boolean;
     checkRoleHierarchy?: boolean;
 }
@@ -66,37 +64,27 @@ const checkProjectAccess = (options: CheckProjectAccessOptions): preHandlerHookH
 
         if (options.allowGlobalAdmin && request.user.role === Role.ADMIN) return;
 
-        const isProjectManager = Boolean(options.allowGlobalProjectManager && request.user.role === Role.PROJECT_MANAGER);
-
         if (options.checkRoleHierarchy) {
             const targetRole = (request.body as Record<string, unknown>).role as string | undefined;
             if (targetRole) {
-                if (targetRole === "ADMINISTRATOR" && request.user.role !== Role.ADMIN) {
-                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Только глобальный администратор может назначить администратора проекта", "ADMIN_REASSIGN");
+                const projectId = Number(params.id);
+                const userId = Number(request.user.sub);
+
+                const member = await request.server.prisma.projectMember.findUnique({
+                    where: { userId_projectId: { userId, projectId } },
+                });
+
+                if (!member) {
+                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
                 }
 
-                if (!isProjectManager) {
-                    const projectId = Number(params.id);
-                    const userId = Number(request.user.sub);
-
-                    const member = await request.server.prisma.projectMember.findUnique({
-                        where: { userId_projectId: { userId, projectId } },
-                    });
-
-                    if (!member) {
-                        throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
-                    }
-
-                    const actorRank = ROLE_HIERARCHY[member.role] ?? 0;
-                    const targetRank = ROLE_HIERARCHY[targetRole] ?? 0;
-                    if (targetRank > actorRank) {
-                        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя назначить роль выше своей", "ROLE_HIERARCHY");
-                    }
+                const actorRank = ROLE_HIERARCHY[member.role] ?? 0;
+                const targetRank = ROLE_HIERARCHY[targetRole] ?? 0;
+                if (targetRank > actorRank) {
+                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя назначить роль выше своей", "ROLE_HIERARCHY");
                 }
             }
         }
-
-        if (isProjectManager) return;
 
         const projectId = Number(params.id);
         const userId = Number(request.user.sub);
@@ -120,7 +108,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         PROJECTS_LIST_PATH,
         {
             schema: getProjectsListSchema,
-            preHandler: [fastify.authenticate],
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
         },
         getProjectsListService,
     );
@@ -129,7 +117,10 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         PROJECT_PATH,
         {
             schema: getProjectByIdSchema,
-            preHandler: [fastify.authenticate],
+            preHandler: [
+                fastify.authorize(Role.USER, Role.ADMIN),
+                checkProjectAccess({ allowGlobalAdmin: true }),
+            ],
         },
         getProjectByIdService,
     );
@@ -138,7 +129,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         PROJECTS_LIST_PATH,
         {
             schema: createProjectSchema,
-            preHandler: [fastify.authorize(Role.PROJECT_MANAGER, Role.ADMIN)],
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
         },
         createProjectService,
     );
@@ -150,9 +141,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [
                 fastify.authenticate,
                 checkProjectAccess({
-                    requireProjectRoles: ["MANAGER", "ADMINISTRATOR"],
+                    requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
-                    allowGlobalProjectManager: true,
                 }),
             ],
         },
@@ -163,7 +153,10 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         PROJECT_MEMBERS_PATH,
         {
             schema: getProjectMembersSchema,
-            preHandler: [fastify.authenticate],
+            preHandler: [
+                fastify.authorize(Role.USER, Role.ADMIN),
+                checkProjectAccess({ allowGlobalAdmin: true }),
+            ],
         },
         getProjectMembersService,
     );
@@ -175,9 +168,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [
                 fastify.authenticate,
                 checkProjectAccess({
-                    requireProjectRoles: ["MANAGER", "ADMINISTRATOR"],
+                    requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
-                    allowGlobalProjectManager: true,
                     checkRoleHierarchy: true,
                 }),
             ],
@@ -192,9 +184,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [
                 fastify.authenticate,
                 checkProjectAccess({
-                    requireProjectRoles: ["MANAGER", "ADMINISTRATOR"],
+                    requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
-                    allowGlobalProjectManager: true,
                     checkSelfModification: true,
                     checkRoleHierarchy: true,
                 }),
@@ -210,9 +201,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [
                 fastify.authenticate,
                 checkProjectAccess({
-                    requireProjectRoles: ["MANAGER", "ADMINISTRATOR"],
+                    requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
-                    allowGlobalProjectManager: true,
                     checkSelfModification: true,
                 }),
             ],
@@ -227,7 +217,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [
                 fastify.authenticate,
                 checkProjectAccess({
-                    requireProjectRoles: ["ADMINISTRATOR"],
+                    requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
                 }),
             ],

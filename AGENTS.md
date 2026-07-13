@@ -83,6 +83,14 @@ This is a **Lerna-based monorepo** using `npm workspaces` with centralized tooli
   - there are multiple equally valid architectural directions;
   - the change may break a public contract or shared API.
 
+## Skills
+
+- `prompt-master` — использовать часто (генерация/оптимизация промптов)
+- `grill-me` — использовать часто (стресс-тест планов и дизайна)
+- `fact-checker` — использовать часто (фактчекинг, верификация)
+- `humanizer` — использовать часто (удаление AI-паттернов из текста)
+- `mcp-builder` — использовать только когда явно запрошено (сборка MCP-серверов)
+
 ## Final Response Format
 
 - The final response must include:

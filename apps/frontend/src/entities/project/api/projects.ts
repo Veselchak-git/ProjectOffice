@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/lib/auth";
 
-import type { CreateProjectData, FetchProjectsParams, Member, Project, UpdateProjectData, User, ProjectMemberRole } from "../model/project";
+import type { CreateProjectData, FetchProjectsParams, Member, Project, UpdateProjectData, ProjectMemberRole } from "../model/project";
 
 export interface FetchProjectsResponse {
     projects: Project[];
@@ -65,17 +65,6 @@ export async function updateProject(id: number, data: UpdateProjectData): Promis
     if (!res.ok) {
         const body = await res.json().catch(() => null);
         throw new Error(body?.message ?? "Ошибка обновления проекта");
-    }
-
-    return res.json();
-}
-
-export async function fetchUsers(): Promise<User[]> {
-    const res = await apiClient("/api/users");
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? "Ошибка загрузки пользователей");
     }
 
     return res.json();

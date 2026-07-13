@@ -5,8 +5,8 @@ import fp from "fastify-plugin";
 import { JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import { USER_PATH, USERS_PATH } from "@/shared/routes.js";
 
-import { createUserSchema, deleteUserSchema, getUsersSchema, updateUserRoleSchema } from "./schema.js";
-import { createUserService, deleteUserService, getUsersService, updateUserRoleService } from "./service.js";
+import { createUserSchema, deleteUserSchema, getUsersSchema, updateUserSchema } from "./schema.js";
+import { createUserService, deleteUserService, getUsersService, updateUserService } from "./service.js";
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.get(
@@ -30,10 +30,10 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.patch(
         USER_PATH,
         {
-            schema: updateUserRoleSchema,
+            schema: updateUserSchema,
             preHandler: [fastify.authorize(Role.ADMIN)],
         },
-        updateUserRoleService,
+        updateUserService,
     );
 
     fastify.delete(

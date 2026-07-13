@@ -1,18 +1,20 @@
 export interface User {
     id: number;
     login: string;
-    role: "GUEST" | "PROJECT_MANAGER" | "ADMIN";
+    role: "GUEST" | "USER" | "ADMIN";
     createdAt: string;
 }
 
 export interface CreateUserData {
     login: string;
     password: string;
-    role: "GUEST" | "PROJECT_MANAGER" | "ADMIN";
+    role: "GUEST" | "USER" | "ADMIN";
 }
 
-export interface UpdateUserRoleData {
-    role: "GUEST" | "PROJECT_MANAGER" | "ADMIN";
+export interface UpdateUserData {
+    login?: string;
+    password?: string;
+    role?: "GUEST" | "USER" | "ADMIN";
 }
 
 export interface FetchUsersParams {
