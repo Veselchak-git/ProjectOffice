@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import { fetchUsers } from "@/entities/user";
 import type { User } from "@/entities/user";
@@ -18,14 +19,6 @@ const ROLE_HIERARCHY: Record<ProjectMemberRole, number> = {
 };
 
 const ROLES: ProjectMemberRole[] = ["VIEWER", "REPORTER", "UPDATER", "DEVELOPER", "MANAGER"];
-
-const ROLE_LABELS: Record<ProjectMemberRole, string> = {
-    VIEWER: "Наблюдатель",
-    REPORTER: "Репортёр",
-    UPDATER: "Редактор",
-    DEVELOPER: "Разработчик",
-    MANAGER: "Менеджер"
-};
 
 interface MembersBlockProps {
     projectId: number;
@@ -77,6 +70,16 @@ export const MembersBlock: FC<MembersBlockProps> = ({
     currentUserId,
     projectRole
 }) => {
+    const { t } = useTranslation();
+
+    const roleLabels: Record<ProjectMemberRole, string> = {
+        VIEWER: t("projects:members.roles.viewer"),
+        REPORTER: t("projects:members.roles.reporter"),
+        UPDATER: t("projects:members.roles.updater"),
+        DEVELOPER: t("projects:members.roles.developer"),
+        MANAGER: t("projects:members.roles.manager")
+    };
+
     const queryClient = useQueryClient();
     const [{ members, users, loading, error }, dispatch] = useReducer(membersReducer, {
         members: [],
@@ -122,7 +125,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
             setSelectedUserId(null);
             setSelectedRole("VIEWER");
         } catch (err: unknown) {
-            dispatch({ type: "error", message: err instanceof Error ? err.message : "Ошибка добавления" });
+            dispatch({ type: "error", message: err instanceof Error ? err.message : t("projects:members.error.add") });
         }
     };
 
@@ -134,14 +137,17 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                 queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             }
         } catch (err: unknown) {
-            dispatch({ type: "error", message: err instanceof Error ? err.message : "Ошибка обновления" });
+            dispatch({
+                type: "error",
+                message: err instanceof Error ? err.message : t("projects:members.error.update")
+            });
         }
     };
 
     const handleRemove = async (userId: number) => {
         const member = members.find(m => m.userId === userId);
         const name = member?.login ?? `#${userId}`;
-        if (!window.confirm(`Вы уверены, что хотите удалить участника «${name}»?`)) return;
+        if (!window.confirm(t("projects:members.confirmDelete", { name }))) return;
         try {
             await removeProjectMember(projectId, userId);
             dispatch({ type: "memberRemoved", userId });
@@ -149,22 +155,25 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                 queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             }
         } catch (err: unknown) {
-            dispatch({ type: "error", message: err instanceof Error ? err.message : "Ошибка удаления" });
+            dispatch({
+                type: "error",
+                message: err instanceof Error ? err.message : t("projects:members.error.delete")
+            });
         }
     };
 
     return (
         <div className="members-block">
-            <h2 className="members-block__title">Участники проекта</h2>
+            <h2 className="members-block__title">{t("projects:members.title")}</h2>
 
             {error && <p className="members-block__error">{error}</p>}
 
             {loading ? (
-                <p className="members-block__loading">Загрузка…</p>
+                <p className="members-block__loading">{t("projects:members.loading")}</p>
             ) : (
                 <>
                     <div className="members-block__list">
-                        {members.length === 0 && <p className="members-block__empty">Нет участников</p>}
+                        {members.length === 0 && <p className="members-block__empty">{t("projects:members.empty")}</p>}
                         {members.map(m => (
                             <div key={m.userId} className="members-block__item">
                                 <span className="members-block__item-login">{m.login}</span>
@@ -176,13 +185,13 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                     >
                                         {assignableRoles.map(r => (
                                             <option key={r} value={r}>
-                                                {ROLE_LABELS[r] ?? r}
+                                                {roleLabels[r] ?? r}
                                             </option>
                                         ))}
                                     </select>
                                 ) : (
                                     <span className="members-block__item-role-text">
-                                        {ROLE_LABELS[m.role] ?? m.role}
+                                        {roleLabels[m.role] ?? m.role}
                                     </span>
                                 )}
                                 {canManage && m.login !== currentLogin && (
@@ -190,7 +199,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                         className="members-block__item-remove"
                                         type="button"
                                         onClick={() => handleRemove(m.userId)}
-                                        title="Удалить участника"
+                                        title={t("projects:members.deleteTooltip")}
                                     >
                                         ✕
                                     </button>
@@ -206,7 +215,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                 value={selectedUserId ?? ""}
                                 onChange={e => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
                             >
-                                <option value="">Выберите пользователя</option>
+                                <option value="">{t("projects:members.placeholder")}</option>
                                 {availableUsers.map(u => (
                                     <option key={u.id} value={u.id}>
                                         {u.login}
@@ -220,7 +229,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                             >
                                 {assignableRoles.map(r => (
                                     <option key={r} value={r}>
-                                        {ROLE_LABELS[r] ?? r}
+                                        {roleLabels[r] ?? r}
                                     </option>
                                 ))}
                             </select>
@@ -230,7 +239,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                 onClick={handleAdd}
                                 disabled={selectedUserId === null}
                             >
-                                Добавить
+                                {t("projects:members.add")}
                             </button>
                         </div>
                     )}

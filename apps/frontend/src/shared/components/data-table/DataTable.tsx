@@ -1,5 +1,6 @@
 import { type Table, flexRender } from "@tanstack/react-table";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import "./DataTable.css";
 
@@ -12,6 +13,8 @@ interface DataTableProps<TData> {
 }
 
 export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, className, children }: DataTableProps<TData>) {
+    const { t } = useTranslation();
+
     return (
         <>
             <div className={`data-table-wrapper${className ? ` ${className}` : ""}`}>
@@ -52,7 +55,7 @@ export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, classNam
                         {table.getRowModel().rows.length === 0 ? (
                             <tr>
                                 <td colSpan={table.getAllColumns().length} className="data-table__empty">
-                                    Нет данных
+                                    {t("noData")}
                                 </td>
                             </tr>
                         ) : (

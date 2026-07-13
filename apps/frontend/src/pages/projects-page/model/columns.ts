@@ -1,11 +1,11 @@
 export const ALL_COLUMNS = [
-    { id: "name", label: "НАЗВАНИЕ" },
-    { id: "description", label: "ОПИСАНИЕ" },
-    { id: "status", label: "СТАТУС" },
-    { id: "versions", label: "ВЕРСИИ" },
-    { id: "tasks", label: "ЗАДАЧИ" },
-    { id: "responsible", label: "ОТВЕТСТВЕННЫЙ" },
-    { id: "created", label: "СОЗДАН" }
+    { id: "name", label: "projects:table.name" },
+    { id: "description", label: "projects:table.description" },
+    { id: "status", label: "projects:table.status" },
+    { id: "versions", label: "projects:table.versions" },
+    { id: "tasks", label: "projects:table.tasks" },
+    { id: "responsible", label: "projects:table.responsible" },
+    { id: "created", label: "projects:table.created" }
 ] as const;
 
 export type ColumnId = (typeof ALL_COLUMNS)[number]["id"];

@@ -5,12 +5,14 @@ import { Button, Input } from "@helpdesk-portal/ui-kit";
 import { useCallback, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { changePasswordRequest } from "../api/changePassword";
 import type { ChangePasswordFormValues } from "../model/change-password-form";
 import "./ProfilePage.css";
 
 export const ProfilePage: FC = () => {
+    const { t } = useTranslation();
     const [serverError, setServerError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -42,20 +44,20 @@ export const ProfilePage: FC = () => {
 
             try {
                 if (data.newPassword !== data.confirmPassword) {
-                    throw new Error("Новый пароль и подтверждение не совпадают");
+                    throw new Error(t("auth:profile.error.notMatch"));
                 }
 
                 await changePasswordRequest(data);
-                setSuccessMessage("Пароль успешно изменён");
+                setSuccessMessage(t("auth:profile.success"));
                 reset();
             } catch (err) {
-                const message = err instanceof Error ? err.message : "Ошибка соединения с сервером";
+                const message = err instanceof Error ? err.message : t("common:error.connection");
                 setServerError(message);
             } finally {
                 setSubmitting(false);
             }
         },
-        [reset]
+        [reset, t]
     );
 
     const currentError = errors.currentPassword?.message;
@@ -66,7 +68,7 @@ export const ProfilePage: FC = () => {
         <div className="profile-page">
             <div className="profile-page__header">
                 <UserIcon />
-                <h2 className="profile-page__title">Профиль</h2>
+                <h2 className="profile-page__title">{t("auth:profile.title")}</h2>
             </div>
 
             <form
@@ -84,15 +86,15 @@ export const ProfilePage: FC = () => {
                 <Controller
                     name="currentPassword"
                     control={control}
-                    rules={{ required: "Введите текущий пароль" }}
+                    rules={{ required: t("validation:required.password") }}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="currentPassword"
-                            label="Текущий пароль"
+                            label={t("auth:profile.currentPassword.label")}
                             type={showPasswords ? "text" : "password"}
                             inputSize="m"
-                            placeholder="Введите текущий пароль"
+                            placeholder={t("auth:profile.currentPassword.placeholder")}
                             autoComplete="current-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -117,17 +119,17 @@ export const ProfilePage: FC = () => {
                     name="newPassword"
                     control={control}
                     rules={{
-                        required: "Введите новый пароль",
-                        minLength: { value: 6, message: "Пароль должен содержать не менее 6 символов" }
+                        required: t("validation:required.password"),
+                        minLength: { value: 6, message: t("validation:minLength.password") }
                     }}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="newPassword"
-                            label="Новый пароль"
+                            label={t("auth:profile.newPassword.label")}
                             type={showPasswords ? "text" : "password"}
                             inputSize="m"
-                            placeholder="Введите новый пароль"
+                            placeholder={t("auth:profile.newPassword.placeholder")}
                             autoComplete="new-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -152,17 +154,17 @@ export const ProfilePage: FC = () => {
                     name="confirmPassword"
                     control={control}
                     rules={{
-                        required: "Подтвердите новый пароль",
-                        validate: value => value === newValue || "Пароли не совпадают"
+                        required: t("auth:profile.confirmPassword.placeholder"),
+                        validate: value => value === newValue || t("validation:passwords.notMatch")
                     }}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="confirmPassword"
-                            label="Подтверждение пароля"
+                            label={t("auth:profile.confirmPassword.label")}
                             type={showPasswords ? "text" : "password"}
                             inputSize="m"
-                            placeholder="Повторите новый пароль"
+                            placeholder={t("auth:profile.confirmPassword.placeholder")}
                             autoComplete="new-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -185,7 +187,7 @@ export const ProfilePage: FC = () => {
 
                 <label className="profile-page__show-all">
                     <input type="checkbox" checked={showPasswords} onChange={() => setShowPasswords(v => !v)} />
-                    <span>Показать пароли</span>
+                    <span>{t("auth:profile.showPasswords")}</span>
                 </label>
 
                 <Button
@@ -196,7 +198,7 @@ export const ProfilePage: FC = () => {
                     type="submit"
                     disabled={!canSubmit}
                 >
-                    {submitting ? "Сохранение..." : "Сменить пароль"}
+                    {submitting ? t("auth:profile.submitting") : t("auth:profile.submit")}
                 </Button>
             </form>
         </div>

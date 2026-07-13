@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/lib/auth";
+import { i18n } from "@/shared/lib/i18n";
 
 import type { LoginFormValues } from "../model/login-form";
 
@@ -17,7 +18,7 @@ export async function loginRequest(data: LoginFormValues): Promise<LoginResponse
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? "Неверный логин или пароль");
+        throw new Error(body?.message ?? i18n.t("auth:error.invalidCredentials"));
     }
 
     const body: LoginResponse = await res.json();

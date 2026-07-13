@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { type FC, type PropsWithChildren, createContext, useCallback, useContext, useEffect } from "react";
 
+import { i18n } from "@/shared/lib/i18n";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 
 import { apiClient } from "./api-client";
@@ -87,7 +88,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
             if (!res.ok) {
                 const body = await res.json().catch(() => null);
-                throw new Error(body?.message ?? "Неверный логин или пароль");
+                throw new Error(body?.message ?? i18n.t("auth:error.invalidCredentials"));
             }
 
             const body = await res.json();

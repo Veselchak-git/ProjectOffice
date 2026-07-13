@@ -7,15 +7,17 @@ import { Button, Input } from "@helpdesk-portal/ui-kit";
 import { useCallback, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { useAuth } from "@/shared/lib/auth";
 
 import type { LoginFormValues } from "../model/login-form";
-import { LOGIN_EMAIL_RULES, LOGIN_PASSWORD_RULES } from "../model/login-form";
+import { getLoginEmailRules, getLoginPasswordRules } from "../model/login-form";
 import "./LoginPage.css";
 
 export const LoginPage: FC = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { login } = useAuth();
     const [serverError, setServerError] = useState<string | null>(null);
@@ -46,13 +48,13 @@ export const LoginPage: FC = () => {
                 await login(data.login, data.password);
                 navigate("/", { replace: true });
             } catch (err) {
-                const message = err instanceof Error ? err.message : "Ошибка соединения с сервером";
+                const message = err instanceof Error ? err.message : t("common:error.connection");
                 setServerError(message);
             } finally {
                 setSubmitting(false);
             }
         },
-        [login, navigate]
+        [login, navigate, t]
     );
 
     const emailError = errors.login?.message;
@@ -64,8 +66,8 @@ export const LoginPage: FC = () => {
             <TecomLogoIcon className="login-page__logo" />
 
             <div className="login-page__header">
-                <h2 className="login-page__heading">Вход в систему</h2>
-                <h3 className="login-page__subtitle">Войдите в систему с доменной учетной записью «Теком»</h3>
+                <h2 className="login-page__heading">{t("auth:login.title")}</h2>
+                <h3 className="login-page__subtitle">{t("auth:login.subtitle")}</h3>
             </div>
             <form
                 className="login-page__form"
@@ -80,15 +82,15 @@ export const LoginPage: FC = () => {
                 <Controller
                     name="login"
                     control={control}
-                    rules={LOGIN_EMAIL_RULES}
+                    rules={getLoginEmailRules(t)}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="login"
-                            label="Логин"
+                            label={t("auth:login.email.label")}
                             type="email"
                             inputSize="m"
-                            placeholder="Введите почту"
+                            placeholder={t("auth:login.email.placeholder")}
                             autoComplete="email"
                             startIcon={<LoginIcon />}
                             endIcon={
@@ -112,15 +114,15 @@ export const LoginPage: FC = () => {
                 <Controller
                     name="password"
                     control={control}
-                    rules={LOGIN_PASSWORD_RULES}
+                    rules={getLoginPasswordRules(t)}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="password"
-                            label="Пароль"
+                            label={t("auth:login.password.label")}
                             type={showPassword ? "text" : "password"}
                             inputSize="m"
-                            placeholder="Введите пароль"
+                            placeholder={t("auth:login.password.placeholder")}
                             autoComplete="current-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -161,7 +163,7 @@ export const LoginPage: FC = () => {
                     type="submit"
                     disabled={!canSubmit}
                 >
-                    {submitting ? "Вход..." : "Войти"}
+                    {submitting ? t("auth:login.submitting") : t("auth:login.submit")}
                 </Button>
             </form>
         </>

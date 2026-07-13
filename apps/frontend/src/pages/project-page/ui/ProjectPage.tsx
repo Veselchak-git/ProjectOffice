@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import type { Project, UpdateProjectData } from "@/entities/project";
@@ -34,6 +35,7 @@ const projectReducer = (_state: ProjectPageState, action: ProjectPageAction): Pr
 export const ProjectPage: FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { t } = useTranslation("projects");
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [{ project, loading, fetchError }, dispatch] = useReducer(projectReducer, {
@@ -69,7 +71,7 @@ export const ProjectPage: FC = () => {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm("Вы уверены, что хотите удалить проект? Это действие необратимо.")) return;
+        if (!window.confirm(t("detail.confirmDelete"))) return;
         setDeleting(true);
         try {
             await deleteProject(Number(id));
@@ -83,7 +85,7 @@ export const ProjectPage: FC = () => {
     if (loading) {
         return (
             <div className="project-page">
-                <p className="project-page__loading">Загрузка проекта…</p>
+                <p className="project-page__loading">{t("loading")}</p>
             </div>
         );
     }
@@ -100,9 +102,9 @@ export const ProjectPage: FC = () => {
         return (
             <div className="project-page">
                 <div className="project-page__not-found">
-                    <h1>Проект не найден</h1>
+                    <h1>{t("detail.notFound")}</h1>
                     <button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
-                        Вернуться к списку
+                        {t("detail.backToList")}
                     </button>
                 </div>
             </div>
@@ -112,7 +114,7 @@ export const ProjectPage: FC = () => {
     if (editing) {
         return (
             <div className="project-page">
-                <h1 className="project-form-title">Редактирование проекта</h1>
+                <h1 className="project-form-title">{t("detail.editTitle")}</h1>
                 <ProjectForm
                     initial={{
                         name: project.name,
@@ -130,7 +132,7 @@ export const ProjectPage: FC = () => {
     return (
         <div className="project-page">
             <button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
-                ← Назад к проектам
+                {t("detail.back")}
             </button>
 
             <div className="project-page__card">
@@ -140,13 +142,13 @@ export const ProjectPage: FC = () => {
                         <span
                             className={`project-page__status project-page__status--${project.status === "ACTIVE" ? "active" : "archived"}`}
                         >
-                            {project.status === "ACTIVE" ? "Активный" : "Архивный"}
+                            {project.status === "ACTIVE" ? t("status.active") : t("status.archived")}
                         </span>
                     </div>
                     <div className="project-page__actions">
                         {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
                             <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
-                                Редактировать
+                                {t("detail.edit")}
                             </button>
                         )}
                         {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
@@ -156,7 +158,7 @@ export const ProjectPage: FC = () => {
                                 onClick={handleDelete}
                                 disabled={deleting}
                             >
-                                {deleting ? "Удаление…" : "Удалить"}
+                                {deleting ? t("detail.deleting") : t("detail.delete")}
                             </button>
                         )}
                     </div>
@@ -164,11 +166,11 @@ export const ProjectPage: FC = () => {
 
                 <div className="project-page__fields">
                     <div className="project-page__field">
-                        <span className="project-page__field-label">Описание</span>
+                        <span className="project-page__field-label">{t("detail.info.description")}</span>
                         <span className="project-page__field-value">{project.description || "—"}</span>
                     </div>
                     <div className="project-page__field">
-                        <span className="project-page__field-label">Версии продукта</span>
+                        <span className="project-page__field-label">{t("detail.info.versions")}</span>
                         <div className="project-page__versions-list">
                             {project.versions.length > 0 ? (
                                 project.versions.map(v => (
@@ -182,15 +184,15 @@ export const ProjectPage: FC = () => {
                         </div>
                     </div>
                     <div className="project-page__field">
-                        <span className="project-page__field-label">Задачи</span>
+                        <span className="project-page__field-label">{t("detail.info.tasks")}</span>
                         <span className="project-page__field-value">{project.taskCount}</span>
                     </div>
                     <div className="project-page__field">
-                        <span className="project-page__field-label">Ответственный</span>
+                        <span className="project-page__field-label">{t("detail.info.responsible")}</span>
                         <span className="project-page__field-value">{project.responsible}</span>
                     </div>
                     <div className="project-page__field">
-                        <span className="project-page__field-label">Дата создания</span>
+                        <span className="project-page__field-label">{t("detail.info.created")}</span>
                         <span className="project-page__field-value">{formatDateTime(project.createdAt)}</span>
                     </div>
                 </div>

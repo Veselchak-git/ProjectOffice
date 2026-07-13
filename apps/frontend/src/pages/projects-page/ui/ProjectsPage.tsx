@@ -16,6 +16,7 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { rootReducer } from "@/app/store";
@@ -49,6 +50,7 @@ const columnHelper = createColumnHelper<Project>();
 
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation("projects");
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
@@ -145,37 +147,37 @@ export const ProjectsPage: FC = () => {
             )
         }),
         columnHelper.accessor("name", {
-            header: "НАЗВАНИЕ",
+            header: t("table.name"),
             enableSorting: true,
             cell: info => info.getValue()
         }),
         columnHelper.accessor("description", {
-            header: "ОПИСАНИЕ",
+            header: t("table.description"),
             enableSorting: false,
             cell: info => info.getValue()
         }),
         columnHelper.accessor("status", {
-            header: "СТАТУС",
+            header: t("table.status"),
             enableSorting: true,
             cell: info => <StatusBadge status={info.getValue()} />
         }),
         columnHelper.accessor("versions", {
-            header: "ВЕРСИИ",
+            header: t("table.versions"),
             enableSorting: false,
             cell: info => info.getValue()[0] ?? "-"
         }),
         columnHelper.accessor("taskCount", {
             id: "tasks",
-            header: "ЗАДАЧИ",
+            header: t("table.tasks"),
             enableSorting: true
         }),
         columnHelper.accessor("responsible", {
-            header: "ОТВЕТСТВЕННЫЙ",
+            header: t("table.responsible"),
             enableSorting: false
         }),
         columnHelper.accessor("createdAt", {
             id: "created",
-            header: "СОЗДАН",
+            header: t("table.created"),
             enableSorting: true,
             cell: info => formatDate(info.getValue())
         })
@@ -237,21 +239,19 @@ export const ProjectsPage: FC = () => {
         <div className="projects-page">
             <div className="projects-page__title-area">
                 <div className="projects-page__title-text">
-                    <h1 className="projects-page__title-heading">Проекты</h1>
-                    <p className="projects-page__title-subtitle">
-                        Все проекты, доступные в Вашей роли — {active} активных из {total}
-                    </p>
+                    <h1 className="projects-page__title-heading">{t("page.title")}</h1>
+                    <p className="projects-page__title-subtitle">{t("page.subtitle", { active, total })}</p>
                 </div>
                 <div className="projects-page__actions">
                     {user?.role !== "GUEST" && (
                         <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
                             <PlusIcon />
-                            Создать проект
+                            {t("actions.create")}
                         </button>
                     )}
                     <button className="projects-page__export-btn" type="button">
                         <ExportIcon />
-                        Экспорт
+                        {t("actions.export")}
                     </button>
                     <div className="projects-page__columns-wrapper" ref={columnsRef}>
                         <button
@@ -260,7 +260,7 @@ export const ProjectsPage: FC = () => {
                             onClick={() => setColumnsOpen(v => !v)}
                         >
                             <GearIcon />
-                            Колонки
+                            {t("actions.columns")}
                         </button>
                         {columnsOpen && (
                             <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
@@ -275,7 +275,7 @@ export const ProjectsPage: FC = () => {
                                                     <SortableColumnItem
                                                         key={col.id}
                                                         id={col.id}
-                                                        label={col.label}
+                                                        label={t(col.label)}
                                                         isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
                                                         onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
                                                     />
@@ -291,9 +291,11 @@ export const ProjectsPage: FC = () => {
 
             <div className="projects-page__table-area" ref={containerRef}>
                 {isPending && !data ? (
-                    <p className="projects-page__empty">Загрузка проектов…</p>
+                    <p className="projects-page__empty">{t("loading")}</p>
                 ) : isError && !data ? (
-                    <p className="projects-page__empty">{error instanceof Error ? error.message : "Ошибка загрузки"}</p>
+                    <p className="projects-page__empty">
+                        {error instanceof Error ? error.message : t("error.loading")}
+                    </p>
                 ) : (
                     <DataTable table={table} onRowDoubleClick={row => navigate(`/projects/${row.id}`)}>
                         <DataTablePagination table={table} total={total} />
@@ -304,7 +306,7 @@ export const ProjectsPage: FC = () => {
             {creating && (
                 <div className="projects-page__overlay">
                     <div className="projects-page__modal">
-                        <h2 className="projects-page__modal-title">Создание проекта</h2>
+                        <h2 className="projects-page__modal-title">{t("create.title")}</h2>
                         <ProjectForm
                             onSubmit={data => createProjectMutate(data as CreateProjectData).then(() => {})}
                             onCancel={() => setCreating(false)}
@@ -359,6 +361,7 @@ const SortableColumnItem: FC<{
 };
 
 const StatusBadge: FC<{ status: Project["status"] }> = ({ status }) => {
+    const { t } = useTranslation("projects");
     const isActive = status === "ACTIVE";
 
     return (
@@ -368,7 +371,7 @@ const StatusBadge: FC<{ status: Project["status"] }> = ({ status }) => {
             <span
                 className={`projects-table__status-dot projects-table__status-dot--${isActive ? "active" : "archived"}`}
             />
-            {isActive ? "Активный" : "Архивный"}
+            {isActive ? t("status.active") : t("status.archived")}
         </span>
     );
 };

@@ -3,6 +3,7 @@ import ArrowRightIcon from "@helpdesk-portal/icons/ArrowRight.svg?react";
 import DoubleArrowLeftIcon from "@helpdesk-portal/icons/DoubleArrowLeft.svg?react";
 import DoubleArrowRightIcon from "@helpdesk-portal/icons/DoubleArrowRight.svg?react";
 import { type Table } from "@tanstack/react-table";
+import { useTranslation } from "react-i18next";
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>;
@@ -10,6 +11,7 @@ interface DataTablePaginationProps<TData> {
 }
 
 export function DataTablePagination<TData>({ table, total }: DataTablePaginationProps<TData>) {
+    const { t } = useTranslation();
     const { pageIndex, pageSize } = table.getState().pagination;
     const pageCount = table.getPageCount();
     const from = total === 0 ? 0 : pageIndex * pageSize + 1;
@@ -32,9 +34,7 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
                 <ArrowLeftIcon width={16} height={16} />
             </button>
 
-            <span className="data-table-pagination__info">
-                {from}–{to} из {total}
-            </span>
+            <span className="data-table-pagination__info">{t("showing", { from, to, total })}</span>
 
             <button
                 className="data-table-pagination__btn"

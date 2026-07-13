@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/lib/auth";
+import { i18n } from "@/shared/lib/i18n";
 
 import type { ChangePasswordFormValues } from "../model/change-password-form";
 
@@ -14,6 +15,6 @@ export async function changePasswordRequest(data: ChangePasswordFormValues): Pro
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? "Ошибка при смене пароля");
+        throw new Error(body?.message ?? i18n.t("auth:profile.error.changePassword"));
     }
 }

@@ -5,18 +5,22 @@ export interface LoginFormValues {
     password: string;
 }
 
-export const LOGIN_EMAIL_RULES: RegisterOptions<LoginFormValues, "login"> = {
-    required: "Введите email",
-    pattern: {
-        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "Некорректный формат email"
-    }
-};
+export function getLoginEmailRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "login"> {
+    return {
+        required: t("validation:required.email"),
+        pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: t("validation:invalid.email")
+        }
+    };
+}
 
-export const LOGIN_PASSWORD_RULES: RegisterOptions<LoginFormValues, "password"> = {
-    required: "Введите пароль",
-    minLength: {
-        value: 6,
-        message: "Пароль должен содержать не менее 6 символов"
-    }
-};
+export function getLoginPasswordRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "password"> {
+    return {
+        required: t("validation:required.password"),
+        minLength: {
+            value: 6,
+            message: t("validation:minLength.password")
+        }
+    };
+}

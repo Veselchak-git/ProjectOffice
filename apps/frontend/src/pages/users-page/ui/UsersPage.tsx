@@ -12,8 +12,10 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import { formatDate } from "@/shared/lib/format-date";
+import { i18n } from "@/shared/lib/i18n";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
 import { DataTable, DataTablePagination } from "@/shared/components/data-table";
@@ -23,14 +25,15 @@ import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../
 import "./UsersPage.css";
 
 const ROLE_OPTIONS = [
-    { value: "GUEST", label: "Гость" },
-    { value: "USER", label: "Пользователь" },
-    { value: "ADMIN", label: "Администратор" }
+    { value: "GUEST", label: i18n.t("users:roles.guest") },
+    { value: "USER", label: i18n.t("users:roles.user") },
+    { value: "ADMIN", label: i18n.t("users:roles.admin") }
 ];
 
 const columnHelper = createColumnHelper<User>();
 
 export const UsersPage: FC = () => {
+    const { t } = useTranslation("users");
     const queryClient = useQueryClient();
     const [paginationState, setPaginationState] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -118,11 +121,11 @@ export const UsersPage: FC = () => {
 
     const columns = [
         columnHelper.accessor("login", {
-            header: "ЛОГИН",
+            header: t("table.login"),
             enableSorting: true
         }),
         columnHelper.accessor("role", {
-            header: "РОЛЬ",
+            header: t("table.role"),
             enableSorting: true,
             cell: info => (
                 <Select
@@ -138,7 +141,7 @@ export const UsersPage: FC = () => {
             )
         }),
         columnHelper.accessor("createdAt", {
-            header: "СОЗДАН",
+            header: t("table.created"),
             enableSorting: true,
             cell: info => formatDate(info.getValue())
         }),
@@ -150,18 +153,18 @@ export const UsersPage: FC = () => {
             cell: info => (
                 <div className="users-page__actions-cell">
                     <Button variant="stroke" size="s" onClick={() => setEditingUser(info.row.original)}>
-                        Редактировать
+                        {t("table.edit")}
                     </Button>
                     <Button
                         variant="stroke"
                         color="error"
                         size="s"
                         onClick={() => {
-                            if (confirm(`Удалить пользователя «${info.row.original.login}»?`))
+                            if (confirm(t("delete.confirm", { login: info.row.original.login })))
                                 deleteUserMutate(info.row.original.id);
                         }}
                     >
-                        Удалить
+                        {t("delete.delete")}
                     </Button>
                 </div>
             )
@@ -190,13 +193,13 @@ export const UsersPage: FC = () => {
         <div className="users-page">
             <div className="users-page__title-area">
                 <div className="users-page__title-text">
-                    <h1 className="users-page__title-heading">Пользователи</h1>
-                    <p className="users-page__title-subtitle">Всего пользователей: {total}</p>
+                    <h1 className="users-page__title-heading">{t("page.title")}</h1>
+                    <p className="users-page__title-subtitle">{t("page.subtitle", { count: total })}</p>
                 </div>
                 <div className="users-page__actions">
                     <button className="users-page__create-btn" type="button" onClick={() => setCreating(true)}>
                         <PlusIcon />
-                        Создать пользователя
+                        {t("actions.create")}
                     </button>
                 </div>
             </div>
@@ -204,7 +207,7 @@ export const UsersPage: FC = () => {
             <div className="users-page__controls">
                 <Input
                     className="users-page__controls-search"
-                    placeholder="Найти пользователя..."
+                    placeholder={t("search.placeholder")}
                     startIcon={<SearchIcon />}
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
@@ -213,9 +216,9 @@ export const UsersPage: FC = () => {
 
             <div className="users-page__table-area" ref={containerRef}>
                 {isPending && !data ? (
-                    <p className="users-page__empty">Загрузка пользователей…</p>
+                    <p className="users-page__empty">{t("loading")}</p>
                 ) : isError && !data ? (
-                    <p className="users-page__empty">{error instanceof Error ? error.message : "Ошибка загрузки"}</p>
+                    <p className="users-page__empty">{error instanceof Error ? error.message : t("error.loading")}</p>
                 ) : (
                     <DataTable table={table}>
                         <DataTablePagination table={table} total={total} />
@@ -226,7 +229,7 @@ export const UsersPage: FC = () => {
             {creating && (
                 <div className="users-page__overlay">
                     <div className="users-page__modal">
-                        <h2 className="users-page__modal-title">Создание пользователя</h2>
+                        <h2 className="users-page__modal-title">{t("create.title")}</h2>
                         <CreateUserForm
                             onSubmit={data => createUserMutate(data).then(() => {})}
                             onCancel={() => setCreating(false)}
@@ -238,7 +241,7 @@ export const UsersPage: FC = () => {
             {editingUser && (
                 <div className="users-page__overlay">
                     <div className="users-page__modal">
-                        <h2 className="users-page__modal-title">Редактирование пользователя</h2>
+                        <h2 className="users-page__modal-title">{t("edit.title")}</h2>
                         <EditUserForm
                             user={editingUser}
                             onSubmit={data => editUserMutate({ id: editingUser.id, data }).then(() => {})}
@@ -259,16 +262,17 @@ interface CreateUserFormProps {
 const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validateLogin(value: string): string | undefined {
-    if (!value.trim()) return "Введите email";
-    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return "Некорректный формат email";
+    if (!value.trim()) return i18n.t("users:validation.required.email");
+    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return i18n.t("users:validation.invalid.email");
 }
 
 function validatePasswordCreate(value: string): string | undefined {
-    if (!value) return "Введите пароль";
-    if (value.length < 6) return "Пароль должен содержать не менее 6 символов";
+    if (!value) return i18n.t("users:validation.required.password");
+    if (value.length < 6) return i18n.t("users:validation.minLength.password");
 }
 
 const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
+    const { t: tu } = useTranslation("users");
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("GUEST");
@@ -289,7 +293,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
         try {
             await onSubmit({ login: login.trim(), password, role: role as CreateUserData["role"] });
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : "Ошибка создания пользователя");
+            setServerError(err instanceof Error ? err.message : i18n.t("users:create.error"));
         } finally {
             setSubmitting(false);
         }
@@ -305,9 +309,9 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
         >
             {serverError ? <div className="users-page__form-error">{serverError}</div> : null}
             <Input
-                label="Логин"
+                label={tu("form.login.label")}
                 type="email"
-                placeholder="Введите почту"
+                placeholder={tu("form.login.placeholder")}
                 value={login}
                 onChange={e => setLogin(e.target.value)}
                 color={loginError ? "error" : "default"}
@@ -316,9 +320,9 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
             />
             <div className="users-page__password-field">
                 <Input
-                    label="Пароль"
+                    label={tu("form.password.label")}
                     type={showPassword ? "text" : "password"}
-                    placeholder="Минимум 6 символов"
+                    placeholder={tu("form.password.placeholder")}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     color={passwordError ? "error" : "default"}
@@ -327,16 +331,22 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                 />
                 <label className="users-page__checkbox-row">
                     <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
-                    <span>Показать пароль</span>
+                    <span>{tu("form.showPassword")}</span>
                 </label>
             </div>
-            <Select label="Роль" options={ROLE_OPTIONS} value={role} usePortal={false} onValueChange={setRole} />
+            <Select
+                label={tu("form.role")}
+                options={ROLE_OPTIONS}
+                value={role}
+                usePortal={false}
+                onValueChange={setRole}
+            />
             <div className="users-page__form-actions">
                 <Button type="submit" disabled={!canSubmit}>
-                    {submitting ? "Создание…" : "Создать"}
+                    {submitting ? tu("create.submitting") : tu("create.submit")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    Отмена
+                    {tu("common:cancel")}
                 </Button>
             </div>
         </form>
@@ -350,6 +360,7 @@ interface EditUserFormProps {
 }
 
 const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
+    const { t: tu } = useTranslation("users");
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState<string>(user.role);
@@ -358,9 +369,9 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
     const [submitting, setSubmitting] = useState(false);
 
     const loginError =
-        login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim()) ? "Некорректный формат email" : undefined;
+        login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim()) ? i18n.t("users:validation.invalid.email") : undefined;
     const passwordError =
-        password.length > 0 && password.length < 6 ? "Пароль должен содержать не менее 6 символов" : undefined;
+        password.length > 0 && password.length < 6 ? i18n.t("users:validation.minLength.password") : undefined;
     const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
     const canSubmit = !submitting && !hasFieldErrors;
 
@@ -375,13 +386,13 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             if (password) data.password = password;
             if (role !== user.role) data.role = role as User["role"];
             if (Object.keys(data).length === 0) {
-                setServerError("Нет изменений для сохранения");
+                setServerError(i18n.t("users:edit.noChanges"));
                 setSubmitting(false);
                 return;
             }
             await onSubmit(data);
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : "Ошибка обновления пользователя");
+            setServerError(err instanceof Error ? err.message : i18n.t("users:edit.error"));
         } finally {
             setSubmitting(false);
         }
@@ -398,13 +409,13 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             {serverError ? <div className="users-page__form-error">{serverError}</div> : null}
 
             <div className="users-page__old-data">
-                <span className="users-page__old-data-label">Текущие данные</span>
+                <span className="users-page__old-data-label">{tu("edit.currentData")}</span>
                 <div className="users-page__old-data-row">
-                    <span className="users-page__old-data-key">Логин:</span>
+                    <span className="users-page__old-data-key">{tu("edit.loginLabel")}</span>
                     <span className="users-page__old-data-value">{user.login}</span>
                 </div>
                 <div className="users-page__old-data-row">
-                    <span className="users-page__old-data-key">Роль:</span>
+                    <span className="users-page__old-data-key">{tu("edit.roleLabel")}</span>
                     <span className="users-page__old-data-value">
                         {ROLE_OPTIONS.find(o => o.value === user.role)?.label ?? user.role}
                     </span>
@@ -412,9 +423,9 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             </div>
 
             <Input
-                label="Новый логин"
+                label={tu("edit.newLogin")}
                 type="email"
-                placeholder="Оставьте пустым, чтобы не менять"
+                placeholder={tu("edit.newLoginPlaceholder")}
                 value={login}
                 onChange={e => setLogin(e.target.value)}
                 color={loginError ? "error" : "default"}
@@ -422,9 +433,9 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             />
             <div className="users-page__password-field">
                 <Input
-                    label="Новый пароль"
+                    label={tu("edit.newPassword")}
                     type={showPassword ? "text" : "password"}
-                    placeholder="Оставьте пустым, чтобы не менять"
+                    placeholder={tu("edit.newPasswordPlaceholder")}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     color={passwordError ? "error" : "default"}
@@ -432,16 +443,22 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                 />
                 <label className="users-page__checkbox-row">
                     <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
-                    <span>Показать пароль</span>
+                    <span>{tu("edit.showPassword")}</span>
                 </label>
             </div>
-            <Select label="Роль" options={ROLE_OPTIONS} value={role} usePortal={false} onValueChange={setRole} />
+            <Select
+                label={tu("form.role")}
+                options={ROLE_OPTIONS}
+                value={role}
+                usePortal={false}
+                onValueChange={setRole}
+            />
             <div className="users-page__form-actions">
                 <Button type="submit" disabled={!canSubmit}>
-                    {submitting ? "Сохранение…" : "Сохранить"}
+                    {submitting ? tu("edit.saving") : tu("edit.save")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    Отмена
+                    {tu("common:cancel")}
                 </Button>
             </div>
         </form>

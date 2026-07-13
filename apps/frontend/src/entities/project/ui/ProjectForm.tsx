@@ -1,6 +1,7 @@
 import { Button, Input } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { CreateProjectData, UpdateProjectData } from "../model/project";
 import "./ProjectForm.css";
@@ -17,6 +18,7 @@ interface ProjectFormProps {
 }
 
 export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel }) => {
+    const { t } = useTranslation();
     const [name, setName] = useState(initial?.name ?? "");
     const [description, setDescription] = useState(initial?.description ?? "");
     const [status, setStatus] = useState<"ACTIVE" | "ARCHIVED">(initial?.status ?? "ACTIVE");
@@ -56,37 +58,37 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
     return (
         <form className="project-form" onSubmit={handleSubmit}>
             <Input
-                label="Название проекта"
-                placeholder="Введите название"
+                label={t("projects:form.name.label")}
+                placeholder={t("projects:form.name.placeholder")}
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
             />
 
             <Input
-                label="Описание"
-                placeholder="Введите описание"
+                label={t("projects:form.description.label")}
+                placeholder={t("projects:form.description.placeholder")}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
             />
 
             <div className="project-form__field">
-                <label className="project-form__label">Статус</label>
+                <label className="project-form__label">{t("projects:form.status.label")}</label>
                 <select
                     className="project-form__select"
                     value={status}
                     onChange={e => setStatus(e.target.value as "ACTIVE" | "ARCHIVED")}
                 >
-                    <option value="ACTIVE">Активный</option>
-                    <option value="ARCHIVED">Архивный</option>
+                    <option value="ACTIVE">{t("projects:status.active")}</option>
+                    <option value="ARCHIVED">{t("projects:status.archived")}</option>
                 </select>
             </div>
 
             <div className="project-form__field">
-                <label className="project-form__label">Версии продукта</label>
+                <label className="project-form__label">{t("projects:form.versions.label")}</label>
                 <div className="project-form__versions-input">
                     <Input
-                        placeholder="Введите версию и нажмите Enter"
+                        placeholder={t("projects:form.versions.placeholder")}
                         value={versionInput}
                         onChange={e => setVersionInput(e.target.value)}
                         onKeyDown={e => {
@@ -120,10 +122,10 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
 
             <div className="project-form__actions">
                 <Button type="submit" disabled={!name.trim() || submitting}>
-                    {initial ? "Сохранить" : "Создать"}
+                    {initial ? t("common:save") : t("common:create")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    Отмена
+                    {t("common:cancel")}
                 </Button>
             </div>
         </form>

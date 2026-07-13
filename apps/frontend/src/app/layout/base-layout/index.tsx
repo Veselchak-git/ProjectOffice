@@ -10,6 +10,7 @@ import UserIcon from "@helpdesk-portal/icons/User.svg?react";
 import { Select, useColorMode } from "@helpdesk-portal/ui-kit";
 import { useQuery } from "@tanstack/react-query";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { RequireAuth, apiClient, useAuth } from "@/shared/lib/auth";
@@ -25,20 +26,15 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { label: "Главная", path: "/", icon: HouseIcon },
-    { label: "Проекты", path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
-    { label: "Задачи", path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
-    { label: "Аудит-лог", path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
-    { label: "Пользователи", path: "/users", icon: UserIcon, roles: ["ADMIN"] }
+    { label: "navigation:menu.home", path: "/", icon: HouseIcon },
+    { label: "navigation:menu.projects", path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
+    { label: "navigation:menu.tasks", path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
+    { label: "navigation:menu.audit-log", path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
+    { label: "navigation:menu.users", path: "/users", icon: UserIcon, roles: ["ADMIN"] }
 ];
 
-const roleLabels: Record<string, string> = {
-    ADMIN: "Администратор",
-    USER: "Пользователь",
-    GUEST: "Гость"
-};
-
 export const BaseLayout: FC = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const { mode, toggleMode } = useColorMode();
@@ -46,6 +42,12 @@ export const BaseLayout: FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
+
+    const roleLabels: Record<string, string> = {
+        ADMIN: t("navigation:role.admin"),
+        USER: t("navigation:role.user"),
+        GUEST: t("navigation:role.guest")
+    };
 
     const handleLogout = useCallback(async () => {
         await logout();
@@ -79,7 +81,7 @@ export const BaseLayout: FC = () => {
         return true;
     });
 
-    const displayName = user?.login?.split("@")[0] ?? "Пользователь";
+    const displayName = user?.login?.split("@")[0] ?? t("navigation:role.user");
     const displayRole = user ? (roleLabels[user.role] ?? user.role) : "";
 
     return (
@@ -136,7 +138,7 @@ export const BaseLayout: FC = () => {
                                     <span className="sidebar__item-icon">
                                         <IconComponent />
                                     </span>
-                                    {sidebarOpen && <span className="sidebar__item-text">{item.label}</span>}
+                                    {sidebarOpen && <span className="sidebar__item-text">{t(item.label)}</span>}
                                 </button>
                             );
                         })}
@@ -194,14 +196,14 @@ export const BaseLayout: FC = () => {
                                                 setProfileMenuOpen(false);
                                             }}
                                         >
-                                            Редактировать
+                                            {t("common:edit")}
                                         </button>
                                         <button
                                             className="header__profile-menu-item header__profile-menu-item--danger"
                                             type="button"
                                             onClick={handleLogout}
                                         >
-                                            Выйти
+                                            {t("common:logout")}
                                         </button>
                                     </div>
                                 )}
