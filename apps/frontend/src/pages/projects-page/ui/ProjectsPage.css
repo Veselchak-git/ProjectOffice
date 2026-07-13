@@ -300,7 +300,9 @@
     .projects-page__columns-btn svg {
         width: 20px;
         height: 20px;
+        color: var(--semantic-text-primary);
     }
+
 
     .projects-page__columns-btn:hover {
         background-color: var(--semantic-fill-primary-hover);
