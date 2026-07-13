@@ -19,8 +19,6 @@ import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { rootReducer } from "@/app/store";
-
 import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities/project";
 import { createProject, fetchProjects } from "@/entities/project";
 import { ProjectForm } from "@/entities/project";
@@ -30,11 +28,10 @@ import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
-import { DataTable, DataTablePagination } from "@/shared/components/data-table";
+import { DataTable, DataTablePagination } from "@/shared/ui/data-table";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
-    projectsPageSlice,
     selectColumnOrder,
     selectColumnVisibility,
     selectRowSelection,
@@ -43,8 +40,6 @@ import {
     setRowSelection
 } from "../model/projects-page-slice";
 import "./ProjectsPage.css";
-
-rootReducer.inject(projectsPageSlice);
 
 const columnHelper = createColumnHelper<Project>();
 

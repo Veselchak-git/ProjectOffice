@@ -7,10 +7,15 @@
  */
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
 
+import { projectsPageSlice } from "@/pages/projects-page/model/projects-page-slice";
+
 import { authSlice } from "@/shared/lib/auth";
-import type { LazyLoadedReduxSlices } from "@/shared/lib/redux";
+
+import type { LazyLoadedReduxSlices } from "./lazy-loaded-slices";
 
 export const rootReducer = combineSlices(authSlice).withLazyLoadedSlices<LazyLoadedReduxSlices>();
+
+rootReducer.inject(projectsPageSlice);
 
 export const store = configureStore({
     reducer: rootReducer,

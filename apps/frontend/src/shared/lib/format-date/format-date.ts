@@ -1,7 +1,9 @@
+import { i18n } from "@/shared/lib/i18n";
+
 export function formatDate(isoString: string): string {
     try {
         const date = new Date(isoString);
-        return date.toLocaleDateString("ru-RU", {
+        return date.toLocaleDateString(i18n.language ?? "ru-RU", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric"
@@ -14,7 +16,7 @@ export function formatDate(isoString: string): string {
 export function formatDateTime(isoString: string): string {
     try {
         const date = new Date(isoString);
-        return date.toLocaleString("ru-RU", {
+        return date.toLocaleString(i18n.language ?? "ru-RU", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",

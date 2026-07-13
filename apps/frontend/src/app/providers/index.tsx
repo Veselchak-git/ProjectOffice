@@ -11,9 +11,9 @@ import type { FC, PropsWithChildren } from "react";
 import { AuthProvider } from "@/shared/lib/auth";
 
 import { FakeProviderWithValue } from "./FakeProviderWithValue";
+import { I18nProvider } from "./I18nProvider";
 import { QueryProvider } from "./Query";
 import { ReduxProvider } from "./Redux";
-import { I18nProvider } from "./i18n-provider";
 
 export const Providers: FC<PropsWithChildren> = ({ children }) => {
     return (

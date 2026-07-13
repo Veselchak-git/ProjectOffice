@@ -18,7 +18,7 @@ import { formatDate } from "@/shared/lib/format-date";
 import { i18n } from "@/shared/lib/i18n";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
-import { DataTable, DataTablePagination } from "@/shared/components/data-table";
+import { DataTable, DataTablePagination } from "@/shared/ui/data-table";
 
 import { createUser, deleteUser, fetchUsers, updateUser } from "../api/users";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../model/users";
