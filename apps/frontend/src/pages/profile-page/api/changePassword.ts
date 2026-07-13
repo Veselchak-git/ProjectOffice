@@ -8,8 +8,8 @@ export async function changePasswordRequest(data: ChangePasswordFormValues): Pro
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             currentPassword: data.currentPassword,
-            newPassword: data.newPassword,
-        }),
+            newPassword: data.newPassword
+        })
     });
 
     if (!res.ok) {

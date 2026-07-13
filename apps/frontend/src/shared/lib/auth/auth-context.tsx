@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-
-import { createContext, useCallback, useContext, useEffect, type FC, type PropsWithChildren } from "react";
+import { type FC, type PropsWithChildren, createContext, useCallback, useContext, useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 
@@ -23,7 +22,7 @@ const AuthContext = createContext<AuthState>({
     user: null,
     loading: true,
     login: async () => {},
-    logout: async () => {},
+    logout: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -39,7 +38,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
             if (existingToken) {
                 const meRes = await apiClient("/api/auth/me", {
-                    headers: { Authorization: `Bearer ${existingToken}` },
+                    headers: { Authorization: `Bearer ${existingToken}` }
                 });
 
                 if (meRes.ok) {
@@ -60,7 +59,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
             setToken(accessToken);
 
             const meRes = await apiClient("/api/auth/me", {
-                headers: { Authorization: `Bearer ${accessToken}` },
+                headers: { Authorization: `Bearer ${accessToken}` }
             });
 
             if (meRes.ok) {
@@ -78,22 +77,25 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         initAuth();
     }, [initAuth]);
 
-    const login = useCallback(async (loginArg: string, password: string) => {
-        const res = await apiClient("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ login: loginArg, password }),
-        });
+    const login = useCallback(
+        async (loginArg: string, password: string) => {
+            const res = await apiClient("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ login: loginArg, password })
+            });
 
-        if (!res.ok) {
-            const body = await res.json().catch(() => null);
-            throw new Error(body?.message ?? "Неверный логин или пароль");
-        }
+            if (!res.ok) {
+                const body = await res.json().catch(() => null);
+                throw new Error(body?.message ?? "Неверный логин или пароль");
+            }
 
-        const body = await res.json();
-        setToken(body.accessToken);
-        dispatch(loginSuccess({ user: body.user, accessToken: body.accessToken }));
-    }, [dispatch]);
+            const body = await res.json();
+            setToken(body.accessToken);
+            dispatch(loginSuccess({ user: body.user, accessToken: body.accessToken }));
+        },
+        [dispatch]
+    );
 
     const logout = useCallback(async () => {
         try {
@@ -105,9 +107,5 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         dispatch(logoutAction());
     }, [dispatch]);
 
-    return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
 };

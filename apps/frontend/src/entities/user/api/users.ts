@@ -10,6 +10,6 @@ export async function fetchUsers(): Promise<User[]> {
         throw new Error(body?.message ?? "Ошибка загрузки пользователей");
     }
 
-    const data = await res.json() as { users: User[] };
+    const data = (await res.json()) as { users: User[] };
     return data.users;
 }

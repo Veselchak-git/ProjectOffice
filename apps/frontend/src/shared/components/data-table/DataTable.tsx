@@ -1,4 +1,4 @@
-import { flexRender, type Table } from "@tanstack/react-table";
+import { type Table, flexRender } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 
 import "./DataTable.css";
@@ -26,17 +26,11 @@ export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, classNam
                                             key={header.id}
                                             colSpan={header.colSpan}
                                             className={
-                                                canSort
-                                                    ? "data-table__th data-table__th--sortable"
-                                                    : "data-table__th"
+                                                canSort ? "data-table__th data-table__th--sortable" : "data-table__th"
                                             }
-                                            onClick={
-                                                canSort
-                                                    ? header.column.getToggleSortingHandler()
-                                                    : undefined
-                                            }
+                                            onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                                             style={{
-                                                width: header.getSize() !== 150 ? header.getSize() : undefined,
+                                                width: header.getSize() !== 150 ? header.getSize() : undefined
                                             }}
                                         >
                                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -44,7 +38,7 @@ export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, classNam
                                                 <span className="data-table__sort-icon">
                                                     {{
                                                         asc: " ▲",
-                                                        desc: " ▼",
+                                                        desc: " ▼"
                                                     }[header.column.getIsSorted() as string] ?? " ▸"}
                                                 </span>
                                             )}
@@ -67,8 +61,10 @@ export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, classNam
                                     key={row.id}
                                     className={[
                                         onRowClick || onRowDoubleClick ? "data-table__row--clickable" : "",
-                                        row.getIsSelected() ? "data-table__row--selected" : "",
-                                    ].filter(Boolean).join(" ")}
+                                        row.getIsSelected() ? "data-table__row--selected" : ""
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ")}
                                     onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                                     onDoubleClick={onRowDoubleClick ? () => onRowDoubleClick(row.original) : undefined}
                                 >

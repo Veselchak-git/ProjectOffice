@@ -85,7 +85,9 @@
     font-size: 14px;
     font-weight: 400;
     cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
 }
 
 .project-page__edit-btn:hover {
@@ -107,7 +109,9 @@
     font-size: 14px;
     font-weight: 400;
     cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
 }
 
 .project-page__delete-btn:hover:not(:disabled) {

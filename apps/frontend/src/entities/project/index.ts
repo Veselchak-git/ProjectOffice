@@ -8,7 +8,7 @@ export {
     fetchProjectMembers,
     addProjectMember,
     updateProjectMember,
-    removeProjectMember,
+    removeProjectMember
 } from "./api/projects";
 export type { FetchProjectsResponse } from "./api/projects";
 export { ProjectForm } from "./ui/ProjectForm";

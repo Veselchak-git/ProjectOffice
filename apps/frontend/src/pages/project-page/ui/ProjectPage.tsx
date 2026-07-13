@@ -3,12 +3,12 @@ import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import { formatDateTime } from "@/shared/lib/format-date";
-
 import type { Project, UpdateProjectData } from "@/entities/project";
-import { fetchProject, updateProject, deleteProject } from "@/entities/project";
-import { ProjectForm, MembersBlock } from "@/entities/project";
+import { deleteProject, fetchProject, updateProject } from "@/entities/project";
+import { MembersBlock, ProjectForm } from "@/entities/project";
+
 import { useAuth } from "@/shared/lib/auth";
+import { formatDateTime } from "@/shared/lib/format-date";
 
 import "./ProjectPage.css";
 
@@ -18,10 +18,7 @@ interface ProjectPageState {
     fetchError: string | null;
 }
 
-type ProjectPageAction =
-    | { type: "start" }
-    | { type: "success"; project: Project }
-    | { type: "error"; message: string };
+type ProjectPageAction = { type: "start" } | { type: "success"; project: Project } | { type: "error"; message: string };
 
 const projectReducer = (_state: ProjectPageState, action: ProjectPageAction): ProjectPageState => {
     switch (action.type) {
@@ -42,7 +39,7 @@ export const ProjectPage: FC = () => {
     const [{ project, loading, fetchError }, dispatch] = useReducer(projectReducer, {
         project: null,
         loading: true,
-        fetchError: null,
+        fetchError: null
     });
     const [editing, setEditing] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -57,7 +54,9 @@ export const ProjectPage: FC = () => {
             .catch(err => {
                 if (!cancelled) dispatch({ type: "error", message: err.message });
             });
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [id]);
 
     const handleEdit = async (data: UpdateProjectData) => {
@@ -119,7 +118,7 @@ export const ProjectPage: FC = () => {
                         name: project.name,
                         description: project.description,
                         status: project.status,
-                        versions: project.versions,
+                        versions: project.versions
                     }}
                     onSubmit={handleEdit}
                     onCancel={() => setEditing(false)}
@@ -138,7 +137,9 @@ export const ProjectPage: FC = () => {
                 <div className="project-page__header">
                     <div className="project-page__title-area">
                         <h1 className="project-page__title">{project.name}</h1>
-                        <span className={`project-page__status project-page__status--${project.status === "ACTIVE" ? "active" : "archived"}`}>
+                        <span
+                            className={`project-page__status project-page__status--${project.status === "ACTIVE" ? "active" : "archived"}`}
+                        >
                             {project.status === "ACTIVE" ? "Активный" : "Архивный"}
                         </span>
                     </div>
@@ -169,12 +170,15 @@ export const ProjectPage: FC = () => {
                     <div className="project-page__field">
                         <span className="project-page__field-label">Версии продукта</span>
                         <div className="project-page__versions-list">
-                            {project.versions.length > 0
-                                ? project.versions.map(v => (
-                                      <span key={v} className="project-page__version-tag">{v}</span>
-                                  ))
-                                : <span className="project-page__field-value">—</span>
-                            }
+                            {project.versions.length > 0 ? (
+                                project.versions.map(v => (
+                                    <span key={v} className="project-page__version-tag">
+                                        {v}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="project-page__field-value">—</span>
+                            )}
                         </div>
                     </div>
                     <div className="project-page__field">
@@ -192,7 +196,13 @@ export const ProjectPage: FC = () => {
                 </div>
             </div>
 
-            <MembersBlock projectId={project.id} globalRole={user?.role} currentLogin={user?.login} currentUserId={user?.id ? Number(user.id) : undefined} projectRole={project.myRole} />
+            <MembersBlock
+                projectId={project.id}
+                globalRole={user?.role}
+                currentLogin={user?.login}
+                currentUserId={user?.id ? Number(user.id) : undefined}
+                projectRole={project.myRole}
+            />
         </div>
     );
 };

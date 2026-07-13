@@ -25,7 +25,7 @@ export async function createUser(data: CreateUserData): Promise<User> {
     const res = await apiClient("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
     });
 
     if (!res.ok) {
@@ -38,7 +38,7 @@ export async function createUser(data: CreateUserData): Promise<User> {
 
 export async function deleteUser(id: number): Promise<void> {
     const res = await apiClient(`/api/users/${id}`, {
-        method: "DELETE",
+        method: "DELETE"
     });
 
     if (!res.ok) {
@@ -56,7 +56,7 @@ export async function updateUser(id: number, data: UpdateUserData): Promise<User
     const res = await apiClient(`/api/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body)
     });
 
     if (!res.ok) {

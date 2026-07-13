@@ -1,6 +1,13 @@
 import { apiClient } from "@/shared/lib/auth";
 
-import type { CreateProjectData, FetchProjectsParams, Member, Project, UpdateProjectData, ProjectMemberRole } from "../model/project";
+import type {
+    CreateProjectData,
+    FetchProjectsParams,
+    Member,
+    Project,
+    ProjectMemberRole,
+    UpdateProjectData
+} from "../model/project";
 
 export interface FetchProjectsResponse {
     projects: Project[];
@@ -44,7 +51,7 @@ export async function createProject(data: CreateProjectData): Promise<{ id: numb
     const res = await apiClient("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
     });
 
     if (!res.ok) {
@@ -59,7 +66,7 @@ export async function updateProject(id: number, data: UpdateProjectData): Promis
     const res = await apiClient(`/api/projects/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
     });
 
     if (!res.ok) {
@@ -85,7 +92,7 @@ export async function addProjectMember(projectId: number, userId: number, role: 
     const res = await apiClient(`/api/projects/${projectId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, role }),
+        body: JSON.stringify({ userId, role })
     });
 
     if (!res.ok) {
@@ -100,7 +107,7 @@ export async function updateProjectMember(projectId: number, userId: number, rol
     const res = await apiClient(`/api/projects/${projectId}/members/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role }),
+        body: JSON.stringify({ role })
     });
 
     if (!res.ok) {
@@ -113,7 +120,7 @@ export async function updateProjectMember(projectId: number, userId: number, rol
 
 export async function removeProjectMember(projectId: number, userId: number): Promise<void> {
     const res = await apiClient(`/api/projects/${projectId}/members/${userId}`, {
-        method: "DELETE",
+        method: "DELETE"
     });
 
     if (!res.ok) {
@@ -124,7 +131,7 @@ export async function removeProjectMember(projectId: number, userId: number): Pr
 
 export async function deleteProject(id: number): Promise<void> {
     const res = await apiClient(`/api/projects/${id}`, {
-        method: "DELETE",
+        method: "DELETE"
     });
 
     if (!res.ok) {

@@ -1,14 +1,13 @@
-import { Button, Input } from "@helpdesk-portal/ui-kit";
-import UserIcon from "@helpdesk-portal/icons/User.svg?react";
 import PasswordIcon from "@helpdesk-portal/icons/PasswordIcon.svg?react";
 import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
+import UserIcon from "@helpdesk-portal/icons/User.svg?react";
+import { Button, Input } from "@helpdesk-portal/ui-kit";
 import { useCallback, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { changePasswordRequest } from "../api/changePassword";
 import type { ChangePasswordFormValues } from "../model/change-password-form";
-
 import "./ProfilePage.css";
 
 export const ProfilePage: FC = () => {
@@ -21,10 +20,10 @@ export const ProfilePage: FC = () => {
         control,
         handleSubmit,
         formState: { errors },
-        reset,
+        reset
     } = useForm<ChangePasswordFormValues>({
         mode: "onChange",
-        defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+        defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" }
     });
 
     const currentValue = useWatch({ control, name: "currentPassword" });
@@ -56,7 +55,7 @@ export const ProfilePage: FC = () => {
                 setSubmitting(false);
             }
         },
-        [reset],
+        [reset]
     );
 
     const currentError = errors.currentPassword?.message;
@@ -70,14 +69,17 @@ export const ProfilePage: FC = () => {
                 <h2 className="profile-page__title">Профиль</h2>
             </div>
 
-            <form className="profile-page__form" onSubmit={handleSubmit(onSubmit)} noValidate onChange={() => { if (serverError) setServerError(null); if (successMessage) setSuccessMessage(null); }}>
-                {serverError ? (
-                    <div className="profile-page__error-banner">{serverError}</div>
-                ) : null}
-                {successMessage ? (
-                    <div className="profile-page__success-banner">{successMessage}</div>
-                ) : null}
-
+            <form
+                className="profile-page__form"
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+                onChange={() => {
+                    if (serverError) setServerError(null);
+                    if (successMessage) setSuccessMessage(null);
+                }}
+            >
+                {serverError ? <div className="profile-page__error-banner">{serverError}</div> : null}
+                {successMessage ? <div className="profile-page__success-banner">{successMessage}</div> : null}
 
                 <Controller
                     name="currentPassword"
@@ -93,11 +95,17 @@ export const ProfilePage: FC = () => {
                             placeholder="Введите текущий пароль"
                             autoComplete="current-password"
                             startIcon={<PasswordIcon />}
-                            endIcon={currentValue?.length > 0 ? (
-                                    <button className="profile-page__reset" type="button" onClick={() => field.onChange("")}>
+                            endIcon={
+                                currentValue?.length > 0 ? (
+                                    <button
+                                        className="profile-page__reset"
+                                        type="button"
+                                        onClick={() => field.onChange("")}
+                                    >
                                         <ResetInputIcon />
                                     </button>
-                            ) : undefined}
+                                ) : undefined
+                            }
                             color={serverError || currentError ? "error" : "default"}
                             errorMessage={currentError}
                             filled={currentValue?.length > 0}
@@ -110,7 +118,7 @@ export const ProfilePage: FC = () => {
                     control={control}
                     rules={{
                         required: "Введите новый пароль",
-                        minLength: { value: 6, message: "Пароль должен содержать не менее 6 символов" },
+                        minLength: { value: 6, message: "Пароль должен содержать не менее 6 символов" }
                     }}
                     render={({ field }) => (
                         <Input
@@ -122,11 +130,17 @@ export const ProfilePage: FC = () => {
                             placeholder="Введите новый пароль"
                             autoComplete="new-password"
                             startIcon={<PasswordIcon />}
-                            endIcon={newValue?.length > 0 ? (
-                                    <button className="profile-page__reset" type="button" onClick={() => field.onChange("")}>
+                            endIcon={
+                                newValue?.length > 0 ? (
+                                    <button
+                                        className="profile-page__reset"
+                                        type="button"
+                                        onClick={() => field.onChange("")}
+                                    >
                                         <ResetInputIcon />
                                     </button>
-                            ) : undefined}
+                                ) : undefined
+                            }
                             color={newError ? "error" : "default"}
                             errorMessage={newError}
                             filled={newValue?.length > 0}
@@ -139,7 +153,7 @@ export const ProfilePage: FC = () => {
                     control={control}
                     rules={{
                         required: "Подтвердите новый пароль",
-                        validate: value => value === newValue || "Пароли не совпадают",
+                        validate: value => value === newValue || "Пароли не совпадают"
                     }}
                     render={({ field }) => (
                         <Input
@@ -151,11 +165,17 @@ export const ProfilePage: FC = () => {
                             placeholder="Повторите новый пароль"
                             autoComplete="new-password"
                             startIcon={<PasswordIcon />}
-                            endIcon={confirmValue?.length > 0 ? (
-                                    <button className="profile-page__reset" type="button" onClick={() => field.onChange("")}>
+                            endIcon={
+                                confirmValue?.length > 0 ? (
+                                    <button
+                                        className="profile-page__reset"
+                                        type="button"
+                                        onClick={() => field.onChange("")}
+                                    >
                                         <ResetInputIcon />
                                     </button>
-                            ) : undefined}
+                                ) : undefined
+                            }
                             color={confirmError ? "error" : "default"}
                             errorMessage={confirmError}
                             filled={confirmValue?.length > 0}
@@ -167,7 +187,7 @@ export const ProfilePage: FC = () => {
                     <input type="checkbox" checked={showPasswords} onChange={() => setShowPasswords(v => !v)} />
                     <span>Показать пароли</span>
                 </label>
-                
+
                 <Button
                     className="profile-page__submit"
                     variant="fill"

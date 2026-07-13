@@ -3,7 +3,6 @@ import type { FC } from "react";
 import { useState } from "react";
 
 import type { CreateProjectData, UpdateProjectData } from "../model/project";
-
 import "./ProjectForm.css";
 
 interface ProjectFormProps {
@@ -44,7 +43,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
         try {
             const data: Record<string, unknown> = {
                 name,
-                versions,
+                versions
             };
             if (description) data.description = description;
             if (initial) data.status = status;

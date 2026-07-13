@@ -13,6 +13,7 @@ import { AuthProvider } from "@/shared/lib/auth";
 import { FakeProviderWithValue } from "./FakeProviderWithValue";
 import { QueryProvider } from "./Query";
 import { ReduxProvider } from "./Redux";
+import { I18nProvider } from "./i18n-provider";
 
 export const Providers: FC<PropsWithChildren> = ({ children }) => {
     return (
@@ -20,7 +21,9 @@ export const Providers: FC<PropsWithChildren> = ({ children }) => {
             <ReduxProvider>
                 <AuthProvider>
                     <UiKitThemeProvider>
-                        <FakeProviderWithValue>{children}</FakeProviderWithValue>
+                        <FakeProviderWithValue>
+                            <I18nProvider>{children}</I18nProvider>
+                        </FakeProviderWithValue>
                     </UiKitThemeProvider>
                 </AuthProvider>
             </ReduxProvider>

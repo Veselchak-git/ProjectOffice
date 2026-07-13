@@ -9,14 +9,14 @@ export const LOGIN_EMAIL_RULES: RegisterOptions<LoginFormValues, "login"> = {
     required: "Введите email",
     pattern: {
         value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "Некорректный формат email",
-    },
+        message: "Некорректный формат email"
+    }
 };
 
 export const LOGIN_PASSWORD_RULES: RegisterOptions<LoginFormValues, "password"> = {
     required: "Введите пароль",
     minLength: {
         value: 6,
-        message: "Пароль должен содержать не менее 6 символов",
-    },
+        message: "Пароль должен содержать не менее 6 символов"
+    }
 };

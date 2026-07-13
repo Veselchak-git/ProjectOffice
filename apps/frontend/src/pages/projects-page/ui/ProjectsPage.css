@@ -82,7 +82,9 @@
         font-size: 14px;
         font-weight: 400;
         cursor: pointer;
-        transition: background-color 0.15s, border-color 0.15s;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
     }
 
     .projects-page__export-btn:hover {
@@ -131,7 +133,9 @@
         vertical-align: middle;
         margin-left: 4px;
         opacity: 0.5;
-        transition: transform 0.2s, opacity 0.2s;
+        transition:
+            transform 0.2s,
+            opacity 0.2s;
     }
 
     .projects-table th .projects-table__sort-icon svg {
@@ -288,7 +292,9 @@
         font-size: 14px;
         font-weight: 400;
         cursor: pointer;
-        transition: background-color 0.15s, border-color 0.15s;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
     }
 
     .projects-page__columns-btn svg {

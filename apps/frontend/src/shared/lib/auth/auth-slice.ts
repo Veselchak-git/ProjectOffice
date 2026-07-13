@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 export interface AuthUser {
     id: string;
@@ -13,7 +13,7 @@ export interface AuthState {
 
 const initialState: AuthState = {
     user: null,
-    loading: true,
+    loading: true
 };
 
 export const authSlice = createSlice({
@@ -33,8 +33,8 @@ export const authSlice = createSlice({
         logoutAction(state) {
             state.user = null;
             state.loading = false;
-        },
-    },
+        }
+    }
 });
 
 export const { setUser, setLoading, loginSuccess, logoutAction } = authSlice.actions;

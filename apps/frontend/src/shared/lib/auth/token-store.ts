@@ -11,9 +11,17 @@ let accessToken: string | null = (() => {
 export function setToken(token: string | null) {
     accessToken = token;
     if (token) {
-        try { localStorage.setItem(STORAGE_KEY, token); } catch { /* ignore */ }
+        try {
+            localStorage.setItem(STORAGE_KEY, token);
+        } catch {
+            /* ignore */
+        }
     } else {
-        try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch {
+            /* ignore */
+        }
     }
 }
 

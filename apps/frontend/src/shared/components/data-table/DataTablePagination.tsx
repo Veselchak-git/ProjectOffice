@@ -1,8 +1,8 @@
-import { type Table } from "@tanstack/react-table";
 import ArrowLeftIcon from "@helpdesk-portal/icons/ArrowLeft.svg?react";
 import ArrowRightIcon from "@helpdesk-portal/icons/ArrowRight.svg?react";
 import DoubleArrowLeftIcon from "@helpdesk-portal/icons/DoubleArrowLeft.svg?react";
 import DoubleArrowRightIcon from "@helpdesk-portal/icons/DoubleArrowRight.svg?react";
+import { type Table } from "@tanstack/react-table";
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>;

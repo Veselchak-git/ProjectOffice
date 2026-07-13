@@ -1,9 +1,9 @@
-import { Button, Input } from "@helpdesk-portal/ui-kit";
 import LoginIcon from "@helpdesk-portal/icons/LoginIcon.svg?react";
 import PasswordIcon from "@helpdesk-portal/icons/PasswordIcon.svg?react";
 import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import ShowPasswordIcon from "@helpdesk-portal/icons/ShowPassword.svg?react";
 import TecomLogoIcon from "@helpdesk-portal/icons/TecomLogo.svg?react";
+import { Button, Input } from "@helpdesk-portal/ui-kit";
 import { useCallback, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -13,7 +13,6 @@ import { useAuth } from "@/shared/lib/auth";
 
 import type { LoginFormValues } from "../model/login-form";
 import { LOGIN_EMAIL_RULES, LOGIN_PASSWORD_RULES } from "../model/login-form";
-
 import "./LoginPage.css";
 
 export const LoginPage: FC = () => {
@@ -26,10 +25,10 @@ export const LoginPage: FC = () => {
     const {
         control,
         handleSubmit,
-        formState: { errors },
+        formState: { errors }
     } = useForm<LoginFormValues>({
         mode: "onChange",
-        defaultValues: { login: "", password: "" },
+        defaultValues: { login: "", password: "" }
     });
 
     const loginValue = useWatch({ control, name: "login" });
@@ -53,7 +52,7 @@ export const LoginPage: FC = () => {
                 setSubmitting(false);
             }
         },
-        [login, navigate],
+        [login, navigate]
     );
 
     const emailError = errors.login?.message;
@@ -68,10 +67,15 @@ export const LoginPage: FC = () => {
                 <h2 className="login-page__heading">Вход в систему</h2>
                 <h3 className="login-page__subtitle">Войдите в систему с доменной учетной записью «Теком»</h3>
             </div>
-            <form className="login-page__form" onSubmit={handleSubmit(onSubmit)} noValidate onChange={() => { if (serverError) setServerError(null); }}>
-                {serverError ? (
-                    <div className="login-page__error-banner">{serverError}</div>
-                ) : null}
+            <form
+                className="login-page__form"
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+                onChange={() => {
+                    if (serverError) setServerError(null);
+                }}
+            >
+                {serverError ? <div className="login-page__error-banner">{serverError}</div> : null}
 
                 <Controller
                     name="login"
@@ -87,11 +91,17 @@ export const LoginPage: FC = () => {
                             placeholder="Введите почту"
                             autoComplete="email"
                             startIcon={<LoginIcon />}
-                            endIcon={loginValue?.length > 0 ? (
-                                <button className="login-page__reset-toggle" type="button" onClick={() => field.onChange("")}>
-                                    <ResetInputIcon />
-                                </button>
-                            ) : undefined}
+                            endIcon={
+                                loginValue?.length > 0 ? (
+                                    <button
+                                        className="login-page__reset-toggle"
+                                        type="button"
+                                        onClick={() => field.onChange("")}
+                                    >
+                                        <ResetInputIcon />
+                                    </button>
+                                ) : undefined
+                            }
                             color={hasServerError || emailError ? "error" : "default"}
                             errorMessage={emailError}
                             filled={loginValue?.length > 0}
@@ -114,12 +124,23 @@ export const LoginPage: FC = () => {
                             autoComplete="current-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
-                                <div className="login-page__end-icons" style={{ paddingRight: passwordValue?.length > 0 ? '12px' : '0' }}>
-                                    <button className="login-page__password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
+                                <div
+                                    className="login-page__end-icons"
+                                    style={{ paddingRight: passwordValue?.length > 0 ? "12px" : "0" }}
+                                >
+                                    <button
+                                        className="login-page__password-toggle"
+                                        type="button"
+                                        onClick={() => setShowPassword(v => !v)}
+                                    >
                                         <ShowPasswordIcon />
                                     </button>
                                     {passwordValue?.length > 0 ? (
-                                        <button className="login-page__reset-toggle" type="button" onClick={() => field.onChange("")}>
+                                        <button
+                                            className="login-page__reset-toggle"
+                                            type="button"
+                                            onClick={() => field.onChange("")}
+                                        >
                                             <ResetInputIcon />
                                         </button>
                                     ) : null}

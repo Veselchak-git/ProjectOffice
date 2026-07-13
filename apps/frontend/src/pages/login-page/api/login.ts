@@ -12,7 +12,7 @@ export async function loginRequest(data: LoginFormValues): Promise<LoginResponse
     const res = await apiClient("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
     });
 
     if (!res.ok) {

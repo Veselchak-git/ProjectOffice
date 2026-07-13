@@ -1,40 +1,35 @@
-import { Checkbox } from "@helpdesk-portal/ui-kit";
+import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
+import { Checkbox } from "@helpdesk-portal/ui-kit";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    DndContext,
-    closestCenter,
-    type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-    useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { FC } from "react";
-import { useNavigate } from "react-router";
-import {
-    createColumnHelper,
-    getCoreRowModel,
-    useReactTable,
     type OnChangeFn,
     type PaginationState,
     type SortingState,
+    createColumnHelper,
+    getCoreRowModel,
+    useReactTable
 } from "@tanstack/react-table";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { FC } from "react";
+import { useNavigate } from "react-router";
 
-import { DataTable, DataTablePagination } from "@/shared/components/data-table";
-import { useAuth } from "@/shared/lib/auth";
-import { formatDate } from "@/shared/lib/format-date";
-import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
-import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
+import { rootReducer } from "@/app/store";
 
 import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities/project";
 import { createProject, fetchProjects } from "@/entities/project";
 import { ProjectForm } from "@/entities/project";
+
+import { useAuth } from "@/shared/lib/auth";
+import { formatDate } from "@/shared/lib/format-date";
+import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
+import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
+
+import { DataTable, DataTablePagination } from "@/shared/components/data-table";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
@@ -44,13 +39,11 @@ import {
     selectRowSelection,
     setColumnOrder,
     setColumnVisibility,
-    setRowSelection,
+    setRowSelection
 } from "../model/projects-page-slice";
-
-import { rootReducer } from "@/app/store";
-rootReducer.inject(projectsPageSlice);
-
 import "./ProjectsPage.css";
+
+rootReducer.inject(projectsPageSlice);
 
 const columnHelper = createColumnHelper<Project>();
 
@@ -83,7 +76,7 @@ export const ProjectsPage: FC = () => {
         rowHeight: 57,
         theadHeight: 41,
         paginationHeight: 36,
-        min: 5,
+        min: 5
     });
 
     const pagination = useMemo<PaginationState>(() => {
@@ -101,14 +94,14 @@ export const ProjectsPage: FC = () => {
         page,
         perPage,
         ...(sortBy ? { sortBy } : {}),
-        ...(sortOrder ? { sortOrder } : {}),
+        ...(sortOrder ? { sortOrder } : {})
     } satisfies FetchProjectsParams;
 
     const { data, isPending, isError, error } = useQuery({
         queryKey: ["projects", projectParams],
         queryFn: () => fetchProjects(projectParams),
         enabled: ready,
-        placeholderData: keepPreviousData,
+        placeholderData: keepPreviousData
     });
 
     const projects = data?.projects ?? [];
@@ -121,7 +114,7 @@ export const ProjectsPage: FC = () => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
             queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             setCreating(false);
-        },
+        }
     });
 
     const handleSortingChange: OnChangeFn<SortingState> = updater => {
@@ -140,7 +133,7 @@ export const ProjectsPage: FC = () => {
                     inputSize="m"
                     checked={table.getIsAllRowsSelected()}
                     indeterminate={table.getIsSomeRowsSelected()}
-                    onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
+                    onCheckedChange={checked => table.toggleAllRowsSelected(checked)}
                 />
             ),
             cell: ({ row }) => (
@@ -149,43 +142,43 @@ export const ProjectsPage: FC = () => {
                     checked={row.getIsSelected()}
                     onCheckedChange={row.getToggleSelectedHandler()}
                 />
-            ),
+            )
         }),
         columnHelper.accessor("name", {
             header: "НАЗВАНИЕ",
             enableSorting: true,
-            cell: info => info.getValue(),
+            cell: info => info.getValue()
         }),
         columnHelper.accessor("description", {
             header: "ОПИСАНИЕ",
             enableSorting: false,
-            cell: info => info.getValue(),
+            cell: info => info.getValue()
         }),
         columnHelper.accessor("status", {
             header: "СТАТУС",
             enableSorting: true,
-            cell: info => <StatusBadge status={info.getValue()} />,
+            cell: info => <StatusBadge status={info.getValue()} />
         }),
         columnHelper.accessor("versions", {
             header: "ВЕРСИИ",
             enableSorting: false,
-            cell: info => info.getValue()[0] ?? "-",
+            cell: info => info.getValue()[0] ?? "-"
         }),
         columnHelper.accessor("taskCount", {
             id: "tasks",
             header: "ЗАДАЧИ",
-            enableSorting: true,
+            enableSorting: true
         }),
         columnHelper.accessor("responsible", {
             header: "ОТВЕТСТВЕННЫЙ",
-            enableSorting: false,
+            enableSorting: false
         }),
         columnHelper.accessor("createdAt", {
             id: "created",
             header: "СОЗДАН",
             enableSorting: true,
-            cell: info => formatDate(info.getValue()),
-        }),
+            cell: info => formatDate(info.getValue())
+        })
     ];
 
     function handleDragEnd(event: DragEndEvent) {
@@ -211,7 +204,7 @@ export const ProjectsPage: FC = () => {
             pagination,
             sorting,
             columnVisibility,
-            rowSelection,
+            rowSelection
         },
         onPaginationChange: updater => {
             setPaginationState(prev => {
@@ -237,7 +230,7 @@ export const ProjectsPage: FC = () => {
         pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
         manualSorting: true,
         getCoreRowModel: getCoreRowModel(),
-        enableRowSelection: true,
+        enableRowSelection: true
     });
 
     return (
@@ -273,19 +266,21 @@ export const ProjectsPage: FC = () => {
                             <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
                                 <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
                                     <div className="projects-page__columns-dropdown">
-                                        {columnOrder.filter(id => id !== "select").map(id => {
-                                            const col = ALL_COLUMNS.find(c => c.id === id);
-                                            if (!col) return null;
-                                            return (
-                                                <SortableColumnItem
-                                                    key={col.id}
-                                                    id={col.id}
-                                                    label={col.label}
-                                                    isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
-                                                    onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
-                                                />
-                                            );
-                                        })}
+                                        {columnOrder
+                                            .filter(id => id !== "select")
+                                            .map(id => {
+                                                const col = ALL_COLUMNS.find(c => c.id === id);
+                                                if (!col) return null;
+                                                return (
+                                                    <SortableColumnItem
+                                                        key={col.id}
+                                                        id={col.id}
+                                                        label={col.label}
+                                                        isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
+                                                        onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
+                                                    />
+                                                );
+                                            })}
                                     </div>
                                 </SortableContext>
                             </DndContext>
@@ -298,9 +293,7 @@ export const ProjectsPage: FC = () => {
                 {isPending && !data ? (
                     <p className="projects-page__empty">Загрузка проектов…</p>
                 ) : isError && !data ? (
-                    <p className="projects-page__empty">
-                        {error instanceof Error ? error.message : "Ошибка загрузки"}
-                    </p>
+                    <p className="projects-page__empty">{error instanceof Error ? error.message : "Ошибка загрузки"}</p>
                 ) : (
                     <DataTable table={table} onRowDoubleClick={row => navigate(`/projects/${row.id}`)}>
                         <DataTablePagination table={table} total={total} />
@@ -345,7 +338,7 @@ const SortableColumnItem: FC<{
     const style: React.CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.5 : 1
     };
 
     return (
@@ -354,12 +347,7 @@ const SortableColumnItem: FC<{
             style={style}
             className={`projects-page__columns-option${isDragging ? " projects-page__columns-option--dragging" : ""}`}
         >
-            <button
-                className="projects-page__columns-drag-btn"
-                type="button"
-                {...attributes}
-                {...listeners}
-            >
+            <button className="projects-page__columns-drag-btn" type="button" {...attributes} {...listeners}>
                 <GripIcon />
             </button>
             <Checkbox inputSize="m" checked={isVisible} onCheckedChange={onToggle} />

@@ -1,31 +1,31 @@
-import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { FC } from "react";
+import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    createColumnHelper,
-    getCoreRowModel,
-    useReactTable,
     type OnChangeFn,
     type PaginationState,
     type SortingState,
+    createColumnHelper,
+    getCoreRowModel,
+    useReactTable
 } from "@tanstack/react-table";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { FC } from "react";
 
-import { DataTable, DataTablePagination } from "@/shared/components/data-table";
 import { formatDate } from "@/shared/lib/format-date";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
+import { DataTable, DataTablePagination } from "@/shared/components/data-table";
+
 import { createUser, deleteUser, fetchUsers, updateUser } from "../api/users";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../model/users";
-
 import "./UsersPage.css";
 
 const ROLE_OPTIONS = [
     { value: "GUEST", label: "Гость" },
     { value: "USER", label: "Пользователь" },
-    { value: "ADMIN", label: "Администратор" },
+    { value: "ADMIN", label: "Администратор" }
 ];
 
 const columnHelper = createColumnHelper<User>();
@@ -44,7 +44,7 @@ export const UsersPage: FC = () => {
         rowHeight: 57,
         theadHeight: 41,
         paginationHeight: 36,
-        min: 5,
+        min: 5
     });
 
     const pagination = useMemo<PaginationState>(() => {
@@ -72,14 +72,14 @@ export const UsersPage: FC = () => {
         page,
         perPage,
         ...(sortBy ? { sortBy } : {}),
-        ...(sortOrder ? { sortOrder } : {}),
+        ...(sortOrder ? { sortOrder } : {})
     } satisfies FetchUsersParams;
 
     const { data, isPending, isError, error } = useQuery({
         queryKey: ["users", userParams],
         queryFn: () => fetchUsers(userParams),
         enabled: ready,
-        placeholderData: keepPreviousData,
+        placeholderData: keepPreviousData
     });
 
     const users = data?.users ?? [];
@@ -90,17 +90,17 @@ export const UsersPage: FC = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             setCreating(false);
-        },
+        }
     });
 
     const { mutate: deleteUserMutate } = useMutation({
         mutationFn: (id: number) => deleteUser(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] })
     });
 
     const { mutate: updateRoleMutate } = useMutation({
         mutationFn: ({ id, role }: { id: number; role: User["role"] }) => updateUser(id, { role }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] })
     });
 
     const { mutateAsync: editUserMutate } = useMutation({
@@ -108,7 +108,7 @@ export const UsersPage: FC = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             setEditingUser(null);
-        },
+        }
     });
 
     const handleSortingChange: OnChangeFn<SortingState> = updater => {
@@ -119,7 +119,7 @@ export const UsersPage: FC = () => {
     const columns = [
         columnHelper.accessor("login", {
             header: "ЛОГИН",
-            enableSorting: true,
+            enableSorting: true
         }),
         columnHelper.accessor("role", {
             header: "РОЛЬ",
@@ -131,16 +131,16 @@ export const UsersPage: FC = () => {
                     onValueChange={value =>
                         updateRoleMutate({
                             id: info.row.original.id,
-                            role: value as User["role"],
+                            role: value as User["role"]
                         })
                     }
                 />
-            ),
+            )
         }),
         columnHelper.accessor("createdAt", {
             header: "СОЗДАН",
             enableSorting: true,
-            cell: info => formatDate(info.getValue()),
+            cell: info => formatDate(info.getValue())
         }),
         columnHelper.display({
             id: "actions",
@@ -149,11 +149,7 @@ export const UsersPage: FC = () => {
             minSize: 200,
             cell: info => (
                 <div className="users-page__actions-cell">
-                    <Button
-                        variant="stroke"
-                        size="s"
-                        onClick={() => setEditingUser(info.row.original)}
-                    >
+                    <Button variant="stroke" size="s" onClick={() => setEditingUser(info.row.original)}>
                         Редактировать
                     </Button>
                     <Button
@@ -168,8 +164,8 @@ export const UsersPage: FC = () => {
                         Удалить
                     </Button>
                 </div>
-            ),
-        }),
+            )
+        })
     ];
 
     // eslint-disable-next-line react-hooks/incompatible-library
@@ -187,7 +183,7 @@ export const UsersPage: FC = () => {
         manualPagination: true,
         pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
         manualSorting: true,
-        getCoreRowModel: getCoreRowModel(),
+        getCoreRowModel: getCoreRowModel()
     });
 
     return (
@@ -300,10 +296,14 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
     };
 
     return (
-        <form className="users-page__form" onSubmit={handleSubmit} onChange={() => { if (serverError) setServerError(null); }}>
-            {serverError ? (
-                <div className="users-page__form-error">{serverError}</div>
-            ) : null}
+        <form
+            className="users-page__form"
+            onSubmit={handleSubmit}
+            onChange={() => {
+                if (serverError) setServerError(null);
+            }}
+        >
+            {serverError ? <div className="users-page__form-error">{serverError}</div> : null}
             <Input
                 label="Логин"
                 type="email"
@@ -326,21 +326,11 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     required
                 />
                 <label className="users-page__checkbox-row">
-                    <input
-                        type="checkbox"
-                        checked={showPassword}
-                        onChange={e => setShowPassword(e.target.checked)}
-                    />
+                    <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
                     <span>Показать пароль</span>
                 </label>
             </div>
-            <Select
-                label="Роль"
-                options={ROLE_OPTIONS}
-                value={role}
-                usePortal={false}
-                onValueChange={setRole}
-            />
+            <Select label="Роль" options={ROLE_OPTIONS} value={role} usePortal={false} onValueChange={setRole} />
             <div className="users-page__form-actions">
                 <Button type="submit" disabled={!canSubmit}>
                     {submitting ? "Создание…" : "Создать"}
@@ -367,8 +357,10 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
     const [serverError, setServerError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    const loginError = login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim()) ? "Некорректный формат email" : undefined;
-    const passwordError = password.length > 0 && password.length < 6 ? "Пароль должен содержать не менее 6 символов" : undefined;
+    const loginError =
+        login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim()) ? "Некорректный формат email" : undefined;
+    const passwordError =
+        password.length > 0 && password.length < 6 ? "Пароль должен содержать не менее 6 символов" : undefined;
     const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
     const canSubmit = !submitting && !hasFieldErrors;
 
@@ -396,10 +388,14 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
     };
 
     return (
-        <form className="users-page__form" onSubmit={handleSubmit} onChange={() => { if (serverError) setServerError(null); }}>
-            {serverError ? (
-                <div className="users-page__form-error">{serverError}</div>
-            ) : null}
+        <form
+            className="users-page__form"
+            onSubmit={handleSubmit}
+            onChange={() => {
+                if (serverError) setServerError(null);
+            }}
+        >
+            {serverError ? <div className="users-page__form-error">{serverError}</div> : null}
 
             <div className="users-page__old-data">
                 <span className="users-page__old-data-label">Текущие данные</span>
@@ -435,21 +431,11 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                     errorMessage={passwordError}
                 />
                 <label className="users-page__checkbox-row">
-                    <input
-                        type="checkbox"
-                        checked={showPassword}
-                        onChange={e => setShowPassword(e.target.checked)}
-                    />
+                    <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
                     <span>Показать пароль</span>
                 </label>
             </div>
-            <Select
-                label="Роль"
-                options={ROLE_OPTIONS}
-                value={role}
-                usePortal={false}
-                onValueChange={setRole}
-            />
+            <Select label="Роль" options={ROLE_OPTIONS} value={role} usePortal={false} onValueChange={setRole} />
             <div className="users-page__form-actions">
                 <Button type="submit" disabled={!canSubmit}>
                     {submitting ? "Сохранение…" : "Сохранить"}

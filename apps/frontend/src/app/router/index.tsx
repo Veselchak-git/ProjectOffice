@@ -12,7 +12,7 @@ export const routes = createBrowserRouter([
                 lazy: async () => {
                     const { HomePage } = await import("@/pages/home-page");
                     return { Component: HomePage };
-                },
+                }
             },
             {
                 path: "projects",
@@ -24,9 +24,9 @@ export const routes = createBrowserRouter([
                             <RequireRole roles={["ADMIN", "USER"]}>
                                 <ProjectsPage />
                             </RequireRole>
-                        ),
+                        )
                     };
-                },
+                }
             },
             {
                 path: "projects/:id",
@@ -38,9 +38,9 @@ export const routes = createBrowserRouter([
                             <RequireRole roles={["ADMIN", "USER"]}>
                                 <ProjectPage />
                             </RequireRole>
-                        ),
+                        )
                     };
-                },
+                }
             },
             {
                 path: "tasks",
@@ -52,9 +52,9 @@ export const routes = createBrowserRouter([
                             <RequireRole roles={["ADMIN", "USER"]}>
                                 <HomePage />
                             </RequireRole>
-                        ),
+                        )
                     };
-                },
+                }
             },
             {
                 path: "audit-log",
@@ -66,9 +66,9 @@ export const routes = createBrowserRouter([
                             <RequireRole roles={["ADMIN", "USER"]}>
                                 <HomePage />
                             </RequireRole>
-                        ),
+                        )
                     };
-                },
+                }
             },
             {
                 path: "users",
@@ -80,9 +80,9 @@ export const routes = createBrowserRouter([
                             <RequireRole roles={["ADMIN"]}>
                                 <UsersPage />
                             </RequireRole>
-                        ),
+                        )
                     };
-                },
+                }
             },
             {
                 path: "profile",
@@ -94,11 +94,11 @@ export const routes = createBrowserRouter([
                             <RequireRole roles={["ADMIN", "USER"]}>
                                 <ProfilePage />
                             </RequireRole>
-                        ),
+                        )
                     };
-                },
-            },
-        ],
+                }
+            }
+        ]
     },
     {
         path: "/login",
@@ -109,8 +109,8 @@ export const routes = createBrowserRouter([
                 lazy: async () => {
                     const { LoginPage } = await import("@/pages/login-page");
                     return { Component: LoginPage };
-                },
-            },
-        ],
-    },
+                }
+            }
+        ]
+    }
 ]);

@@ -133,7 +133,9 @@
         vertical-align: middle;
         margin-left: 4px;
         opacity: 0.5;
-        transition: transform 0.2s, opacity 0.2s;
+        transition:
+            transform 0.2s,
+            opacity 0.2s;
     }
 
     .users-table th .users-table__sort-icon svg {

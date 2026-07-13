@@ -8,8 +8,8 @@ export async function apiClient(url: string, options?: RequestInit): Promise<Res
         credentials: "include",
         headers: {
             ...options?.headers,
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
     });
 
     if (res.status === 401 && url !== "/api/auth/refresh") {
@@ -24,8 +24,8 @@ export async function apiClient(url: string, options?: RequestInit): Promise<Res
                 credentials: "include",
                 headers: {
                     ...options?.headers,
-                    Authorization: `Bearer ${accessToken}`,
-                },
+                    Authorization: `Bearer ${accessToken}`
+                }
             });
         }
 

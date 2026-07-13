@@ -1,9 +1,4 @@
-export type ProjectMemberRole =
-    | "VIEWER"
-    | "REPORTER"
-    | "UPDATER"
-    | "DEVELOPER"
-    | "MANAGER";
+export type ProjectMemberRole = "VIEWER" | "REPORTER" | "UPDATER" | "DEVELOPER" | "MANAGER";
 
 export interface Member {
     userId: number;
@@ -45,5 +40,3 @@ export interface UpdateProjectData {
     status?: "ACTIVE" | "ARCHIVED";
     versions?: string[];
 }
-
-

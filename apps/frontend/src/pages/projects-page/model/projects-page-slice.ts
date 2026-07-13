@@ -1,4 +1,4 @@
-import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { type PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit";
 
 import { DEFAULT_COLUMN_ORDER, DEFAULT_COLUMN_VISIBILITY } from "./columns";
 
@@ -11,7 +11,7 @@ export interface ProjectsPageState {
 const initialState: ProjectsPageState = {
     columnVisibility: DEFAULT_COLUMN_VISIBILITY,
     columnOrder: DEFAULT_COLUMN_ORDER,
-    rowSelection: {},
+    rowSelection: {}
 };
 
 export const projectsPageSlice = createSlice({
@@ -34,8 +34,8 @@ export const projectsPageSlice = createSlice({
             state.columnVisibility = DEFAULT_COLUMN_VISIBILITY;
             state.columnOrder = DEFAULT_COLUMN_ORDER;
             state.rowSelection = {};
-        },
-    },
+        }
+    }
 });
 
 export const { setColumnVisibility, setColumnOrder, setRowSelection, resetRowSelection, resetPageState } =
@@ -45,15 +45,9 @@ const selectProjectsPage = (state: AppState) => state.projectsPage;
 
 export const selectColumnVisibility = createSelector(
     selectProjectsPage,
-    page => page?.columnVisibility ?? DEFAULT_COLUMN_VISIBILITY,
+    page => page?.columnVisibility ?? DEFAULT_COLUMN_VISIBILITY
 );
 
-export const selectColumnOrder = createSelector(
-    selectProjectsPage,
-    page => page?.columnOrder ?? DEFAULT_COLUMN_ORDER,
-);
+export const selectColumnOrder = createSelector(selectProjectsPage, page => page?.columnOrder ?? DEFAULT_COLUMN_ORDER);
 
-export const selectRowSelection = createSelector(
-    selectProjectsPage,
-    page => page?.rowSelection ?? {},
-);
+export const selectRowSelection = createSelector(selectProjectsPage, page => page?.rowSelection ?? {});
