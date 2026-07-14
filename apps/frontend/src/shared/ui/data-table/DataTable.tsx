@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import "./DataTable.css";
+import { DataTablePagination } from "./DataTablePagination";
 
 interface DataTableProps<TData> {
     table: Table<TData>;
@@ -10,9 +11,17 @@ interface DataTableProps<TData> {
     onRowDoubleClick?: (row: TData) => void;
     className?: string;
     children?: ReactNode;
+    total?: number;
 }
 
-export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, className, children }: DataTableProps<TData>) {
+export function DataTable<TData>({
+    table,
+    onRowClick,
+    onRowDoubleClick,
+    className,
+    children,
+    total
+}: DataTableProps<TData>) {
     const { t } = useTranslation();
 
     return (
@@ -82,6 +91,7 @@ export function DataTable<TData>({ table, onRowClick, onRowDoubleClick, classNam
                     </tbody>
                 </table>
             </div>
+            {total !== undefined && <DataTablePagination table={table} total={total} />}
             {children}
         </>
     );
