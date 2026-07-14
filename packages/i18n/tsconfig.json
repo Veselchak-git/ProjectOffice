@@ -1,0 +1,12 @@
+{
+    "extends": "@helpdesk-portal/typescript-config/library",
+    "compilerOptions": {
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+        "rootDir": "./src",
+        "noEmit": true,
+        "jsx": "preserve",
+        "types": [],
+        "lib": ["ES2023"]
+    },
+    "include": ["src"]
+}

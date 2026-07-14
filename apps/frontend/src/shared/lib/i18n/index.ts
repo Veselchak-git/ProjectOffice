@@ -1,3 +1,4 @@
+import { ALL_NAMESPACES } from "@helpdesk-portal/i18n";
 import i18n from "i18next";
 import HttpBackend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
@@ -10,7 +11,7 @@ i18n.use(HttpBackend)
         },
         fallbackLng: "ru",
         supportedLngs: ["ru", "en"],
-        ns: ["common", "auth", "navigation", "users", "projects", "audit", "validation"],
+        ns: ALL_NAMESPACES,
         defaultNS: "common",
         load: "currentOnly",
         interpolation: {

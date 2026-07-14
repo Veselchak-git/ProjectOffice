@@ -1,0 +1,24 @@
+{
+    "name": "@helpdesk-portal/i18n",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+        }
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "type-check": "tsc -b --noEmit"
+    },
+    "devDependencies": {
+        "@helpdesk-portal/eslint-config": "*",
+        "@helpdesk-portal/prettier-config": "*",
+        "@helpdesk-portal/typescript-config": "*"
+    }
+}
