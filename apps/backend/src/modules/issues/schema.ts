@@ -1,18 +1,20 @@
 import { type Static, Type } from "@fastify/type-provider-typebox";
 
+import { IssueCategory, IssuePriority, IssueStatus } from "@/generated/prisma/enums.js";
+
 export const issueResponseSchema = Type.Object({
     id: Type.Number(),
     title: Type.String(),
     projectId: Type.Number(),
     projectName: Type.String(),
-    category: Type.String(),
-    priority: Type.String(),
+    category: Type.Enum(IssueCategory),
+    priority: Type.Enum(IssuePriority),
     reproducibility: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     productVersionId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     productVersion: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     additionalInfo: Type.Optional(Type.Union([Type.String(), Type.Null()])),
-    status: Type.String(),
+    status: Type.Enum(IssueStatus),
     assigneeId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     assigneeLogin: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     reporterId: Type.Number(),
@@ -40,9 +42,9 @@ export const issuesListQuerySchema = Type.Object({
     perPage: Type.Optional(Type.Number({ default: 20 })),
     sortBy: Type.Optional(Type.String({ default: "createdAt" })),
     sortOrder: Type.Optional(Type.String({ default: "desc" })),
-    status: Type.Optional(Type.String()),
-    priority: Type.Optional(Type.String()),
-    category: Type.Optional(Type.String()),
+    status: Type.Optional(Type.Enum(IssueStatus)),
+    priority: Type.Optional(Type.Enum(IssuePriority)),
+    category: Type.Optional(Type.Enum(IssueCategory)),
 });
 
 export type IssuesListQuery = Static<typeof issuesListQuerySchema>;
@@ -75,8 +77,8 @@ export const getIssueByIdSchema = {
 
 export const createIssueBodySchema = Type.Object({
     title: Type.String({ minLength: 1 }),
-    category: Type.String(),
-    priority: Type.String(),
+    category: Type.Enum(IssueCategory),
+    priority: Type.Enum(IssuePriority),
     reproducibility: Type.Optional(Type.String()),
     productVersionId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     description: Type.Optional(Type.String()),
@@ -98,13 +100,13 @@ export const createIssueSchema = {
 
 export const updateIssueBodySchema = Type.Object({
     title: Type.Optional(Type.String({ minLength: 1 })),
-    category: Type.Optional(Type.String()),
-    priority: Type.Optional(Type.String()),
+    category: Type.Optional(Type.Enum(IssueCategory)),
+    priority: Type.Optional(Type.Enum(IssuePriority)),
     reproducibility: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     productVersionId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     additionalInfo: Type.Optional(Type.Union([Type.String(), Type.Null()])),
-    status: Type.Optional(Type.String()),
+    status: Type.Optional(Type.Enum(IssueStatus)),
     assigneeId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     solution: Type.Optional(Type.Union([Type.String(), Type.Null()])),
 });
