@@ -1,28 +1,41 @@
+import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { NS } from "@helpdesk-portal/i18n";
+import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
-import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
+import { Button, Checkbox, Input, Select } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
+import { createUser, deleteUser, fetchUsers, updateUser } from "@/entities/user";
+import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/entities/user";
+
 import { formatDate } from "@/shared/lib/format-date";
 import { i18n } from "@/shared/lib/i18n";
+import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 import { useTable } from "@/shared/lib/use-table";
 
 import { DataTable } from "@/shared/ui/data-table";
 
-import { createUser, deleteUser, fetchUsers, updateUser } from "../api/users";
-import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../model/users";
+import { ALL_COLUMNS } from "../model/columns";
+import {
+    selectColumnOrder,
+    selectColumnVisibility,
+    setColumnOrder,
+    setColumnVisibility
+} from "../model/users-page-slice";
 import "./UsersPage.css";
 
-const ROLE_OPTIONS = [
-    { value: "GUEST", label: i18n.t(`${NS.users}:roles.guest`) },
-    { value: "USER", label: i18n.t(`${NS.users}:roles.user`) },
-    { value: "ADMIN", label: i18n.t(`${NS.users}:roles.admin`) }
+const getRoleOptions = (t: (key: string) => string) => [
+    { value: "GUEST" as const, label: t("roles.guest") },
+    { value: "USER" as const, label: t("roles.user") },
+    { value: "ADMIN" as const, label: t("roles.admin") }
 ];
 
 const columnHelper = createColumnHelper<User>();
@@ -38,12 +51,28 @@ export const UsersPage: FC = () => {
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const dispatch = useAppDispatch();
+    const columnVisibility = useAppSelector(selectColumnVisibility);
+    const columnOrder = useAppSelector(selectColumnOrder);
+    const [columnsOpen, setColumnsOpen] = useState(false);
+    const columnsRef = useRef<HTMLDivElement>(null);
+
     const { perPage, ready } = useDynamicPerPage(containerRef, {
         rowHeight: 57,
         theadHeight: 41,
         paginationHeight: 36,
         min: 5
     });
+
+    useEffect(() => {
+        function handleClick(e: MouseEvent) {
+            if (columnsRef.current && !columnsRef.current.contains(e.target as Node)) {
+                setColumnsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClick);
+        return () => document.removeEventListener("mousedown", handleClick);
+    }, []);
 
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -114,7 +143,7 @@ export const UsersPage: FC = () => {
             enableSorting: true,
             cell: info => (
                 <Select
-                    options={ROLE_OPTIONS}
+                    options={getRoleOptions(t)}
                     value={info.getValue()}
                     onValueChange={value =>
                         updateRoleMutate({
@@ -156,6 +185,20 @@ export const UsersPage: FC = () => {
         })
     ];
 
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const prev = columnOrder;
+        const oldIndex = prev.indexOf(String(active.id));
+        const newIndex = prev.indexOf(String(over.id));
+        if (oldIndex === -1 || newIndex === -1) return;
+
+        const next = [...prev];
+        next.splice(newIndex, 0, ...next.splice(oldIndex, 1));
+        dispatch(setColumnOrder(next));
+    }
+
     const { table } = useTable({
         data: users,
         columns: columns as ColumnDef<User>[],
@@ -166,6 +209,16 @@ export const UsersPage: FC = () => {
         onPageIndexChange: setPageIndex,
         sorting,
         onSortingChange: setSorting,
+        columnVisibility,
+        columnOrder,
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        },
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
         resetKey: debouncedQ
     });
 
@@ -181,6 +234,39 @@ export const UsersPage: FC = () => {
                         <PlusIcon />
                         {t("actions.create")}
                     </button>
+                    <div className="users-page__columns-wrapper" ref={columnsRef}>
+                        <button
+                            className="users-page__columns-btn"
+                            type="button"
+                            onClick={() => setColumnsOpen(v => !v)}
+                        >
+                            <GearIcon />
+                            {t("actions.columns")}
+                        </button>
+                        {columnsOpen && (
+                            <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                                <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
+                                    <div className="users-page__columns-dropdown">
+                                        {columnOrder
+                                            .filter(id => id !== "select" && id !== "actions")
+                                            .map(id => {
+                                                const col = ALL_COLUMNS.find(c => c.id === id);
+                                                if (!col) return null;
+                                                return (
+                                                    <SortableColumnItem
+                                                        key={col.id}
+                                                        id={col.id}
+                                                        label={t(col.label)}
+                                                        isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
+                                                        onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
+                                                    />
+                                                );
+                                            })}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -314,7 +400,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
             </div>
             <Select
                 label={tu("form.role")}
-                options={ROLE_OPTIONS}
+                options={getRoleOptions(tu)}
                 value={role}
                 usePortal={false}
                 onValueChange={setRole}
@@ -397,7 +483,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                 <div className="users-page__old-data-row">
                     <span className="users-page__old-data-key">{tu("edit.roleLabel")}</span>
                     <span className="users-page__old-data-value">
-                        {ROLE_OPTIONS.find(o => o.value === user.role)?.label ?? user.role}
+                        {getRoleOptions(tu).find(o => o.value === user.role)?.label ?? user.role}
                     </span>
                 </div>
             </div>
@@ -428,7 +514,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             </div>
             <Select
                 label={tu("form.role")}
-                options={ROLE_OPTIONS}
+                options={getRoleOptions(tu)}
                 value={role}
                 usePortal={false}
                 onValueChange={setRole}
@@ -442,5 +528,47 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                 </Button>
             </div>
         </form>
+    );
+};
+
+const GripIcon: FC = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <circle cx="5" cy="4" r="1.5" />
+        <circle cx="11" cy="4" r="1.5" />
+        <circle cx="5" cy="8" r="1.5" />
+        <circle cx="11" cy="8" r="1.5" />
+        <circle cx="5" cy="12" r="1.5" />
+        <circle cx="11" cy="12" r="1.5" />
+    </svg>
+);
+
+const SortableColumnItem: FC<{
+    id: string;
+    label: string;
+    isVisible: boolean;
+    onToggle: () => void;
+}> = ({ id, label, isVisible, onToggle }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+    const style: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`users-page__columns-option${isDragging ? " users-page__columns-option--dragging" : ""}`}
+        >
+            <button className="users-page__columns-drag-btn" type="button" {...attributes} {...listeners}>
+                <GripIcon />
+            </button>
+            <Checkbox inputSize="m" checked={isVisible} onCheckedChange={onToggle} />
+            <span className="users-page__columns-label" onClick={onToggle}>
+                {label}
+            </span>
+        </div>
     );
 };
