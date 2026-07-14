@@ -17,6 +17,7 @@
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
         "@helpdesk-portal/icons": "*",
+        "@helpdesk-portal/i18n": "*",
         "@helpdesk-portal/ui-kit": "*",
         "@reduxjs/toolkit": "2.12.0",
         "@tanstack/react-query": "5.99.2",
