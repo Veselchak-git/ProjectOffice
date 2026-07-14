@@ -307,7 +307,6 @@
         color: var(--semantic-text-primary);
     }
 
-
     .projects-page__columns-btn:hover {
         background-color: var(--semantic-fill-primary-hover);
         border-color: var(--semantic-btn-accent-fill-hover-bg);

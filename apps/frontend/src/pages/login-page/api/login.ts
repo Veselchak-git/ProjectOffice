@@ -1,3 +1,5 @@
+import { NS } from "@helpdesk-portal/i18n";
+
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -18,7 +20,7 @@ export async function loginRequest(data: LoginFormValues): Promise<LoginResponse
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("auth:error.invalidCredentials"));
+        throw new Error(body?.message ?? i18n.t(`${NS.auth}:error.invalidCredentials`));
     }
 
     const body: LoginResponse = await res.json();

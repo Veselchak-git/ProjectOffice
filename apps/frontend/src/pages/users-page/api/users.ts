@@ -1,3 +1,5 @@
+import { NS } from "@helpdesk-portal/i18n";
+
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -16,7 +18,7 @@ export async function fetchUsers(params?: FetchUsersParams): Promise<FetchUsersR
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("users:error.loading"));
+        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.loading`));
     }
 
     return res.json();
@@ -31,7 +33,7 @@ export async function createUser(data: CreateUserData): Promise<User> {
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("users:error.create"));
+        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.create`));
     }
 
     return res.json();
@@ -44,7 +46,7 @@ export async function deleteUser(id: number): Promise<void> {
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("users:error.delete"));
+        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.delete`));
     }
 }
 
@@ -62,7 +64,7 @@ export async function updateUser(id: number, data: UpdateUserData): Promise<User
 
     if (!res.ok) {
         const err = await res.json().catch(() => null);
-        throw new Error(err?.message ?? i18n.t("users:error.update"));
+        throw new Error(err?.message ?? i18n.t(`${NS.users}:error.update`));
     }
 
     return res.json();

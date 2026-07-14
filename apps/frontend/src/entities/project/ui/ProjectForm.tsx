@@ -1,9 +1,10 @@
+import { NS } from "@helpdesk-portal/i18n";
 import { Button, Input } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { CreateProjectData, UpdateProjectData } from "../model/project";
+import type { CreateProjectData, ProjectVersion, UpdateProjectData } from "../model/project";
 import "./ProjectForm.css";
 
 interface ProjectFormProps {
@@ -11,7 +12,7 @@ interface ProjectFormProps {
         name: string;
         description: string | null;
         status: "ACTIVE" | "ARCHIVED";
-        versions: string[];
+        versions: ProjectVersion[];
     };
     onSubmit(data: CreateProjectData | UpdateProjectData): Promise<void>;
     onCancel(): void;
@@ -22,7 +23,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
     const [name, setName] = useState(initial?.name ?? "");
     const [description, setDescription] = useState(initial?.description ?? "");
     const [status, setStatus] = useState<"ACTIVE" | "ARCHIVED">(initial?.status ?? "ACTIVE");
-    const [versions, setVersions] = useState<string[]>(initial?.versions ?? []);
+    const [versions, setVersions] = useState<string[]>(initial?.versions.map(v => v.version) ?? []);
     const [versionInput, setVersionInput] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
@@ -58,37 +59,37 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
     return (
         <form className="project-form" onSubmit={handleSubmit}>
             <Input
-                label={t("projects:form.name.label")}
-                placeholder={t("projects:form.name.placeholder")}
+                label={t(`${NS.projects}:form.name.label`)}
+                placeholder={t(`${NS.projects}:form.name.placeholder`)}
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
             />
 
             <Input
-                label={t("projects:form.description.label")}
-                placeholder={t("projects:form.description.placeholder")}
+                label={t(`${NS.projects}:form.description.label`)}
+                placeholder={t(`${NS.projects}:form.description.placeholder`)}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
             />
 
             <div className="project-form__field">
-                <label className="project-form__label">{t("projects:form.status.label")}</label>
+                <label className="project-form__label">{t(`${NS.projects}:form.status.label`)}</label>
                 <select
                     className="project-form__select"
                     value={status}
                     onChange={e => setStatus(e.target.value as "ACTIVE" | "ARCHIVED")}
                 >
-                    <option value="ACTIVE">{t("projects:status.active")}</option>
-                    <option value="ARCHIVED">{t("projects:status.archived")}</option>
+                    <option value="ACTIVE">{t(`${NS.projects}:status.active`)}</option>
+                    <option value="ARCHIVED">{t(`${NS.projects}:status.archived`)}</option>
                 </select>
             </div>
 
             <div className="project-form__field">
-                <label className="project-form__label">{t("projects:form.versions.label")}</label>
+                <label className="project-form__label">{t(`${NS.projects}:form.versions.label`)}</label>
                 <div className="project-form__versions-input">
                     <Input
-                        placeholder={t("projects:form.versions.placeholder")}
+                        placeholder={t(`${NS.projects}:form.versions.placeholder`)}
                         value={versionInput}
                         onChange={e => setVersionInput(e.target.value)}
                         onKeyDown={e => {
@@ -122,10 +123,10 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
 
             <div className="project-form__actions">
                 <Button type="submit" disabled={!name.trim() || submitting}>
-                    {initial ? t("common:save") : t("common:create")}
+                    {initial ? t(`${NS.common}:save`) : t(`${NS.common}:create`)}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    {t("common:cancel")}
+                    {t(`${NS.common}:cancel`)}
                 </Button>
             </div>
         </form>

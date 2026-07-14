@@ -1,3 +1,4 @@
+import { NS } from "@helpdesk-portal/i18n";
 import PasswordIcon from "@helpdesk-portal/icons/PasswordIcon.svg?react";
 import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import UserIcon from "@helpdesk-portal/icons/User.svg?react";
@@ -44,14 +45,14 @@ export const ProfilePage: FC = () => {
 
             try {
                 if (data.newPassword !== data.confirmPassword) {
-                    throw new Error(t("auth:profile.error.notMatch"));
+                    throw new Error(t(`${NS.auth}:profile.error.notMatch`));
                 }
 
                 await changePasswordRequest(data);
-                setSuccessMessage(t("auth:profile.success"));
+                setSuccessMessage(t(`${NS.auth}:profile.success`));
                 reset();
             } catch (err) {
-                const message = err instanceof Error ? err.message : t("common:error.connection");
+                const message = err instanceof Error ? err.message : t(`${NS.common}:error.connection`);
                 setServerError(message);
             } finally {
                 setSubmitting(false);
@@ -68,7 +69,7 @@ export const ProfilePage: FC = () => {
         <div className="profile-page">
             <div className="profile-page__header">
                 <UserIcon />
-                <h2 className="profile-page__title">{t("auth:profile.title")}</h2>
+                <h2 className="profile-page__title">{t(`${NS.auth}:profile.title`)}</h2>
             </div>
 
             <form
@@ -86,15 +87,15 @@ export const ProfilePage: FC = () => {
                 <Controller
                     name="currentPassword"
                     control={control}
-                    rules={{ required: t("validation:required.password") }}
+                    rules={{ required: t(`${NS.validation}:required.password`) }}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="currentPassword"
-                            label={t("auth:profile.currentPassword.label")}
+                            label={t(`${NS.auth}:profile.currentPassword.label`)}
                             type={showPasswords ? "text" : "password"}
                             inputSize="m"
-                            placeholder={t("auth:profile.currentPassword.placeholder")}
+                            placeholder={t(`${NS.auth}:profile.currentPassword.placeholder`)}
                             autoComplete="current-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -119,17 +120,17 @@ export const ProfilePage: FC = () => {
                     name="newPassword"
                     control={control}
                     rules={{
-                        required: t("validation:required.password"),
-                        minLength: { value: 6, message: t("validation:minLength.password") }
+                        required: t(`${NS.validation}:required.password`),
+                        minLength: { value: 6, message: t(`${NS.validation}:minLength.password`) }
                     }}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="newPassword"
-                            label={t("auth:profile.newPassword.label")}
+                            label={t(`${NS.auth}:profile.newPassword.label`)}
                             type={showPasswords ? "text" : "password"}
                             inputSize="m"
-                            placeholder={t("auth:profile.newPassword.placeholder")}
+                            placeholder={t(`${NS.auth}:profile.newPassword.placeholder`)}
                             autoComplete="new-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -154,17 +155,17 @@ export const ProfilePage: FC = () => {
                     name="confirmPassword"
                     control={control}
                     rules={{
-                        required: t("auth:profile.confirmPassword.placeholder"),
-                        validate: value => value === newValue || t("validation:passwords.notMatch")
+                        required: t(`${NS.auth}:profile.confirmPassword.placeholder`),
+                        validate: value => value === newValue || t(`${NS.validation}:passwords.notMatch`)
                     }}
                     render={({ field }) => (
                         <Input
                             {...field}
                             id="confirmPassword"
-                            label={t("auth:profile.confirmPassword.label")}
+                            label={t(`${NS.auth}:profile.confirmPassword.label`)}
                             type={showPasswords ? "text" : "password"}
                             inputSize="m"
-                            placeholder={t("auth:profile.confirmPassword.placeholder")}
+                            placeholder={t(`${NS.auth}:profile.confirmPassword.placeholder`)}
                             autoComplete="new-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -187,7 +188,7 @@ export const ProfilePage: FC = () => {
 
                 <label className="profile-page__show-all">
                     <input type="checkbox" checked={showPasswords} onChange={() => setShowPasswords(v => !v)} />
-                    <span>{t("auth:profile.showPasswords")}</span>
+                    <span>{t(`${NS.auth}:profile.showPasswords`)}</span>
                 </label>
 
                 <Button
@@ -198,7 +199,7 @@ export const ProfilePage: FC = () => {
                     type="submit"
                     disabled={!canSubmit}
                 >
-                    {submitting ? t("auth:profile.submitting") : t("auth:profile.submit")}
+                    {submitting ? t(`${NS.auth}:profile.submitting`) : t(`${NS.auth}:profile.submit`)}
                 </Button>
             </form>
         </div>

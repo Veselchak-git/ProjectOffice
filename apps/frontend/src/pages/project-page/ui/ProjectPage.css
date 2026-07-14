@@ -1,6 +1,5 @@
 .project-page {
-    max-width: 720px;
-    margin: 0 auto;
+    max-width: none;
 }
 
 .project-page__back-btn {
@@ -54,6 +53,7 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
+    width: fit-content;
 }
 
 .project-page__status--active {
@@ -68,61 +68,14 @@
 
 .project-page__actions {
     display: flex;
-    gap: 8px;
-}
-
-.project-page__edit-btn {
-    display: inline-flex;
     align-items: center;
     gap: 8px;
-    height: 40px;
-    padding: 0 20px;
-    border: 1px solid var(--semantic-border-default);
-    border-radius: 8px;
-    background-color: transparent;
-    color: var(--semantic-text-primary);
-    font-family: Geologica;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: pointer;
-    transition:
-        background-color 0.15s,
-        border-color 0.15s;
+    flex-shrink: 0;
 }
 
-.project-page__edit-btn:hover {
-    background-color: var(--semantic-fill-primary-hover);
-    border-color: var(--semantic-btn-accent-fill-hover-bg);
-}
-
-.project-page__delete-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 40px;
-    padding: 0 20px;
-    border: 1px solid var(--semantic-btn-error-stroke-border);
-    border-radius: 8px;
-    background-color: transparent;
-    color: var(--semantic-btn-error-stroke-text);
-    font-family: Geologica;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: pointer;
-    transition:
-        background-color 0.15s,
-        border-color 0.15s;
-}
-
-.project-page__delete-btn:hover:not(:disabled) {
-    background-color: var(--semantic-btn-error-stroke-hover-bg);
-    border-color: var(--semantic-btn-error-stroke-hover-border);
-    color: var(--semantic-btn-error-stroke-hover-text);
-}
-
-.project-page__delete-btn:disabled {
-    opacity: 0.5;
-    cursor: default;
+.project-page__actions .ui-kit-btn-accent.ui-kit-btn-fill {
+    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
+    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
 }
 
 .project-page__fields {
@@ -196,6 +149,34 @@
 
 .project-form-title {
     font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 24px;
+    color: var(--semantic-text-primary);
+}
+
+.project-page__overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.project-page__modal {
+    background-color: var(--semantic-bg-surface);
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 12px;
+    padding: 32px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.project-page__modal-title {
+    font-size: 20px;
     font-weight: 600;
     margin: 0 0 24px;
     color: var(--semantic-text-primary);

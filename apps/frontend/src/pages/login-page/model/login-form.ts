@@ -1,3 +1,4 @@
+import { NS } from "@helpdesk-portal/i18n";
 import type { RegisterOptions } from "react-hook-form";
 
 export interface LoginFormValues {
@@ -7,20 +8,20 @@ export interface LoginFormValues {
 
 export function getLoginEmailRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "login"> {
     return {
-        required: t("validation:required.email"),
+        required: t(`${NS.validation}:required.email`),
         pattern: {
             value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            message: t("validation:invalid.email")
+            message: t(`${NS.validation}:invalid.email`)
         }
     };
 }
 
 export function getLoginPasswordRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "password"> {
     return {
-        required: t("validation:required.password"),
+        required: t(`${NS.validation}:required.password`),
         minLength: {
             value: 6,
-            message: t("validation:minLength.password")
+            message: t(`${NS.validation}:minLength.password`)
         }
     };
 }

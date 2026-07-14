@@ -1,3 +1,4 @@
+import { NS } from "@helpdesk-portal/i18n";
 import ArchiveIcon from "@helpdesk-portal/icons/Archive.svg?react";
 import FolderIcon from "@helpdesk-portal/icons/Folder.svg?react";
 import HouseIcon from "@helpdesk-portal/icons/House.svg?react";
@@ -26,11 +27,11 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { label: "navigation:menu.home", path: "/", icon: HouseIcon },
-    { label: "navigation:menu.projects", path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
-    { label: "navigation:menu.tasks", path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
-    { label: "navigation:menu.audit-log", path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
-    { label: "navigation:menu.users", path: "/users", icon: UserIcon, roles: ["ADMIN"] }
+    { label: `${NS.navigation}:menu.home`, path: "/", icon: HouseIcon },
+    { label: `${NS.navigation}:menu.projects`, path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
+    { label: `${NS.navigation}:menu.tasks`, path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
+    { label: `${NS.navigation}:menu.audit-log`, path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
+    { label: `${NS.navigation}:menu.users`, path: "/users", icon: UserIcon, roles: ["ADMIN"] }
 ];
 
 export const BaseLayout: FC = () => {
@@ -44,9 +45,9 @@ export const BaseLayout: FC = () => {
     const profileRef = useRef<HTMLDivElement>(null);
 
     const roleLabels: Record<string, string> = {
-        ADMIN: t("navigation:role.admin"),
-        USER: t("navigation:role.user"),
-        GUEST: t("navigation:role.guest")
+        ADMIN: t(`${NS.navigation}:role.admin`),
+        USER: t(`${NS.navigation}:role.user`),
+        GUEST: t(`${NS.navigation}:role.guest`)
     };
 
     const handleLogout = useCallback(async () => {
@@ -81,7 +82,7 @@ export const BaseLayout: FC = () => {
         return true;
     });
 
-    const displayName = user?.login?.split("@")[0] ?? t("navigation:role.user");
+    const displayName = user?.login?.split("@")[0] ?? t(`${NS.navigation}:role.user`);
     const displayRole = user ? (roleLabels[user.role] ?? user.role) : "";
 
     return (
@@ -196,14 +197,14 @@ export const BaseLayout: FC = () => {
                                                 setProfileMenuOpen(false);
                                             }}
                                         >
-                                            {t("common:edit")}
+                                            {t(`${NS.common}:edit`)}
                                         </button>
                                         <button
                                             className="header__profile-menu-item header__profile-menu-item--danger"
                                             type="button"
                                             onClick={handleLogout}
                                         >
-                                            {t("common:logout")}
+                                            {t(`${NS.common}:logout`)}
                                         </button>
                                     </div>
                                 )}

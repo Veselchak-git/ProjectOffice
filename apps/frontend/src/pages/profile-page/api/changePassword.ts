@@ -1,3 +1,5 @@
+import { NS } from "@helpdesk-portal/i18n";
+
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -15,6 +17,6 @@ export async function changePasswordRequest(data: ChangePasswordFormValues): Pro
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("auth:profile.error.changePassword"));
+        throw new Error(body?.message ?? i18n.t(`${NS.auth}:profile.error.changePassword`));
     }
 }

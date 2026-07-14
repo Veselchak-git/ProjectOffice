@@ -1,3 +1,5 @@
+import { NS } from "@helpdesk-portal/i18n";
+
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -31,7 +33,7 @@ export async function fetchProjects(params?: FetchProjectsParams): Promise<Fetch
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:error.loading"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:error.loading`));
     }
 
     return res.json();
@@ -42,7 +44,7 @@ export async function fetchProject(id: number): Promise<Project> {
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:error.loadOne"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:error.loadOne`));
     }
 
     return res.json();
@@ -57,7 +59,7 @@ export async function createProject(data: CreateProjectData): Promise<{ id: numb
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:error.create"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:error.create`));
     }
 
     return res.json();
@@ -72,7 +74,7 @@ export async function updateProject(id: number, data: UpdateProjectData): Promis
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:error.update"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:error.update`));
     }
 
     return res.json();
@@ -83,7 +85,7 @@ export async function fetchProjectMembers(projectId: number): Promise<Member[]> 
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:members.error.load"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:members.error.load`));
     }
 
     return res.json();
@@ -98,7 +100,7 @@ export async function addProjectMember(projectId: number, userId: number, role: 
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:members.error.add"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:members.error.add`));
     }
 
     return res.json();
@@ -113,7 +115,7 @@ export async function updateProjectMember(projectId: number, userId: number, rol
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:members.error.update"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:members.error.update`));
     }
 
     return res.json();
@@ -126,7 +128,7 @@ export async function removeProjectMember(projectId: number, userId: number): Pr
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:members.error.delete"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:members.error.delete`));
     }
 }
 
@@ -137,6 +139,6 @@ export async function deleteProject(id: number): Promise<void> {
 
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t("projects:error.delete"));
+        throw new Error(body?.message ?? i18n.t(`${NS.projects}:error.delete`));
     }
 }

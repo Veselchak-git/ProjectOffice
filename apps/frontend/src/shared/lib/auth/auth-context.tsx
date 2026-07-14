@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { NS } from "@helpdesk-portal/i18n";
 import { type FC, type PropsWithChildren, createContext, useCallback, useContext, useEffect } from "react";
 
 import { i18n } from "@/shared/lib/i18n";
@@ -88,7 +89,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
             if (!res.ok) {
                 const body = await res.json().catch(() => null);
-                throw new Error(body?.message ?? i18n.t("auth:error.invalidCredentials"));
+                throw new Error(body?.message ?? i18n.t(`${NS.auth}:error.invalidCredentials`));
             }
 
             const body = await res.json();

@@ -1,16 +1,10 @@
+import { NS } from "@helpdesk-portal/i18n";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    type OnChangeFn,
-    type PaginationState,
-    type SortingState,
-    createColumnHelper,
-    getCoreRowModel,
-    useReactTable
-} from "@tanstack/react-table";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
+import { useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,24 +12,24 @@ import { formatDate } from "@/shared/lib/format-date";
 import { i18n } from "@/shared/lib/i18n";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 
-import { DataTable, DataTablePagination } from "@/shared/ui/data-table";
+import { Table } from "@/shared/ui/table";
 
 import { createUser, deleteUser, fetchUsers, updateUser } from "../api/users";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../model/users";
 import "./UsersPage.css";
 
 const ROLE_OPTIONS = [
-    { value: "GUEST", label: i18n.t("users:roles.guest") },
-    { value: "USER", label: i18n.t("users:roles.user") },
-    { value: "ADMIN", label: i18n.t("users:roles.admin") }
+    { value: "GUEST", label: i18n.t(`${NS.users}:roles.guest`) },
+    { value: "USER", label: i18n.t(`${NS.users}:roles.user`) },
+    { value: "ADMIN", label: i18n.t(`${NS.users}:roles.admin`) }
 ];
 
 const columnHelper = createColumnHelper<User>();
 
 export const UsersPage: FC = () => {
-    const { t } = useTranslation("users");
+    const { t } = useTranslation(NS.users);
     const queryClient = useQueryClient();
-    const [paginationState, setPaginationState] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+    const [pageIndex, setPageIndex] = useState(0);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [searchInput, setSearchInput] = useState("");
     const [debouncedQ, setDebouncedQ] = useState("");
@@ -50,25 +44,20 @@ export const UsersPage: FC = () => {
         min: 5
     });
 
-    const pagination = useMemo<PaginationState>(() => {
-        if (perPage === paginationState.pageSize) return paginationState;
-        const oldOffset = paginationState.pageIndex * paginationState.pageSize;
-        const newPageIndex = Math.floor(oldOffset / perPage);
-        return { pageIndex: newPageIndex, pageSize: perPage };
-    }, [paginationState, perPage]);
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedQ(searchInput), 400);
-        return () => clearTimeout(timer);
-    }, [searchInput]);
-
-    useEffect(() => {
-        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
-    }, [debouncedQ]);
+    const handleSearchChange = (value: string) => {
+        setSearchInput(value);
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+            setDebouncedQ(value);
+            setPageIndex(0);
+        }, 400);
+    };
 
     const sortBy = sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
-    const page = pagination.pageIndex + 1;
+    const page = pageIndex + 1;
 
     const userParams = {
         ...(debouncedQ ? { q: debouncedQ } : {}),
@@ -113,11 +102,6 @@ export const UsersPage: FC = () => {
             setEditingUser(null);
         }
     });
-
-    const handleSortingChange: OnChangeFn<SortingState> = updater => {
-        setSorting(updater);
-        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
-    };
 
     const columns = [
         columnHelper.accessor("login", {
@@ -171,24 +155,6 @@ export const UsersPage: FC = () => {
         })
     ];
 
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const table = useReactTable({
-        data: users,
-        columns,
-        state: { pagination, sorting },
-        onPaginationChange: updater => {
-            setPaginationState(prev => {
-                const next = typeof updater === "function" ? updater(prev) : updater;
-                return { pageIndex: next.pageIndex, pageSize: perPage };
-            });
-        },
-        onSortingChange: handleSortingChange,
-        manualPagination: true,
-        pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
-        manualSorting: true,
-        getCoreRowModel: getCoreRowModel()
-    });
-
     return (
         <div className="users-page">
             <div className="users-page__title-area">
@@ -210,7 +176,7 @@ export const UsersPage: FC = () => {
                     placeholder={t("search.placeholder")}
                     startIcon={<SearchIcon />}
                     value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
+                    onChange={e => handleSearchChange(e.target.value)}
                 />
             </div>
 
@@ -220,9 +186,18 @@ export const UsersPage: FC = () => {
                 ) : isError && !data ? (
                     <p className="users-page__empty">{error instanceof Error ? error.message : t("error.loading")}</p>
                 ) : (
-                    <DataTable table={table}>
-                        <DataTablePagination table={table} total={total} />
-                    </DataTable>
+                    <Table
+                        data={users}
+                        columns={columns as ColumnDef<User>[]}
+                        getRowId={row => String(row.id)}
+                        total={total}
+                        pageSize={perPage}
+                        pageIndex={pageIndex}
+                        onPageIndexChange={setPageIndex}
+                        sorting={sorting}
+                        onSortingChange={setSorting}
+                        resetKey={debouncedQ}
+                    />
                 )}
             </div>
 
@@ -262,17 +237,17 @@ interface CreateUserFormProps {
 const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validateLogin(value: string): string | undefined {
-    if (!value.trim()) return i18n.t("users:validation.required.email");
-    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return i18n.t("users:validation.invalid.email");
+    if (!value.trim()) return i18n.t(`${NS.users}:validation.required.email`);
+    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return i18n.t(`${NS.users}:validation.invalid.email`);
 }
 
 function validatePasswordCreate(value: string): string | undefined {
-    if (!value) return i18n.t("users:validation.required.password");
-    if (value.length < 6) return i18n.t("users:validation.minLength.password");
+    if (!value) return i18n.t(`${NS.users}:validation.required.password`);
+    if (value.length < 6) return i18n.t(`${NS.users}:validation.minLength.password`);
 }
 
 const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
-    const { t: tu } = useTranslation("users");
+    const { t: tu } = useTranslation(NS.users);
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("GUEST");
@@ -293,7 +268,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
         try {
             await onSubmit({ login: login.trim(), password, role: role as CreateUserData["role"] });
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : i18n.t("users:create.error"));
+            setServerError(err instanceof Error ? err.message : i18n.t(`${NS.users}:create.error`));
         } finally {
             setSubmitting(false);
         }
@@ -346,7 +321,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     {submitting ? tu("create.submitting") : tu("create.submit")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    {tu("common:cancel")}
+                    {tu(`${NS.common}:cancel`)}
                 </Button>
             </div>
         </form>
@@ -360,7 +335,7 @@ interface EditUserFormProps {
 }
 
 const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
-    const { t: tu } = useTranslation("users");
+    const { t: tu } = useTranslation(NS.users);
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState<string>(user.role);
@@ -369,9 +344,11 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
     const [submitting, setSubmitting] = useState(false);
 
     const loginError =
-        login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim()) ? i18n.t("users:validation.invalid.email") : undefined;
+        login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim())
+            ? i18n.t(`${NS.users}:validation.invalid.email`)
+            : undefined;
     const passwordError =
-        password.length > 0 && password.length < 6 ? i18n.t("users:validation.minLength.password") : undefined;
+        password.length > 0 && password.length < 6 ? i18n.t(`${NS.users}:validation.minLength.password`) : undefined;
     const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
     const canSubmit = !submitting && !hasFieldErrors;
 
@@ -386,13 +363,13 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             if (password) data.password = password;
             if (role !== user.role) data.role = role as User["role"];
             if (Object.keys(data).length === 0) {
-                setServerError(i18n.t("users:edit.noChanges"));
+                setServerError(i18n.t(`${NS.users}:edit.noChanges`));
                 setSubmitting(false);
                 return;
             }
             await onSubmit(data);
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : i18n.t("users:edit.error"));
+            setServerError(err instanceof Error ? err.message : i18n.t(`${NS.users}:edit.error`));
         } finally {
             setSubmitting(false);
         }
@@ -458,7 +435,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                     {submitting ? tu("edit.saving") : tu("edit.save")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    {tu("common:cancel")}
+                    {tu(`${NS.common}:cancel`)}
                 </Button>
             </div>
         </form>

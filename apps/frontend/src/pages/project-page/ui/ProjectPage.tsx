@@ -1,11 +1,16 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { NS } from "@helpdesk-portal/i18n";
+import { Button } from "@helpdesk-portal/ui-kit";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
+import type { CreateIssueData } from "@/entities/issue";
+import { createIssue } from "@/entities/issue";
+import { IssueForm } from "@/entities/issue";
 import type { Project, UpdateProjectData } from "@/entities/project";
-import { deleteProject, fetchProject, updateProject } from "@/entities/project";
+import { deleteProject, fetchProject, fetchProjectMembers, updateProject } from "@/entities/project";
 import { MembersBlock, ProjectForm } from "@/entities/project";
 
 import { useAuth } from "@/shared/lib/auth";
@@ -35,7 +40,7 @@ const projectReducer = (_state: ProjectPageState, action: ProjectPageAction): Pr
 export const ProjectPage: FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { t } = useTranslation("projects");
+    const { t } = useTranslation(NS.projects);
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [{ project, loading, fetchError }, dispatch] = useReducer(projectReducer, {
@@ -45,6 +50,23 @@ export const ProjectPage: FC = () => {
     });
     const [editing, setEditing] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [creatingIssue, setCreatingIssue] = useState(false);
+
+    const projectId = Number(id);
+
+    const { data: projectMembers } = useQuery({
+        queryKey: ["project-members", projectId],
+        queryFn: () => fetchProjectMembers(projectId),
+        enabled: !!project && !loading
+    });
+
+    const { mutateAsync: createIssueMutate } = useMutation({
+        mutationFn: (dto: CreateIssueData) => createIssue(projectId, dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["issues"] });
+            setCreatingIssue(false);
+        }
+    });
 
     useEffect(() => {
         dispatch({ type: "start" });
@@ -146,20 +168,18 @@ export const ProjectPage: FC = () => {
                         </span>
                     </div>
                     <div className="project-page__actions">
-                        {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
-                            <button className="project-page__edit-btn" type="button" onClick={() => setEditing(true)}>
-                                {t("detail.edit")}
-                            </button>
+                        {project.myRole && project.myRole !== "VIEWER" && (
+                            <Button onClick={() => setCreatingIssue(true)}>{t("detail.issues.create")}</Button>
                         )}
                         {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
-                            <button
-                                className="project-page__delete-btn"
-                                type="button"
-                                onClick={handleDelete}
-                                disabled={deleting}
-                            >
+                            <Button variant="stroke" onClick={() => setEditing(true)}>
+                                {t("detail.edit")}
+                            </Button>
+                        )}
+                        {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
+                            <Button variant="stroke" color="error" onClick={handleDelete} disabled={deleting}>
                                 {deleting ? t("detail.deleting") : t("detail.delete")}
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -174,8 +194,8 @@ export const ProjectPage: FC = () => {
                         <div className="project-page__versions-list">
                             {project.versions.length > 0 ? (
                                 project.versions.map(v => (
-                                    <span key={v} className="project-page__version-tag">
-                                        {v}
+                                    <span key={v.id} className="project-page__version-tag">
+                                        {v.version}
                                     </span>
                                 ))
                             ) : (
@@ -205,6 +225,20 @@ export const ProjectPage: FC = () => {
                 currentUserId={user?.id ? Number(user.id) : undefined}
                 projectRole={project.myRole}
             />
+
+            {creatingIssue && (
+                <div className="project-page__overlay">
+                    <div className="project-page__modal">
+                        <h2 className="project-page__modal-title">{t("detail.issues.createTitle")}</h2>
+                        <IssueForm
+                            members={projectMembers ?? []}
+                            versions={project.versions}
+                            onSubmit={data => createIssueMutate(data as CreateIssueData).then(() => {})}
+                            onCancel={() => setCreatingIssue(false)}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

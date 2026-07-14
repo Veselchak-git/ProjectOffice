@@ -1,20 +1,21 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
 import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { NS } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import { Checkbox } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    type OnChangeFn,
-    type PaginationState,
-    type SortingState,
-    createColumnHelper,
-    getCoreRowModel,
-    useReactTable
-} from "@tanstack/react-table";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
+import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -27,8 +28,9 @@ import { useAuth } from "@/shared/lib/auth";
 import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
+import { useTable } from "@/shared/lib/use-table";
 
-import { DataTable, DataTablePagination } from "@/shared/ui/data-table";
+import { DataTable } from "@/shared/ui/data-table";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
@@ -45,14 +47,14 @@ const columnHelper = createColumnHelper<Project>();
 
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
-    const { t } = useTranslation("projects");
+    const { t } = useTranslation(NS.projects);
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
     const rowSelection = useAppSelector(selectRowSelection);
-    const [paginationState, setPaginationState] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+    const [pageIndex, setPageIndex] = useState(0);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [creating, setCreating] = useState(false);
     const [columnsOpen, setColumnsOpen] = useState(false);
@@ -76,16 +78,9 @@ export const ProjectsPage: FC = () => {
         min: 5
     });
 
-    const pagination = useMemo<PaginationState>(() => {
-        if (perPage === paginationState.pageSize) return paginationState;
-        const oldOffset = paginationState.pageIndex * paginationState.pageSize;
-        const newPageIndex = Math.floor(oldOffset / perPage);
-        return { pageIndex: newPageIndex, pageSize: perPage };
-    }, [paginationState, perPage]);
-
     const sortBy = sorting[0]?.id === "tasks" ? "taskCount" : sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
-    const page = pagination.pageIndex + 1;
+    const page = pageIndex + 1;
 
     const projectParams = {
         page,
@@ -113,11 +108,6 @@ export const ProjectsPage: FC = () => {
             setCreating(false);
         }
     });
-
-    const handleSortingChange: OnChangeFn<SortingState> = updater => {
-        setSorting(updater);
-        setPaginationState(prev => ({ ...prev, pageIndex: 0 }));
-    };
 
     const columns = [
         columnHelper.display({
@@ -160,11 +150,12 @@ export const ProjectsPage: FC = () => {
             header: t("table.versions"),
             enableSorting: false,
             cell: info => {
-                const versions = info.getValue() as string[];
+                const versions = info.getValue() as { id: number; version: string }[];
                 if (versions.length === 0) return "-";
+                const first = versions[0]!;
                 return (
                     <>
-                        {versions[0]}
+                        {first.version}
                         {versions.length > 1 && (
                             <span className="projects-table__version-extra"> +{versions.length - 1}</span>
                         )}
@@ -203,24 +194,19 @@ export const ProjectsPage: FC = () => {
         dispatch(setColumnOrder(next));
     }
 
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const table = useReactTable({
+    const { table } = useTable({
         data: projects,
-        columns,
-        state: {
-            columnOrder,
-            pagination,
-            sorting,
-            columnVisibility,
-            rowSelection
-        },
-        onPaginationChange: updater => {
-            setPaginationState(prev => {
-                const next = typeof updater === "function" ? updater(prev) : updater;
-                return { pageIndex: next.pageIndex, pageSize: perPage };
-            });
-        },
-        onSortingChange: handleSortingChange,
+        columns: columns as ColumnDef<Project>[],
+        getRowId: row => String(row.id),
+        total,
+        pageSize: perPage,
+        pageIndex,
+        onPageIndexChange: setPageIndex,
+        sorting,
+        onSortingChange: setSorting,
+        columnVisibility,
+        columnOrder,
+        rowSelection,
         onColumnOrderChange: updater => {
             const next = typeof updater === "function" ? updater(columnOrder) : updater;
             dispatch(setColumnOrder(next));
@@ -233,11 +219,6 @@ export const ProjectsPage: FC = () => {
             const next = typeof updater === "function" ? updater(rowSelection) : updater;
             dispatch(setRowSelection(next));
         },
-        getRowId: row => String(row.id),
-        manualPagination: true,
-        pageCount: perPage > 0 ? Math.ceil(total / perPage) : -1,
-        manualSorting: true,
-        getCoreRowModel: getCoreRowModel(),
         enableRowSelection: true
     });
 
@@ -303,9 +284,7 @@ export const ProjectsPage: FC = () => {
                         {error instanceof Error ? error.message : t("error.loading")}
                     </p>
                 ) : (
-                    <DataTable table={table} onRowDoubleClick={row => navigate(`/projects/${row.id}`)}>
-                        <DataTablePagination table={table} total={total} />
-                    </DataTable>
+                    <DataTable table={table} onRowDoubleClick={row => navigate(`/projects/${row.id}`)} total={total} />
                 )}
             </div>
 
@@ -367,7 +346,7 @@ const SortableColumnItem: FC<{
 };
 
 const StatusBadge: FC<{ status: Project["status"] }> = ({ status }) => {
-    const { t } = useTranslation("projects");
+    const { t } = useTranslation(NS.projects);
     const isActive = status === "ACTIVE";
 
     return (
