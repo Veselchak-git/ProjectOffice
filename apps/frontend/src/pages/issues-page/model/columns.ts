@@ -10,8 +10,6 @@ export const ALL_COLUMNS = [
     { id: "createdAt", label: `${NS.issues}:table.created` }
 ] as const;
 
-export type ColumnId = (typeof ALL_COLUMNS)[number]["id"];
-
 export const COLUMN_IDS = ALL_COLUMNS.map(c => c.id);
 
 export const DEFAULT_COLUMN_ORDER = ["select", ...COLUMN_IDS];

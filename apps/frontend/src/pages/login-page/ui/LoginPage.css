@@ -30,22 +30,6 @@
         height: 100%;
     }
 
-    .theme-toggle {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        z-index: 1000;
-        padding: 8px 16px;
-        border: 1px solid var(--semantic-border-default);
-        border-radius: 8px;
-        background-color: var(--semantic-bg-surface);
-        color: var(--semantic-text-primary);
-        cursor: pointer;
-        font-family: Geologica;
-        font-size: 13px;
-        line-height: 1;
-    }
-
     .login-layout {
         display: flex;
         align-items: center;

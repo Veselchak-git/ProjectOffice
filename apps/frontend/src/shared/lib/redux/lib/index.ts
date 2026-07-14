@@ -6,4 +6,3 @@
  * Все права защищены
  */
 export * from "./app-types";
-export * from "./thunk-type";

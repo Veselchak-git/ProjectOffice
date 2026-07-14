@@ -10,6 +10,5 @@ export {
     updateProjectMember,
     removeProjectMember
 } from "./api/projects";
-export type { FetchProjectsResponse } from "./api/projects";
 export { ProjectForm } from "./ui/ProjectForm";
 export { MembersBlock } from "./ui/MembersBlock";

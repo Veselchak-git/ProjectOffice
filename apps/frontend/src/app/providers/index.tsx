@@ -10,7 +10,6 @@ import type { FC, PropsWithChildren } from "react";
 
 import { AuthProvider } from "@/shared/lib/auth";
 
-import { FakeProviderWithValue } from "./FakeProviderWithValue";
 import { I18nProvider } from "./I18nProvider";
 import { QueryProvider } from "./Query";
 import { ReduxProvider } from "./Redux";
@@ -21,9 +20,7 @@ export const Providers: FC<PropsWithChildren> = ({ children }) => {
             <ReduxProvider>
                 <AuthProvider>
                     <UiKitThemeProvider>
-                        <FakeProviderWithValue>
-                            <I18nProvider>{children}</I18nProvider>
-                        </FakeProviderWithValue>
+                        <I18nProvider>{children}</I18nProvider>
                     </UiKitThemeProvider>
                 </AuthProvider>
             </ReduxProvider>

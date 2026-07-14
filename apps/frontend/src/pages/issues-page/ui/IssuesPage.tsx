@@ -6,13 +6,7 @@ import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import { Checkbox } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import {
-    type ColumnDef,
-    type RowSelectionState,
-    type SortingState,
-    type VisibilityState,
-    createColumnHelper
-} from "@tanstack/react-table";
+import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -91,20 +85,6 @@ export const IssuesPage: FC = () => {
 
     const issues = data?.issues ?? [];
     const total = data?.total ?? 0;
-
-    function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
-
-        const prev = columnOrder;
-        const oldIndex = prev.indexOf(String(active.id));
-        const newIndex = prev.indexOf(String(over.id));
-        if (oldIndex === -1 || newIndex === -1) return;
-
-        const next = [...prev];
-        next.splice(newIndex, 0, ...next.splice(oldIndex, 1));
-        dispatch(setColumnOrder(next));
-    }
 
     const statusLabels: Record<string, string> = {
         NEW: t("status.new"),
@@ -190,6 +170,49 @@ export const IssuesPage: FC = () => {
         })
     ];
 
+    const { table } = useTable({
+        data: issues,
+        columns: columns as ColumnDef<Issue>[],
+        getRowId: row => String(row.id),
+        total,
+        pageSize: perPage,
+        pageIndex,
+        onPageIndexChange: setPageIndex,
+        sorting,
+        onSortingChange: setSorting,
+        columnVisibility,
+        columnOrder,
+        rowSelection,
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        },
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
+        onRowSelectionChange: updater => {
+            const next = typeof updater === "function" ? updater(rowSelection) : updater;
+            dispatch(setRowSelection(next));
+        },
+        resetKey: undefined,
+        enableRowSelection: true
+    });
+
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const prev = columnOrder;
+        const oldIndex = prev.indexOf(String(active.id));
+        const newIndex = prev.indexOf(String(over.id));
+        if (oldIndex === -1 || newIndex === -1) return;
+
+        const next = [...prev];
+        next.splice(newIndex, 0, ...next.splice(oldIndex, 1));
+        dispatch(setColumnOrder(next));
+    }
+
     return (
         <div className="issues-page">
             <div className="issues-page__title-area">
@@ -202,6 +225,40 @@ export const IssuesPage: FC = () => {
                         <ExportIcon />
                         {t("actions.export")}
                     </button>
+                    <div className="issues-page__columns-wrapper" ref={columnsRef}>
+                        <button
+                            className="issues-page__columns-btn"
+                            type="button"
+                            onClick={() => setColumnsOpen(v => !v)}
+                        >
+                            <GearIcon />
+                            {t("actions.columns")}
+                        </button>
+
+                        {columnsOpen && (
+                            <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                                <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
+                                    <div className="issues-page__columns-dropdown">
+                                        {columnOrder
+                                            .filter(id => id !== "select")
+                                            .map(id => {
+                                                const col = ALL_COLUMNS.find(c => c.id === id);
+                                                if (!col) return null;
+                                                return (
+                                                    <SortableColumnItem
+                                                        key={col.id}
+                                                        id={col.id}
+                                                        label={t(col.label)}
+                                                        isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
+                                                        onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
+                                                    />
+                                                );
+                                            })}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -211,150 +268,12 @@ export const IssuesPage: FC = () => {
                 ) : isError && !data ? (
                     <p className="issues-page__empty">{error instanceof Error ? error.message : t("error.loading")}</p>
                 ) : (
-                    <IssuesTable
-                        issues={issues}
-                        columns={columns as ColumnDef<Issue>[]}
-                        columnOrder={columnOrder}
-                        sorting={sorting}
-                        columnVisibility={columnVisibility}
-                        rowSelection={rowSelection}
-                        perPage={perPage}
-                        total={total}
-                        pageIndex={pageIndex}
-                        onPageIndexChange={setPageIndex}
-                        columnsOpen={columnsOpen}
-                        columnsRef={columnsRef}
-                        setColumnsOpen={setColumnsOpen}
-                        onSortingChange={setSorting}
-                        onColumnOrderChange={updater => {
-                            const next = typeof updater === "function" ? updater(columnOrder) : updater;
-                            dispatch(setColumnOrder(next));
-                        }}
-                        onColumnVisibilityChange={updater => {
-                            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
-                            dispatch(setColumnVisibility(next));
-                        }}
-                        onRowSelectionChange={updater => {
-                            const next = typeof updater === "function" ? updater(rowSelection) : updater;
-                            dispatch(setRowSelection(next));
-                        }}
-                        handleDragEnd={handleDragEnd}
-                        navigate={navigate}
-                        t={t}
-                    />
+                    <DataTable table={table} onRowDoubleClick={row => navigate(`/tasks/${row.id}`)} total={total} />
                 )}
             </div>
         </div>
     );
 };
-
-interface IssuesTableProps {
-    issues: Issue[];
-    columns: ColumnDef<Issue>[];
-    columnOrder: string[];
-    sorting: SortingState;
-    columnVisibility: VisibilityState;
-    rowSelection: RowSelectionState;
-    perPage: number;
-    total: number;
-    pageIndex: number;
-    onPageIndexChange: (pageIndex: number) => void;
-    columnsOpen: boolean;
-    columnsRef: React.RefObject<HTMLDivElement | null>;
-    setColumnsOpen: (v: boolean | ((prev: boolean) => boolean)) => void;
-    onSortingChange: (updater: SortingState | ((prev: SortingState) => SortingState)) => void;
-    onColumnOrderChange: (updater: string[] | ((prev: string[]) => string[])) => void;
-    onColumnVisibilityChange: (
-        updater: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)
-    ) => void;
-    onRowSelectionChange: (
-        updater: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)
-    ) => void;
-    handleDragEnd: (event: DragEndEvent) => void;
-    navigate: (path: string) => void;
-    t: (key: string) => string;
-}
-
-function IssuesTable({
-    issues,
-    columns,
-    columnOrder,
-    sorting,
-    columnVisibility,
-    rowSelection,
-    perPage,
-    total,
-    pageIndex,
-    onPageIndexChange,
-    columnsOpen,
-    columnsRef,
-    setColumnsOpen,
-    onSortingChange,
-    onColumnOrderChange,
-    onColumnVisibilityChange,
-    onRowSelectionChange,
-    handleDragEnd,
-    navigate,
-    t
-}: IssuesTableProps) {
-    const { table } = useTable({
-        data: issues,
-        columns,
-        getRowId: row => String(row.id),
-        total,
-        pageSize: perPage,
-        pageIndex,
-        onPageIndexChange,
-        sorting,
-        onSortingChange,
-        columnVisibility,
-        columnOrder,
-        rowSelection,
-        onColumnOrderChange,
-        onColumnVisibilityChange,
-        onRowSelectionChange,
-        resetKey: undefined,
-        enableRowSelection: true
-    });
-
-    return (
-        <div className="issues-page__table-wrapper">
-            <div className="issues-page__table-toolbar">
-                <div className="issues-page__columns-wrapper" ref={columnsRef}>
-                    <button className="issues-page__columns-btn" type="button" onClick={() => setColumnsOpen(v => !v)}>
-                        <GearIcon />
-                        {t("actions.columns")}
-                    </button>
-
-                    {columnsOpen && (
-                        <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-                            <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
-                                <div className="issues-page__columns-dropdown">
-                                    {columnOrder
-                                        .filter(id => id !== "select")
-                                        .map(id => {
-                                            const col = ALL_COLUMNS.find(c => c.id === id);
-                                            if (!col) return null;
-                                            return (
-                                                <SortableColumnItem
-                                                    key={col.id}
-                                                    id={col.id}
-                                                    label={t(col.label)}
-                                                    isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
-                                                    onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
-                                                />
-                                            );
-                                        })}
-                                </div>
-                            </SortableContext>
-                        </DndContext>
-                    )}
-                </div>
-            </div>
-            <DataTable table={table} onRowDoubleClick={row => navigate(`/tasks/${row.id}`)} total={total} />
-        </div>
-    );
-}
 
 interface SortableColumnItemProps {
     id: string;
