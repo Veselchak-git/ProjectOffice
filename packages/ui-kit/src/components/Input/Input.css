@@ -124,6 +124,12 @@
         }
     }
 
+    [data-color-mode="dark"] .ui-kit-input {
+        --input-error-bg: var(--red-900);
+        --input-error-border-color: var(--red-400);
+        --input-error-text: var(--red-300);
+    }
+
     .ui-kit-input-size-l {
         --input-min-height: 48px;
         --input-padding-inline: 16px;
