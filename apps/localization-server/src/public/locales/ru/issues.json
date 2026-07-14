@@ -1,0 +1,120 @@
+{
+    "page": {
+        "title": "Задачи",
+        "subtitle": "Задачи, назначенные на Вас — {{total}}"
+    },
+    "table": {
+        "title": "НАЗВАНИЕ",
+        "project": "ПРОЕКТ",
+        "status": "СТАТУС",
+        "priority": "ПРИОРИТЕТ",
+        "category": "КАТЕГОРИЯ",
+        "assignee": "ИСПОЛНИТЕЛЬ",
+        "created": "СОЗДАН"
+    },
+    "status": {
+        "new": "Новая",
+        "acknowledged": "Подтверждена",
+        "confirmed": "Принята в работу",
+        "assigned": "Назначена",
+        "resolved": "Решена",
+        "closed": "Закрыта"
+    },
+    "priority": {
+        "critical": "Критичный",
+        "serious": "Серьёзный",
+        "minor": "Незначительный",
+        "general": "Общий вопрос"
+    },
+    "category": {
+        "bug": "Ошибка",
+        "feature": "Функциональность",
+        "task": "Задача",
+        "improvement": "Улучшение",
+        "question": "Вопрос"
+    },
+    "reproducibility": {
+        "always": "Всегда",
+        "sometimes": "Иногда",
+        "randomly": "Случайно",
+        "notReproducible": "Не воспроизводится",
+        "notAttempted": "Не пробовал"
+    },
+    "actions": {
+        "columns": "Колонки",
+        "export": "Экспорт"
+    },
+    "form": {
+        "title": {
+            "label": "Название",
+            "placeholder": "Введите название задачи"
+        },
+        "category": {
+            "label": "Категория"
+        },
+        "priority": {
+            "label": "Приоритет"
+        },
+        "reproducibility": {
+            "label": "Воспроизводимость",
+            "none": "Не выбрана"
+        },
+        "version": {
+            "label": "Версия продукта",
+            "none": "Не выбрана"
+        },
+        "assignee": {
+            "label": "Исполнитель",
+            "none": "Не назначен"
+        },
+        "status": {
+            "label": "Статус"
+        },
+        "description": {
+            "label": "Описание",
+            "placeholder": "Введите описание задачи"
+        },
+        "additionalInfo": {
+            "label": "Дополнительная информация",
+            "placeholder": "Введите дополнительную информацию"
+        },
+        "solution": {
+            "label": "Решение",
+            "placeholder": "Введите описание решения"
+        },
+        "submit": "Создать",
+        "save": "Сохранить",
+        "cancel": "Отмена"
+    },
+    "detail": {
+        "back": "← Назад",
+        "backToList": "Вернуться к списку",
+        "editTitle": "Редактирование задачи",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "confirmDelete": "Вы уверены, что хотите удалить задачу?",
+        "info": {
+            "project": "Проект",
+            "category": "Категория",
+            "priority": "Приоритет",
+            "reproducibility": "Воспроизводимость",
+            "version": "Версия продукта",
+            "description": "Описание",
+            "additionalInfo": "Дополнительная информация",
+            "reporter": "Автор",
+            "assignee": "Исполнитель",
+            "created": "Дата создания",
+            "updated": "Дата обновления",
+            "solution": "Решение"
+        }
+    },
+    "loading": "Загрузка задач…",
+    "error": {
+        "loading": "Ошибка загрузки задач",
+        "loadOne": "Ошибка загрузки задачи",
+        "notFound": "Задача не найдена",
+        "create": "Ошибка создания задачи",
+        "update": "Ошибка обновления задачи",
+        "delete": "Ошибка удаления задачи"
+    }
+}

@@ -1,0 +1,120 @@
+{
+    "page": {
+        "title": "Tasks",
+        "subtitle": "Issues assigned to you — {{total}}"
+    },
+    "table": {
+        "title": "TITLE",
+        "project": "PROJECT",
+        "status": "STATUS",
+        "priority": "PRIORITY",
+        "category": "CATEGORY",
+        "assignee": "ASSIGNEE",
+        "created": "CREATED"
+    },
+    "status": {
+        "new": "New",
+        "acknowledged": "Acknowledged",
+        "confirmed": "Confirmed",
+        "assigned": "Assigned",
+        "resolved": "Resolved",
+        "closed": "Closed"
+    },
+    "priority": {
+        "critical": "Critical",
+        "serious": "Serious",
+        "minor": "Minor",
+        "general": "General"
+    },
+    "category": {
+        "bug": "Bug",
+        "feature": "Feature",
+        "task": "Task",
+        "improvement": "Improvement",
+        "question": "Question"
+    },
+    "reproducibility": {
+        "always": "Always",
+        "sometimes": "Sometimes",
+        "randomly": "Randomly",
+        "notReproducible": "Not reproducible",
+        "notAttempted": "Not attempted"
+    },
+    "actions": {
+        "columns": "Columns",
+        "export": "Export"
+    },
+    "form": {
+        "title": {
+            "label": "Title",
+            "placeholder": "Enter issue title"
+        },
+        "category": {
+            "label": "Category"
+        },
+        "priority": {
+            "label": "Priority"
+        },
+        "reproducibility": {
+            "label": "Reproducibility",
+            "none": "Not selected"
+        },
+        "version": {
+            "label": "Product version",
+            "none": "Not selected"
+        },
+        "assignee": {
+            "label": "Assignee",
+            "none": "Not assigned"
+        },
+        "status": {
+            "label": "Status"
+        },
+        "description": {
+            "label": "Description",
+            "placeholder": "Enter issue description"
+        },
+        "additionalInfo": {
+            "label": "Additional info",
+            "placeholder": "Enter additional information"
+        },
+        "solution": {
+            "label": "Solution",
+            "placeholder": "Enter solution description"
+        },
+        "submit": "Create",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "detail": {
+        "back": "← Back",
+        "backToList": "Back to list",
+        "editTitle": "Edit issue",
+        "edit": "Edit",
+        "delete": "Delete",
+        "confirmDelete": "Are you sure you want to delete this task?",
+        "info": {
+            "project": "Project",
+            "category": "Category",
+            "priority": "Priority",
+            "reproducibility": "Reproducibility",
+            "version": "Product version",
+            "description": "Description",
+            "additionalInfo": "Additional info",
+            "reporter": "Reporter",
+            "assignee": "Assignee",
+            "created": "Created",
+            "updated": "Updated",
+            "solution": "Solution"
+        }
+    },
+    "loading": "Loading issues…",
+    "error": {
+        "loading": "Error loading issues",
+        "loadOne": "Error loading issue",
+        "notFound": "Issue not found",
+        "create": "Error creating issue",
+        "update": "Error updating issue",
+        "delete": "Error deleting issue"
+    }
+}
