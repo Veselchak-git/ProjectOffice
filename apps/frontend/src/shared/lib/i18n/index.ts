@@ -20,5 +20,5 @@ i18n.use(HttpBackend)
     });
 
 export { i18n };
-export { localeSlice, setLocale } from "./locale-slice";
+export { setLocale } from "./locale-slice";
 export type { Locale, LocaleState } from "./locale-slice";

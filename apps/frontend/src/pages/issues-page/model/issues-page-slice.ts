@@ -38,8 +38,7 @@ export const issuesPageSlice = createSlice({
     }
 });
 
-export const { setColumnVisibility, setColumnOrder, setRowSelection, resetRowSelection, resetPageState } =
-    issuesPageSlice.actions;
+export const { setColumnVisibility, setColumnOrder, setRowSelection } = issuesPageSlice.actions;
 
 const selectIssuesPage = (state: AppState) => state.issuesPage;
 

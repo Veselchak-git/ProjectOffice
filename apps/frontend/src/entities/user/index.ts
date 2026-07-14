@@ -1,2 +1,2 @@
-export type { User } from "./model/user";
-export { fetchUsers } from "./api/users";
+export type { CreateUserData, FetchUsersParams, FetchUsersResponse, UpdateUserData, User } from "./model/user";
+export { createUser, deleteUser, fetchAllUsers, fetchUsers, updateUser } from "./api/users";
