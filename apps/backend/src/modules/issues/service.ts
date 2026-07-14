@@ -1,6 +1,13 @@
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
-import { ProjectMemberRole, Role } from "@/generated/prisma/enums.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
+import {
+    IssueCategory,
+    IssuePriority,
+    IssueStatus,
+    ProjectMemberRole,
+    Role,
+} from "@/generated/prisma/enums.js";
+
 
 import type {
     IssueListResponse,
@@ -20,13 +27,13 @@ type IssueRow = {
     id: number;
     title: string;
     projectId: number;
-    category: string;
-    priority: string;
+    category: IssueCategory;
+    priority: IssuePriority;
     reproducibility: string | null;
     productVersionId: number | null;
     description: string | null;
     additionalInfo: string | null;
-    status: string;
+    status: IssueStatus;
     assigneeId: number | null;
     reporterId: number;
     solution: string | null;

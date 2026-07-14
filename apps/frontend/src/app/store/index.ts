@@ -9,6 +9,7 @@ import { combineSlices, configureStore } from "@reduxjs/toolkit";
 
 import { issuesPageSlice } from "@/pages/issues-page/model/issues-page-slice";
 import { projectsPageSlice } from "@/pages/projects-page/model/projects-page-slice";
+import { usersPageSlice } from "@/pages/users-page/model/users-page-slice";
 
 import { authSlice } from "@/shared/lib/auth";
 
@@ -18,6 +19,7 @@ export const rootReducer = combineSlices(authSlice).withLazyLoadedSlices<LazyLoa
 
 rootReducer.inject(projectsPageSlice);
 rootReducer.inject(issuesPageSlice);
+rootReducer.inject(usersPageSlice);
 
 export const store = configureStore({
     reducer: rootReducer,

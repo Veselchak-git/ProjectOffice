@@ -7,6 +7,7 @@
  */
 import type { IssuesPageState } from "@/pages/issues-page/model/issues-page-slice";
 import type { ProjectsPageState } from "@/pages/projects-page/model/projects-page-slice";
+import type { UsersPageState } from "@/pages/users-page/model/users-page-slice";
 
 import type { AuthState } from "@/shared/lib/auth";
 import type { LocaleState } from "@/shared/lib/i18n";
@@ -16,4 +17,5 @@ export interface LazyLoadedReduxSlices {
     locale: LocaleState;
     projectsPage: ProjectsPageState;
     issuesPage: IssuesPageState;
+    usersPage: UsersPageState;
 }

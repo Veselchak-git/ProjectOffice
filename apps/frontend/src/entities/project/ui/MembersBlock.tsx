@@ -4,7 +4,7 @@ import { useEffect, useReducer, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import { fetchUsers } from "@/entities/user";
+import { fetchAllUsers } from "@/entities/user";
 import type { User } from "@/entities/user";
 
 import { addProjectMember, fetchProjectMembers, removeProjectMember, updateProjectMember } from "../api/projects";
@@ -104,7 +104,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
     useEffect(() => {
         dispatch({ type: "start" });
         let cancelled = false;
-        Promise.all([fetchProjectMembers(projectId), fetchUsers()])
+        Promise.all([fetchProjectMembers(projectId), fetchAllUsers()])
             .then(([membersData, usersData]) => {
                 if (!cancelled) dispatch({ type: "loaded", members: membersData, users: usersData });
             })
