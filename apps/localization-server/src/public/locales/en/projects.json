@@ -40,6 +40,12 @@
             "tasks": "Tasks",
             "responsible": "Responsible",
             "created": "Created date"
+        },
+        "issues": {
+            "title": "Project issues",
+            "empty": "No issues in this project yet",
+            "create": "Create issue",
+            "createTitle": "Create issue"
         }
     },
     "form": {
