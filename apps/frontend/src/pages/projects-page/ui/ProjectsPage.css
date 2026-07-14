@@ -221,6 +221,10 @@
         color: var(--semantic-text-primary);
     }
 
+    .projects-table__version-extra {
+        color: var(--semantic-text-tertiary);
+    }
+
     .projects-table__tasks {
         width: 120px;
         min-width: 120px;

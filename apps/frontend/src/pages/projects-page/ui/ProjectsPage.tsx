@@ -159,7 +159,18 @@ export const ProjectsPage: FC = () => {
         columnHelper.accessor("versions", {
             header: t("table.versions"),
             enableSorting: false,
-            cell: info => info.getValue()[0] ?? "-"
+            cell: info => {
+                const versions = info.getValue() as string[];
+                if (versions.length === 0) return "-";
+                return (
+                    <>
+                        {versions[0]}
+                        {versions.length > 1 && (
+                            <span className="projects-table__version-extra"> +{versions.length - 1}</span>
+                        )}
+                    </>
+                );
+            }
         }),
         columnHelper.accessor("taskCount", {
             id: "tasks",
