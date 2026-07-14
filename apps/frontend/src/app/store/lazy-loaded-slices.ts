@@ -5,6 +5,7 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
+import type { IssuesPageState } from "@/pages/issues-page/model/issues-page-slice";
 import type { ProjectsPageState } from "@/pages/projects-page/model/projects-page-slice";
 
 import type { AuthState } from "@/shared/lib/auth";
@@ -14,4 +15,5 @@ export interface LazyLoadedReduxSlices {
     auth: AuthState;
     locale: LocaleState;
     projectsPage: ProjectsPageState;
+    issuesPage: IssuesPageState;
 }

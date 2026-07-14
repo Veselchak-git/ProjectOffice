@@ -45,14 +45,14 @@ const mapProject = (p: {
     createdAt: Date;
     _count: { versions: number; issues: number };
     memberships: { user: { login: string }; role: string }[];
-    versions: { version: string }[];
+    versions: { id: number; version: string }[];
 }) => ({
     id: p.id,
     name: p.name,
     description: p.description,
     status: p.status as "ACTIVE" | "ARCHIVED",
     versionCount: p._count.versions,
-    versions: p.versions.map(v => v.version),
+    versions: p.versions.map(v => ({ id: v.id, version: v.version })),
     taskCount: p._count.issues,
     responsible: findResponsible(p.memberships),
     createdAt: p.createdAt.toISOString(),
@@ -78,7 +78,7 @@ export const getProjectsListService = async (
     const include = {
         _count: { select: { versions: true, issues: true } },
         memberships: { select: { role: true, user: { select: { login: true } } } },
-        versions: { select: { version: true }, orderBy: { id: "desc" as const } },
+        versions: { select: { id: true, version: true }, orderBy: { id: "desc" as const } },
     } as const;
 
     const [projects, total, active] = await prisma.$transaction([
@@ -107,7 +107,7 @@ export const getProjectByIdService = async (
         include: {
             _count: { select: { versions: true, issues: true } },
             memberships: { select: { role: true, user: { select: { login: true } } } },
-            versions: { select: { version: true }, orderBy: { id: "desc" } },
+            versions: { select: { id: true, version: true }, orderBy: { id: "desc" } },
         },
     });
 
@@ -125,7 +125,7 @@ export const getProjectByIdService = async (
         description: project.description,
         status: project.status as "ACTIVE" | "ARCHIVED",
         versionCount: project._count.versions,
-        versions: project.versions.map(v => v.version),
+        versions: project.versions.map(v => ({ id: v.id, version: v.version })),
         taskCount: project._count.issues,
         responsible: findResponsible(project.memberships),
         createdAt: project.createdAt.toISOString(),

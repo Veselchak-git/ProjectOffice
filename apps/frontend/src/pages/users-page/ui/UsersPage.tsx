@@ -11,8 +11,9 @@ import { useTranslation } from "react-i18next";
 import { formatDate } from "@/shared/lib/format-date";
 import { i18n } from "@/shared/lib/i18n";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
+import { useTable } from "@/shared/lib/use-table";
 
-import { Table } from "@/shared/ui/table";
+import { DataTable } from "@/shared/ui/data-table";
 
 import { createUser, deleteUser, fetchUsers, updateUser } from "../api/users";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "../model/users";
@@ -155,6 +156,19 @@ export const UsersPage: FC = () => {
         })
     ];
 
+    const { table } = useTable({
+        data: users,
+        columns: columns as ColumnDef<User>[],
+        getRowId: row => String(row.id),
+        total,
+        pageSize: perPage,
+        pageIndex,
+        onPageIndexChange: setPageIndex,
+        sorting,
+        onSortingChange: setSorting,
+        resetKey: debouncedQ
+    });
+
     return (
         <div className="users-page">
             <div className="users-page__title-area">
@@ -186,18 +200,7 @@ export const UsersPage: FC = () => {
                 ) : isError && !data ? (
                     <p className="users-page__empty">{error instanceof Error ? error.message : t("error.loading")}</p>
                 ) : (
-                    <Table
-                        data={users}
-                        columns={columns as ColumnDef<User>[]}
-                        getRowId={row => String(row.id)}
-                        total={total}
-                        pageSize={perPage}
-                        pageIndex={pageIndex}
-                        onPageIndexChange={setPageIndex}
-                        sorting={sorting}
-                        onSortingChange={setSorting}
-                        resetKey={debouncedQ}
-                    />
+                    <DataTable table={table} total={total} />
                 )}
             </div>
 

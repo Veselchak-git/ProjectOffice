@@ -1,0 +1,365 @@
+@layer pages {
+    .issues-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .issues-page__title-area {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .issues-page__title-text {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .issues-page__title-heading {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    .issues-page__title-subtitle {
+        font-family: Geologica;
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 140%;
+        color: var(--semantic-text-secondary);
+        margin: 0;
+    }
+
+    .issues-page__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .issues-page__export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 20px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: transparent;
+        color: var(--semantic-text-primary);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
+    }
+
+    .issues-page__export-btn:hover {
+        background-color: var(--semantic-fill-primary-hover);
+        border-color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .issues-page__export-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .issues-page__columns-wrapper {
+        position: relative;
+    }
+
+    .issues-page__columns-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 20px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: transparent;
+        color: var(--semantic-text-primary);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
+    }
+
+    .issues-page__columns-btn svg {
+        width: 20px;
+        height: 20px;
+        color: var(--semantic-text-primary);
+    }
+
+    .issues-page__columns-btn:hover {
+        background-color: var(--semantic-fill-primary-hover);
+        border-color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .issues-page__columns-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        min-width: 200px;
+        background-color: var(--semantic-bg-surface-elevated);
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        z-index: 100;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .issues-page__columns-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-family: Geologica;
+        font-size: 14px;
+        color: var(--semantic-text-primary);
+        transition: background-color 0.15s;
+        user-select: none;
+    }
+
+    .issues-page__columns-option:hover:not(.issues-page__columns-option--dragging) {
+        background-color: var(--semantic-fill-primary-hover);
+    }
+
+    .issues-page__columns-option--dragging {
+        background-color: var(--semantic-fill-primary-selected);
+        opacity: 0.5;
+    }
+
+    .issues-page__columns-label {
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .issues-page__columns-drag-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border: none;
+        background: none;
+        color: var(--semantic-text-secondary);
+        cursor: grab;
+        flex-shrink: 0;
+    }
+
+    .issues-page__columns-drag-btn:hover {
+        color: var(--semantic-text-primary);
+    }
+
+    .issues-page__columns-drag-btn:active {
+        cursor: grabbing;
+    }
+
+    .issues-page__table-area {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .issues-page__table-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .issues-page__table-toolbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .issues-page__empty {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--semantic-text-secondary);
+        font-size: 14px;
+    }
+
+    .issues-page__table-area .data-table {
+        min-width: 1200px;
+    }
+
+    .issues-page__table-area .data-table th {
+        height: 41px;
+        padding: 0 12px;
+        text-align: left;
+        font-family: Geologica;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--semantic-text-secondary);
+        border-bottom: 1px solid var(--semantic-border-default);
+        background-color: var(--semantic-bg-surface);
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .issues-page__table-area .data-table td {
+        height: 57px;
+        padding: 0 12px;
+        font-family: Geologica;
+        font-size: 13px;
+        color: var(--semantic-text-primary);
+        border-bottom: 1px solid var(--semantic-border-default);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 0;
+    }
+
+    .issues-page__table-area .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .issues-page__table-area .data-table tr:hover td {
+        background-color: var(--semantic-fill-primary-hover);
+    }
+
+    .issues-page__table-area .data-table-wrapper {
+        border: 1px solid var(--semantic-border-default);
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        background-color: var(--semantic-bg-surface);
+    }
+
+    .issues-page__table-area .data-table-pagination {
+        border: 1px solid var(--semantic-border-default);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .issues-table__status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .issues-table__status-badge--new {
+        background-color: var(--orange-100);
+        color: var(--orange-800);
+    }
+
+    .issues-table__status-badge--acknowledged {
+        background-color: var(--neutral-300);
+        color: var(--neutral-800);
+    }
+
+    .issues-table__status-badge--confirmed {
+        background-color: var(--orange-200);
+        color: var(--orange-900);
+    }
+
+    .issues-table__status-badge--assigned {
+        background-color: var(--red-100);
+        color: var(--red-800);
+    }
+
+    .issues-table__status-badge--resolved {
+        background-color: var(--green-100);
+        color: var(--green-800);
+    }
+
+    .issues-table__status-badge--closed {
+        background-color: var(--neutral-400);
+        color: var(--neutral-900);
+    }
+
+    .issues-table__priority {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        width: fit-content;
+    }
+
+    .issues-table__priority--critical {
+        background-color: var(--red-100);
+        color: var(--red-800);
+    }
+
+    .issues-table__priority--serious {
+        background-color: var(--orange-200);
+        color: var(--orange-900);
+    }
+
+    .issues-table__priority--minor {
+        background-color: var(--orange-100);
+        color: var(--orange-800);
+    }
+
+    .issues-table__priority--general {
+        background-color: var(--semantic-bg-surface-elevated);
+        color: var(--semantic-text-secondary);
+    }
+}
+
+[data-color-mode="dark"] .issues-table__priority--critical {
+    background-color: var(--red-900);
+    color: var(--red-300);
+}
+
+[data-color-mode="dark"] .issues-table__priority--serious {
+    background-color: var(--orange-800);
+    color: var(--orange-200);
+}
+
+[data-color-mode="dark"] .issues-table__priority--minor {
+    background-color: var(--orange-900);
+    color: var(--orange-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--new {
+    background-color: var(--orange-900);
+    color: var(--orange-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--confirmed {
+    background-color: var(--orange-800);
+    color: var(--orange-200);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--assigned {
+    background-color: var(--red-900);
+    color: var(--red-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--resolved {
+    background-color: var(--green-900);
+    color: var(--green-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--acknowledged {
+    background-color: var(--neutral-800);
+    color: var(--neutral-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--closed {
+    background-color: var(--neutral-700);
+    color: var(--neutral-200);
+}

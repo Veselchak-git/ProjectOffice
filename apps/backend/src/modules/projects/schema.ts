@@ -1,5 +1,10 @@
 import { type Static, Type } from "@fastify/type-provider-typebox";
 
+const versionSchema = Type.Object({
+    id: Type.Number(),
+    version: Type.String(),
+});
+
 const projectMemberRoleSchema = Type.Union([
     Type.Literal("VIEWER"),
     Type.Literal("REPORTER"),
@@ -14,7 +19,7 @@ export const projectResponseSchema = Type.Object({
     description: Type.Union([Type.String(), Type.Null()]),
     status: Type.Union([Type.Literal("ACTIVE"), Type.Literal("ARCHIVED")]),
     versionCount: Type.Number(),
-    versions: Type.Array(Type.String()),
+    versions: Type.Array(versionSchema),
     taskCount: Type.Number(),
     responsible: Type.String(),
     createdAt: Type.String(),
@@ -55,7 +60,7 @@ const projectDetailResponseSchema = Type.Object({
     description: Type.Union([Type.String(), Type.Null()]),
     status: Type.Union([Type.Literal("ACTIVE"), Type.Literal("ARCHIVED")]),
     versionCount: Type.Number(),
-    versions: Type.Array(Type.String()),
+    versions: Type.Array(versionSchema),
     taskCount: Type.Number(),
     responsible: Type.String(),
     createdAt: Type.String(),

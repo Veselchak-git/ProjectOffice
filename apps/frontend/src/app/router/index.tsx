@@ -45,12 +45,26 @@ export const routes = createBrowserRouter([
             {
                 path: "tasks",
                 lazy: async () => {
-                    const { HomePage } = await import("@/pages/home-page");
+                    const { IssuesPage } = await import("@/pages/issues-page");
                     const { RequireRole } = await import("@/shared/lib/auth");
                     return {
                         Component: () => (
                             <RequireRole roles={["ADMIN", "USER"]}>
-                                <HomePage />
+                                <IssuesPage />
+                            </RequireRole>
+                        )
+                    };
+                }
+            },
+            {
+                path: "tasks/:id",
+                lazy: async () => {
+                    const { IssuePage } = await import("@/pages/issue-page");
+                    const { RequireRole } = await import("@/shared/lib/auth");
+                    return {
+                        Component: () => (
+                            <RequireRole roles={["ADMIN", "USER"]}>
+                                <IssuePage />
                             </RequireRole>
                         )
                     };

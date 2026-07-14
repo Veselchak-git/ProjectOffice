@@ -6,13 +6,18 @@ export interface Member {
     role: ProjectMemberRole;
 }
 
+export interface ProjectVersion {
+    id: number;
+    version: string;
+}
+
 export interface Project {
     id: number;
     name: string;
     description: string | null;
     status: "ACTIVE" | "ARCHIVED";
     versionCount: number;
-    versions: string[];
+    versions: ProjectVersion[];
     taskCount: number;
     responsible: string;
     members?: Member[];
