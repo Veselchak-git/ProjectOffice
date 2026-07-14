@@ -13,6 +13,7 @@
         "placeholder": "Search users…"
     },
     "actions": {
+        "columns": "Columns",
         "create": "Create user"
     },
     "create": {
