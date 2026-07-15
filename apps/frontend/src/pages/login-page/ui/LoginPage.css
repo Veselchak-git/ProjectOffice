@@ -113,4 +113,10 @@
         line-height: 1.3;
         width: 100%;
     }
+
+    [data-color-mode="dark"] .login-page__error-banner {
+        background-color: var(--red-950);
+        border-color: var(--red-400);
+        color: var(--red-400);
+    }
 }

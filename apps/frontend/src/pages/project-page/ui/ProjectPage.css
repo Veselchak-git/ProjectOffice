@@ -61,6 +61,11 @@
     color: var(--green-700);
 }
 
+[data-color-mode="dark"] .project-page__status--active {
+    background-color: var(--green-900);
+    color: var(--green-300);
+}
+
 .project-page__status--archived {
     background-color: var(--semantic-bg-surface-elevated);
     color: var(--semantic-text-tertiary);

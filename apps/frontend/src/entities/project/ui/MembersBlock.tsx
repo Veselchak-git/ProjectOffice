@@ -104,7 +104,11 @@ export const MembersBlock: FC<MembersBlockProps> = ({
     useEffect(() => {
         dispatch({ type: "start" });
         let cancelled = false;
-        Promise.all([fetchProjectMembers(projectId), fetchAllUsers()])
+
+        const usersPromise =
+            globalRole === "ADMIN" || projectRole === "MANAGER" ? fetchAllUsers() : Promise.resolve([] as User[]);
+
+        Promise.all([fetchProjectMembers(projectId), usersPromise])
             .then(([membersData, usersData]) => {
                 if (!cancelled) dispatch({ type: "loaded", members: membersData, users: usersData });
             })
@@ -114,7 +118,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
         return () => {
             cancelled = true;
         };
-    }, [projectId]);
+    }, [projectId, globalRole, projectRole]);
 
     const availableUsers = users.filter(u => !members.some(m => m.userId === u.id) && u.role !== "GUEST");
 
@@ -126,9 +130,14 @@ export const MembersBlock: FC<MembersBlockProps> = ({
             setSelectedUserId(null);
             setSelectedRole("VIEWER");
         } catch (err: unknown) {
+            const apiError = err as Error & { code?: string };
             dispatch({
                 type: "error",
-                message: err instanceof Error ? err.message : t(`${NS.projects}:members.error.add`)
+                message: apiError.code
+                    ? t(`${NS.projects}:error.${apiError.code}`, { defaultValue: apiError.message })
+                    : err instanceof Error
+                      ? err.message
+                      : t(`${NS.projects}:members.error.add`)
             });
         }
     };
@@ -141,9 +150,14 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                 queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             }
         } catch (err: unknown) {
+            const apiError = err as Error & { code?: string };
             dispatch({
                 type: "error",
-                message: err instanceof Error ? err.message : t(`${NS.projects}:members.error.update`)
+                message: apiError.code
+                    ? t(`${NS.projects}:error.${apiError.code}`, { defaultValue: apiError.message })
+                    : err instanceof Error
+                      ? err.message
+                      : t(`${NS.projects}:members.error.update`)
             });
         }
     };
@@ -159,9 +173,14 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                 queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             }
         } catch (err: unknown) {
+            const apiError = err as Error & { code?: string };
             dispatch({
                 type: "error",
-                message: err instanceof Error ? err.message : t(`${NS.projects}:members.error.delete`)
+                message: apiError.code
+                    ? t(`${NS.projects}:error.${apiError.code}`, { defaultValue: apiError.message })
+                    : err instanceof Error
+                      ? err.message
+                      : t(`${NS.projects}:members.error.delete`)
             });
         }
     };

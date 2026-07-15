@@ -33,10 +33,14 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
     const [status, setStatus] = useState<IssueStatus>((initial?.status as IssueStatus) ?? "NEW");
     const [solution, setSolution] = useState(initial?.solution ?? "");
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!title.trim()) return;
+        setError(null);
+        setFieldErrors({});
         setSubmitting(true);
         try {
             const result: CreateIssueData & { status?: IssueStatus; solution?: string } = {
@@ -55,6 +59,23 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                 if (solution) result.solution = solution;
             }
             await onSubmit(result);
+        } catch (err: unknown) {
+            const code = (err as Error & { code?: string }).code;
+            const message = err instanceof Error ? err.message : t("error.update");
+
+            const fieldMap: Record<string, string> = {
+                AUTH_FORBIDDEN_ASSIGNEE: "assigneeId",
+                AUTH_FORBIDDEN_STATUS_RESOLVED: "status",
+                AUTH_FORBIDDEN_STATUS_CLOSED: "status",
+                AUTH_FORBIDDEN_STATUS_NEW: "status"
+            };
+
+            const fieldName = code ? fieldMap[code] : undefined;
+            if (fieldName) {
+                setFieldErrors(prev => ({ ...prev, [fieldName]: t(`error.${code}`, { defaultValue: message }) }));
+            } else {
+                setError(code ? t(`error.${code}`, { defaultValue: message }) : message);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -62,6 +83,7 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
 
     return (
         <form className="issue-form" onSubmit={handleSubmit}>
+            {error && <div className="issue-form__error">{error}</div>}
             <Input
                 label={t("form.title.label")}
                 placeholder={t("form.title.placeholder")}
@@ -113,8 +135,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                             { value: "ALWAYS", label: t("reproducibility.always") },
                             { value: "SOMETIMES", label: t("reproducibility.sometimes") },
                             { value: "RANDOMLY", label: t("reproducibility.randomly") },
-                            { value: "NOT_REPRODUCIBLE", label: t("reproducibility.notReproducible") },
-                            { value: "NOT_ATTEMPTED", label: t("reproducibility.notAttempted") }
+                            { value: "NOT_REPRODUCIBLE", label: t("reproducibility.not_reproducible") },
+                            { value: "NOT_ATTEMPTED", label: t("reproducibility.not_attempted") }
                         ]}
                         value={reproducibility}
                         onValueChange={val => setReproducibility(val as Reproducibility | "")}
@@ -143,12 +165,23 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                     <label className="issue-form__label">{t("form.assignee.label")}</label>
                     <Select
                         usePortal={false}
+                        color={fieldErrors.assigneeId ? "error" : "default"}
+                        errorMessage={fieldErrors.assigneeId ?? ""}
                         options={[
                             { value: "", label: t("form.assignee.none") },
-                            ...members.map(m => ({ value: String(m.userId), label: m.login }))
+                            ...members
+                                .filter(m => m.role === "DEVELOPER" || m.role === "MANAGER")
+                                .map(m => ({ value: String(m.userId), label: m.login }))
                         ]}
                         value={String(assigneeId ?? "")}
-                        onValueChange={val => setAssigneeId(val ? Number(val) : null)}
+                        onValueChange={val => {
+                            setAssigneeId(val ? Number(val) : null);
+                            setFieldErrors(prev => {
+                                const next = { ...prev };
+                                delete next.assigneeId;
+                                return next;
+                            });
+                        }}
                     />
                 </div>
             )}
@@ -158,6 +191,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                     <label className="issue-form__label">{t("form.status.label")}</label>
                     <Select
                         usePortal={false}
+                        color={fieldErrors.status ? "error" : "default"}
+                        errorMessage={fieldErrors.status ?? ""}
                         options={[
                             { value: "NEW", label: t("status.new") },
                             { value: "ACKNOWLEDGED", label: t("status.acknowledged") },
@@ -167,7 +202,14 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                             { value: "CLOSED", label: t("status.closed") }
                         ]}
                         value={status}
-                        onValueChange={val => setStatus(val as IssueStatus)}
+                        onValueChange={val => {
+                            setStatus(val as IssueStatus);
+                            setFieldErrors(prev => {
+                                const next = { ...prev };
+                                delete next.status;
+                                return next;
+                            });
+                        }}
                     />
                 </div>
             )}

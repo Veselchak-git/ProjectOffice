@@ -9,16 +9,28 @@
     border-collapse: collapse;
 }
 
-.data-table__th {
+.data-table th {
+    height: 41px;
+    padding: 0 12px;
+    text-align: left;
+    font-family: Geologica;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--semantic-text-secondary);
+    border-bottom: 1px solid var(--semantic-border-default);
+    background-color: var(--semantic-bg-surface);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.data-table th {
     position: sticky;
     top: 0;
     z-index: 1;
-    white-space: nowrap;
 }
 
 .data-table__th--sortable {
     cursor: pointer;
-    user-select: none;
 }
 
 .data-table__th--sortable:hover {
@@ -28,6 +40,27 @@
 .data-table__sort-icon {
     margin-left: 4px;
     font-size: 0.75em;
+}
+
+.data-table td {
+    height: 57px;
+    padding: 0 12px;
+    font-family: Geologica;
+    font-size: 13px;
+    color: var(--semantic-text-primary);
+    border-bottom: 1px solid var(--semantic-border-default);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 0;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+    background-color: var(--semantic-fill-primary-hover);
 }
 
 .data-table__row--clickable {
@@ -51,6 +84,13 @@
     padding: 2rem 1rem;
 }
 
+.data-table-wrapper {
+    border: 1px solid var(--semantic-border-default);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background-color: var(--semantic-bg-surface);
+}
+
 .data-table-pagination {
     display: flex;
     align-items: center;
@@ -60,6 +100,58 @@
     border-top: 1px solid var(--semantic-border-default);
     background-color: var(--semantic-bg-surface);
     color: var(--semantic-text-secondary);
+    border: 1px solid var(--semantic-border-default);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.sortable-column-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-primary);
+    transition: background-color 0.15s;
+    user-select: none;
+}
+
+.sortable-column-item:hover {
+    background-color: var(--semantic-fill-primary-hover);
+}
+
+.sortable-column-item--dragging {
+    background-color: var(--semantic-fill-primary-selected);
+    opacity: 0.5;
+}
+
+.sortable-column-item__label {
+    flex: 1;
+    cursor: pointer;
+}
+
+.sortable-column-item__drag-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--semantic-text-secondary);
+    cursor: grab;
+    flex-shrink: 0;
+}
+
+.sortable-column-item__drag-btn:hover {
+    color: var(--semantic-text-primary);
+}
+
+.sortable-column-item__drag-btn:active {
+    cursor: grabbing;
 }
 
 .data-table-pagination__btn {
@@ -104,4 +196,17 @@
     font-size: 0.875em;
     color: var(--semantic-text-secondary);
     white-space: nowrap;
+}
+
+.data-table-pagination__selected {
+    padding: 0 12px 0 0;
+    font-size: 0.875em;
+    color: var(--semantic-text-secondary);
+    white-space: nowrap;
+}
+
+.data-table-pagination__selected::before {
+    content: "|";
+    margin-right: 12px;
+    color: var(--semantic-border-default);
 }

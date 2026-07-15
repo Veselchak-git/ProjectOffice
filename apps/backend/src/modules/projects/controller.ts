@@ -139,7 +139,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         {
             schema: updateProjectSchema,
             preHandler: [
-                fastify.authenticate,
+                fastify.authorize(Role.USER, Role.ADMIN),
                 checkProjectAccess({
                     requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
@@ -166,7 +166,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         {
             schema: addProjectMemberSchema,
             preHandler: [
-                fastify.authenticate,
+                fastify.authorize(Role.USER, Role.ADMIN),
                 checkProjectAccess({
                     requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
@@ -182,7 +182,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         {
             schema: updateProjectMemberSchema,
             preHandler: [
-                fastify.authenticate,
+                fastify.authorize(Role.USER, Role.ADMIN),
                 checkProjectAccess({
                     requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
@@ -199,7 +199,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         {
             schema: deleteProjectMemberSchema,
             preHandler: [
-                fastify.authenticate,
+                fastify.authorize(Role.USER, Role.ADMIN),
                 checkProjectAccess({
                     requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
@@ -215,7 +215,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         {
             schema: deleteProjectSchema,
             preHandler: [
-                fastify.authenticate,
+                fastify.authorize(Role.USER, Role.ADMIN),
                 checkProjectAccess({
                     requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,

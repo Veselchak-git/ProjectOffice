@@ -1,5 +1,6 @@
 import { NS } from "@helpdesk-portal/i18n";
 
+import { handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -25,24 +26,12 @@ export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssu
 
     const query = searchParams.toString();
     const res = await apiClient(`/api/issues${query ? `?${query}` : ""}`);
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.issues}:error.loading`));
-    }
-
-    return res.json();
+    return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${NS.issues}:error.loading`));
 }
 
 export async function fetchIssue(id: number): Promise<Issue> {
     const res = await apiClient(`/api/issues/${id}`);
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.issues}:error.loadOne`));
-    }
-
-    return res.json();
+    return handleApiResponse<Issue>(res, i18n.t(`${NS.issues}:error.loadOne`));
 }
 
 export async function fetchProjectIssues(projectId: number, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
@@ -58,13 +47,7 @@ export async function fetchProjectIssues(projectId: number, params?: FetchIssues
 
     const query = searchParams.toString();
     const res = await apiClient(`/api/projects/${projectId}/issues${query ? `?${query}` : ""}`);
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.issues}:error.loading`));
-    }
-
-    return res.json();
+    return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${NS.issues}:error.loading`));
 }
 
 export async function createIssue(projectId: number, data: CreateIssueData): Promise<Issue> {
@@ -73,13 +56,7 @@ export async function createIssue(projectId: number, data: CreateIssueData): Pro
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.issues}:error.create`));
-    }
-
-    return res.json();
+    return handleApiResponse<Issue>(res, i18n.t(`${NS.issues}:error.create`));
 }
 
 export async function updateIssue(id: number, data: UpdateIssueData): Promise<Issue> {
@@ -88,22 +65,12 @@ export async function updateIssue(id: number, data: UpdateIssueData): Promise<Is
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.issues}:error.update`));
-    }
-
-    return res.json();
+    return handleApiResponse<Issue>(res, i18n.t(`${NS.issues}:error.update`));
 }
 
 export async function deleteIssue(id: number): Promise<void> {
     const res = await apiClient(`/api/issues/${id}`, {
         method: "DELETE"
     });
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.issues}:error.delete`));
-    }
+    await handleApiResponse<void>(res, i18n.t(`${NS.issues}:error.delete`));
 }

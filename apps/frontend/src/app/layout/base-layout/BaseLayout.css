@@ -159,10 +159,6 @@
     box-sizing: border-box;
 }
 
-.header__search {
-    width: 320px;
-}
-
 .header__logo {
     width: 102px;
     height: 24px;
@@ -249,7 +245,11 @@
 }
 
 .header__profile-menu-item--danger {
-    color: var(--semantic-text-danger);
+    color: var(--red-700);
+}
+
+[data-color-mode="dark"] .header__profile-menu-item--danger {
+    color: var(--red-400);
 }
 
 .header__user {
@@ -330,13 +330,22 @@
 }
 
 .theme-switch input:checked + .theme-switch__slider {
-    box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
-    border-color: #0974f1;
+    box-shadow: 0 0 20px rgba(78, 38, 250, 0.3);
+    border-color: var(--accent-600);
 }
 
 .theme-switch input:checked + .theme-switch__slider:before {
     transform: translateX(1.2em);
-    background-color: #0974f1;
+    background-color: var(--accent-600);
+}
+
+[data-color-mode="dark"] .theme-switch input:checked + .theme-switch__slider {
+    box-shadow: 0 0 20px rgba(166, 146, 252, 0.3);
+    border-color: var(--accent-400);
+}
+
+[data-color-mode="dark"] .theme-switch input:checked + .theme-switch__slider:before {
+    background-color: var(--accent-400);
 }
 
 .header__locale-switch {

@@ -25,19 +25,29 @@
 }
 
 .profile-page__error-banner {
-    background-color: var(--semantic-bg-danger);
-    color: var(--semantic-text-danger);
+    background-color: var(--red-100);
+    color: var(--red-700);
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 14px;
 }
 
+[data-color-mode="dark"] .profile-page__error-banner {
+    background-color: var(--red-950);
+    color: var(--red-400);
+}
+
 .profile-page__success-banner {
-    background-color: var(--semantic-bg-success);
-    color: var(--semantic-text-success);
+    background-color: var(--green-100);
+    color: var(--green-700);
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 14px;
+}
+
+[data-color-mode="dark"] .profile-page__success-banner {
+    background-color: var(--green-950);
+    color: var(--green-400);
 }
 
 .profile-page__reset {

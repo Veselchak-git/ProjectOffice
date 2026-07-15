@@ -1,7 +1,7 @@
 import type { FC, PropsWithChildren } from "react";
 import { Navigate } from "react-router";
 
-import { useAuth } from "./auth-context";
+import { useAuth } from "./use-auth";
 
 export const RequireAuth: FC<PropsWithChildren> = ({ children }) => {
     const { user, loading } = useAuth();

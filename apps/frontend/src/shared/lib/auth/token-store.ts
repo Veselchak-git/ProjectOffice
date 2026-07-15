@@ -10,18 +10,14 @@ let accessToken: string | null = (() => {
 
 export function setToken(token: string | null) {
     accessToken = token;
-    if (token) {
-        try {
+    try {
+        if (token) {
             localStorage.setItem(STORAGE_KEY, token);
-        } catch {
-            /* ignore */
-        }
-    } else {
-        try {
+        } else {
             localStorage.removeItem(STORAGE_KEY);
-        } catch {
-            /* ignore */
         }
+    } catch {
+        /* ignore */
     }
 }
 

@@ -8,7 +8,8 @@
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import fp from "fastify-plugin";
 
-import { JWT_DECORATOR_AUTHENTICATE } from "@/plugins/jwt-plugin/index.js";
+import { JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
+import { Role } from "@/generated/prisma/enums.js";
 
 import { AUTH_LOGIN_PATH, AUTH_LOGOUT_PATH, AUTH_ME_PATH, AUTH_ME_PASSWORD_PATH, AUTH_REFRESH_PATH } from "@/shared/routes.js";
 
@@ -54,7 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         AUTH_ME_PASSWORD_PATH,
         {
             schema: changePasswordSchema,
-            preHandler: [fastify.authenticate]
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)]
         },
         changePasswordService
     );
@@ -68,6 +69,6 @@ export const authControllerPlugin = fp(plugin, {
     // на самом верхнем уровне, но мы указываем USER_REPOSITORY_DECORATOR_NAME т.к. он нужен для работы с пользователями
     // и если он не будет зарегистрирован, то будет ошибка при попытке использовать userRepository
     decorators: {
-        fastify: [JWT_DECORATOR_AUTHENTICATE, USER_REPOSITORY_DECORATOR_NAME]
+        fastify: [JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE, USER_REPOSITORY_DECORATOR_NAME]
     }
 });

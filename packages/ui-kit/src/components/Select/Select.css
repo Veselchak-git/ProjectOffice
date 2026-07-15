@@ -125,6 +125,12 @@
         box-shadow: 0 0 0 2px var(--select-error-border-color);
     }
 
+    [data-color-mode="dark"] .ui-kit-select {
+        --select-error-bg: var(--red-900);
+        --select-error-border-color: var(--red-400);
+        --select-error-text: var(--red-300);
+    }
+
     /* Disabled state */
     .ui-kit-select.ui-kit-select-disabled {
         opacity: var(--select-disabled-opacity);
@@ -201,4 +207,5 @@
         position: absolute;
         right: 12px;
     }
+
 }

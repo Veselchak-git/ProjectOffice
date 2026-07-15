@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import fp from "fastify-plugin";
 
-import { JWT_DECORATOR_AUTHENTICATE } from "@/plugins/jwt-plugin/index.js";
+import { JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import { Role } from "@/generated/prisma/enums.js";
 import { AUDIT_LOG_AVAILABLE_PATH } from "@/shared/routes.js";
 
@@ -12,7 +12,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         AUDIT_LOG_AVAILABLE_PATH,
         {
             schema: getAuditLogAvailableSchema,
-            preHandler: [fastify.authenticate],
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
         },
         async request => {
             if (request.user.role === Role.ADMIN) {
@@ -32,6 +32,6 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
 export const auditLogControllerPlugin = fp(plugin, {
     name: "audit-log-controller",
     decorators: {
-        fastify: [JWT_DECORATOR_AUTHENTICATE],
+        fastify: [JWT_DECORATOR_AUTHORIZE],
     },
 });

@@ -1,3 +1,4 @@
+import type { PrismaClient } from "@/generated/prisma/client.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import {
@@ -5,6 +6,7 @@ import {
     IssuePriority,
     IssueStatus,
     ProjectMemberRole,
+    Reproducibility,
     Role,
 } from "@/generated/prisma/enums.js";
 
@@ -29,7 +31,7 @@ type IssueRow = {
     projectId: number;
     category: IssueCategory;
     priority: IssuePriority;
-    reproducibility: string | null;
+    reproducibility: Reproducibility | null;
     productVersionId: number | null;
     description: string | null;
     additionalInfo: string | null;
@@ -85,7 +87,7 @@ const include = {
 } as const;
 
 const checkProjectMember = async (
-    prisma: any,
+    prisma: PrismaClient,
     projectId: number,
     userId: number,
     requiredRoles?: string[],
@@ -111,7 +113,7 @@ const checkProjectMember = async (
     return member;
 };
 
-const getIssueOrThrow = async (prisma: any, id: number): Promise<IssueRow> => {
+const getIssueOrThrow = async (prisma: PrismaClient, id: number): Promise<IssueRow> => {
     const issue = await prisma.issue.findUnique({
         where: { id },
         include,
@@ -119,7 +121,7 @@ const getIssueOrThrow = async (prisma: any, id: number): Promise<IssueRow> => {
     if (!issue) {
         throw new AppError(HTTP_STATUS.NOT_FOUND, "Задача не найдена", "ISSUE_NOT_FOUND");
     }
-    return issue;
+    return issue as unknown as IssueRow;
 };
 
 export const getIssuesListService = async (
@@ -136,20 +138,16 @@ export const getIssuesListService = async (
     if (userRole === Role.ADMIN) {
         // ADMIN sees all issues
     } else {
-        const managerProjects = await prisma.projectMember.findMany({
-            where: { userId, role: ProjectMemberRole.MANAGER },
+        const userProjects = await prisma.projectMember.findMany({
+            where: { userId },
             select: { projectId: true },
         });
 
-        if (managerProjects.length > 0) {
-            const managerProjectIds = managerProjects.map(mp => mp.projectId);
-            where.OR = [
-                { assigneeId: userId },
-                { projectId: { in: managerProjectIds } },
-            ];
-        } else {
-            where.assigneeId = userId;
-        }
+        const projectIds = userProjects.map(up => up.projectId);
+        where.OR = [
+            { assigneeId: userId },
+            ...(projectIds.length > 0 ? [{ projectId: { in: projectIds } }] : []),
+        ];
     }
 
     if (q) where.title = { contains: q };
@@ -242,15 +240,24 @@ export const createIssueService = async (
         if (!assigneeMember) {
             throw new AppError(HTTP_STATUS.BAD_REQUEST, "Пользователь не является участником проекта", "INVALID_ASSIGNEE");
         }
+        if (assigneeMember.role !== "DEVELOPER" && assigneeMember.role !== "MANAGER") {
+            const assigneeUser = await prisma.user.findUnique({
+                where: { id: body.assigneeId },
+                select: { role: true },
+            });
+            if (assigneeUser?.role !== Role.ADMIN) {
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Пользователь не может быть назначен исполнителем", "INVALID_ASSIGNEE_ROLE");
+            }
+        }
     }
 
     const issue = await prisma.issue.create({
         data: {
             title: body.title,
             projectId,
-            category: body.category as any,
-            priority: body.priority as any,
-            reproducibility: (body.reproducibility ?? null) as any,
+            category: body.category,
+            priority: body.priority,
+            reproducibility: (body.reproducibility ?? null) as Reproducibility | null,
             productVersionId: body.productVersionId ?? null,
             description: body.description ?? null,
             additionalInfo: body.additionalInfo ?? null,
@@ -261,10 +268,10 @@ export const createIssueService = async (
         include,
     });
 
-    return mapIssue(issue, member?.role);
+    return mapIssue(issue as unknown as IssueRow, member?.role);
 };
 
-const DEVELOPER_ROLES = [ProjectMemberRole.DEVELOPER, ProjectMemberRole.MANAGER];
+const DEVELOPER_ROLES: ProjectMemberRole[] = [ProjectMemberRole.DEVELOPER, ProjectMemberRole.MANAGER];
 
 export const updateIssueService = async (
     request: FastifyRequestTypeBox<typeof updateIssueSchema>
@@ -292,7 +299,16 @@ export const updateIssueService = async (
         member !== undefined &&
         !DEVELOPER_ROLES.includes(member.role)
     ) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на назначение исполнителя", "AUTH_FORBIDDEN");
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на назначение исполнителя", "AUTH_FORBIDDEN_ASSIGNEE");
+    }
+
+    if (
+        body.status === "NEW" &&
+        issue.status !== "NEW" &&
+        member !== undefined &&
+        member.role !== ProjectMemberRole.MANAGER
+    ) {
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на изменение статуса на новый", "AUTH_FORBIDDEN_STATUS_NEW");
     }
 
     if (
@@ -301,14 +317,23 @@ export const updateIssueService = async (
         member !== undefined &&
         !DEVELOPER_ROLES.includes(member.role)
     ) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на решение задачи", "AUTH_FORBIDDEN");
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на решение задачи", "AUTH_FORBIDDEN_STATUS_RESOLVED");
+    }
+
+    if (
+        body.status === "CLOSED" &&
+        issue.status !== "CLOSED" &&
+        member !== undefined &&
+        !DEVELOPER_ROLES.includes(member.role)
+    ) {
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на закрытие задачи", "AUTH_FORBIDDEN_STATUS_CLOSED");
     }
 
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
-    if (body.category !== undefined) updateData.category = body.category as any;
-    if (body.priority !== undefined) updateData.priority = body.priority as any;
-    if (body.reproducibility !== undefined) updateData.reproducibility = body.reproducibility as any;
+    if (body.category !== undefined) updateData.category = body.category;
+    if (body.priority !== undefined) updateData.priority = body.priority;
+    if (body.reproducibility !== undefined) updateData.reproducibility = body.reproducibility as Reproducibility | null;
     if (body.productVersionId !== undefined) updateData.productVersionId = body.productVersionId;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.additionalInfo !== undefined) updateData.additionalInfo = body.additionalInfo;
@@ -322,6 +347,15 @@ export const updateIssueService = async (
         });
         if (!assigneeMember) {
             throw new AppError(HTTP_STATUS.BAD_REQUEST, "Пользователь не является участником проекта", "INVALID_ASSIGNEE");
+        }
+        if (assigneeMember.role !== "DEVELOPER" && assigneeMember.role !== "MANAGER") {
+            const assigneeUser = await prisma.user.findUnique({
+                where: { id: body.assigneeId },
+                select: { role: true },
+            });
+            if (assigneeUser?.role !== Role.ADMIN) {
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Пользователь не может быть назначен исполнителем", "INVALID_ASSIGNEE_ROLE");
+            }
         }
     }
 

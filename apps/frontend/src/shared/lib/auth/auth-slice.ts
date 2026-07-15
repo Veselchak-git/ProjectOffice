@@ -1,9 +1,11 @@
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 
+export type UserRole = "GUEST" | "USER" | "ADMIN";
+
 export interface AuthUser {
     id: string;
     login: string;
-    role: string;
+    role: UserRole;
 }
 
 export interface AuthState {
@@ -38,3 +40,6 @@ export const authSlice = createSlice({
 });
 
 export const { setUser, setLoading, loginSuccess, logoutAction } = authSlice.actions;
+
+export const selectAuthUser = (state: { auth: AuthState }) => state.auth.user;
+export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.loading;

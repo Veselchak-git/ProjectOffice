@@ -8,8 +8,6 @@
 import { UiKitThemeProvider } from "@helpdesk-portal/ui-kit";
 import type { FC, PropsWithChildren } from "react";
 
-import { AuthProvider } from "@/shared/lib/auth";
-
 import { I18nProvider } from "./I18nProvider";
 import { QueryProvider } from "./Query";
 import { ReduxProvider } from "./Redux";
@@ -18,11 +16,9 @@ export const Providers: FC<PropsWithChildren> = ({ children }) => {
     return (
         <QueryProvider>
             <ReduxProvider>
-                <AuthProvider>
-                    <UiKitThemeProvider>
-                        <I18nProvider>{children}</I18nProvider>
-                    </UiKitThemeProvider>
-                </AuthProvider>
+                <UiKitThemeProvider>
+                    <I18nProvider>{children}</I18nProvider>
+                </UiKitThemeProvider>
             </ReduxProvider>
         </QueryProvider>
     );

@@ -46,6 +46,22 @@
     --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
 }
 
+.issue-form__error {
+    padding: 10px 12px;
+    border: 1px solid var(--red-500);
+    border-radius: 8px;
+    background-color: var(--red-100);
+    color: var(--red-700);
+    font-family: Geologica;
+    font-size: 13px;
+}
+
+[data-color-mode="dark"] .issue-form__error {
+    border-color: var(--red-400);
+    background-color: var(--red-950);
+    color: var(--red-400);
+}
+
 .issue-form__actions {
     display: flex;
     gap: 8px;

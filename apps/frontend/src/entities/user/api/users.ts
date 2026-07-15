@@ -1,5 +1,6 @@
 import { NS } from "@helpdesk-portal/i18n";
 
+import { handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -7,13 +8,7 @@ import type { CreateUserData, FetchUsersParams, FetchUsersResponse, UpdateUserDa
 
 export async function fetchAllUsers(): Promise<User[]> {
     const res = await apiClient("/api/users");
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.loading`));
-    }
-
-    const data = (await res.json()) as { users: User[] };
+    const data = await handleApiResponse<{ users: User[] }>(res, i18n.t(`${NS.users}:error.loading`));
     return data.users;
 }
 
@@ -27,13 +22,7 @@ export async function fetchUsers(params?: FetchUsersParams): Promise<FetchUsersR
 
     const query = searchParams.toString();
     const res = await apiClient(`/api/users${query ? `?${query}` : ""}`);
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.loading`));
-    }
-
-    return res.json();
+    return handleApiResponse<FetchUsersResponse>(res, i18n.t(`${NS.users}:error.loading`));
 }
 
 export async function createUser(data: CreateUserData): Promise<User> {
@@ -42,24 +31,14 @@ export async function createUser(data: CreateUserData): Promise<User> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.create`));
-    }
-
-    return res.json();
+    return handleApiResponse<User>(res, i18n.t(`${NS.users}:error.create`));
 }
 
 export async function deleteUser(id: number): Promise<void> {
     const res = await apiClient(`/api/users/${id}`, {
         method: "DELETE"
     });
-
-    if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message ?? i18n.t(`${NS.users}:error.delete`));
-    }
+    await handleApiResponse<void>(res, i18n.t(`${NS.users}:error.delete`));
 }
 
 export async function updateUser(id: number, data: UpdateUserData): Promise<User> {
@@ -73,11 +52,5 @@ export async function updateUser(id: number, data: UpdateUserData): Promise<User
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
     });
-
-    if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.message ?? i18n.t(`${NS.users}:error.update`));
-    }
-
-    return res.json();
+    return handleApiResponse<User>(res, i18n.t(`${NS.users}:error.update`));
 }

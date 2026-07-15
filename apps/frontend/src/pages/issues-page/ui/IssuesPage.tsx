@@ -1,11 +1,10 @@
 import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { NS } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
-import { Checkbox } from "@helpdesk-portal/ui-kit";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { Button } from "@helpdesk-portal/ui-kit";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { useEffect, useRef, useState } from "react";
 import type { FC } from "react";
@@ -13,14 +12,20 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import type { FetchIssuesParams, Issue } from "@/entities/issue";
-import { fetchIssues } from "@/entities/issue";
+import { deleteIssue, fetchIssues } from "@/entities/issue";
 
-import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
+import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 import { useTable } from "@/shared/lib/use-table";
 
-import { DataTable } from "@/shared/ui/data-table";
+import {
+    DataTable,
+    SortableColumnItem,
+    createDateColumn,
+    createSelectColumn,
+    reorderColumn
+} from "@/shared/ui/data-table";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
@@ -38,6 +43,7 @@ const columnHelper = createColumnHelper<Issue>();
 export const IssuesPage: FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation(NS.issues);
+    const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
@@ -103,27 +109,7 @@ export const IssuesPage: FC = () => {
     };
 
     const columns = [
-        columnHelper.display({
-            id: "select",
-            size: 48,
-            enableSorting: false,
-            enableHiding: false,
-            header: ({ table }) => (
-                <Checkbox
-                    inputSize="m"
-                    checked={table.getIsAllRowsSelected()}
-                    indeterminate={table.getIsSomeRowsSelected()}
-                    onCheckedChange={checked => table.toggleAllRowsSelected(checked)}
-                />
-            ),
-            cell: ({ row }) => (
-                <Checkbox
-                    inputSize="m"
-                    checked={row.getIsSelected()}
-                    onCheckedChange={row.getToggleSelectedHandler()}
-                />
-            )
-        }),
+        createSelectColumn(columnHelper),
         columnHelper.accessor("title", {
             header: t("table.title"),
             enableSorting: true
@@ -162,12 +148,7 @@ export const IssuesPage: FC = () => {
             enableSorting: false,
             cell: info => info.getValue() ?? "—"
         }),
-        columnHelper.accessor("createdAt", {
-            id: "createdAt",
-            header: t("table.created"),
-            enableSorting: true,
-            cell: info => formatDate(info.getValue())
-        })
+        createDateColumn(columnHelper, t)
     ];
 
     const { table } = useTable({
@@ -199,18 +180,36 @@ export const IssuesPage: FC = () => {
         enableRowSelection: true
     });
 
+    usePersistColumnSettings({
+        page: "issues",
+        columnVisibility,
+        columnOrder,
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        }
+    });
+
+    const selectedIds = Object.keys(rowSelection).map(Number);
+    const selectedCount = selectedIds.length;
+
+    const { mutateAsync: deleteIssueMutate } = useMutation({
+        mutationFn: (id: number) => deleteIssue(id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["issues"] })
+    });
+
+    const handleDeleteSelected = async () => {
+        if (!window.confirm(t("confirm.deleteSelected", { count: selectedCount }))) return;
+        await Promise.all(selectedIds.map(id => deleteIssueMutate(id)));
+        dispatch(setRowSelection({}));
+    };
+
     function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
-
-        const prev = columnOrder;
-        const oldIndex = prev.indexOf(String(active.id));
-        const newIndex = prev.indexOf(String(over.id));
-        if (oldIndex === -1 || newIndex === -1) return;
-
-        const next = [...prev];
-        next.splice(newIndex, 0, ...next.splice(oldIndex, 1));
-        dispatch(setColumnOrder(next));
+        reorderColumn(event, columnOrder, next => dispatch(setColumnOrder(next)));
     }
 
     return (
@@ -221,6 +220,11 @@ export const IssuesPage: FC = () => {
                     <p className="issues-page__title-subtitle">{t("page.subtitle", { total })}</p>
                 </div>
                 <div className="issues-page__actions">
+                    {selectedCount > 0 && (
+                        <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
+                            {t("actions.deleteSelected", { count: selectedCount })}
+                        </Button>
+                    )}
                     <button className="issues-page__export-btn" type="button">
                         <ExportIcon />
                         {t("actions.export")}
@@ -271,50 +275,6 @@ export const IssuesPage: FC = () => {
                     <DataTable table={table} onRowDoubleClick={row => navigate(`/tasks/${row.id}`)} total={total} />
                 )}
             </div>
-        </div>
-    );
-};
-
-interface SortableColumnItemProps {
-    id: string;
-    label: string;
-    isVisible: boolean;
-    onToggle: () => void;
-}
-
-const GripIcon: FC = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <circle cx="5" cy="4" r="1.5" />
-        <circle cx="11" cy="4" r="1.5" />
-        <circle cx="5" cy="8" r="1.5" />
-        <circle cx="11" cy="8" r="1.5" />
-        <circle cx="5" cy="12" r="1.5" />
-        <circle cx="11" cy="12" r="1.5" />
-    </svg>
-);
-
-const SortableColumnItem: FC<SortableColumnItemProps> = ({ id, label, isVisible, onToggle }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-
-    const style: React.CSSProperties = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1
-    };
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={`issues-page__columns-option${isDragging ? " issues-page__columns-option--dragging" : ""}`}
-        >
-            <button className="issues-page__columns-drag-btn" type="button" {...attributes} {...listeners}>
-                <GripIcon />
-            </button>
-            <Checkbox inputSize="m" checked={isVisible} onCheckedChange={onToggle} />
-            <span className="issues-page__columns-label" onClick={onToggle}>
-                {label}
-            </span>
         </div>
     );
 };

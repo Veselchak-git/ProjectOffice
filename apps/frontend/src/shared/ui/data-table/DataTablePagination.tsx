@@ -16,6 +16,7 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
     const pageCount = table.getPageCount();
     const from = total === 0 ? 0 : pageIndex * pageSize + 1;
     const to = Math.min((pageIndex + 1) * pageSize, total);
+    const selectedCount = table.getSelectedRowModel().rows.length;
 
     return (
         <div className="data-table-pagination">
@@ -35,6 +36,10 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
             </button>
 
             <span className="data-table-pagination__info">{t("showing", { from, to, total })}</span>
+
+            {selectedCount > 0 && (
+                <span className="data-table-pagination__selected">{t("selectedCount", { count: selectedCount })}</span>
+            )}
 
             <button
                 className="data-table-pagination__btn"

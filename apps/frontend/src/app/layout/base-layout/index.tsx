@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { RequireAuth, apiClient, useAuth } from "@/shared/lib/auth";
+import type { UserRole } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
 import "./BaseLayout.css";
@@ -23,7 +24,7 @@ interface MenuItem {
     label: string;
     path: string;
     icon: FC;
-    roles?: string[];
+    roles?: UserRole[];
 }
 
 const menuItems: MenuItem[] = [
