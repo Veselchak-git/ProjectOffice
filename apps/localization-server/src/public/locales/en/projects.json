@@ -78,7 +78,8 @@
         "loadOne": "Error loading project",
         "create": "Error creating project",
         "update": "Error updating project",
-        "delete": "Error deleting project"
+        "delete": "Error deleting project",
+        "LAST_MANAGER": "Cannot remove or demote the last project manager"
     },
     "members": {
         "title": "Project members",

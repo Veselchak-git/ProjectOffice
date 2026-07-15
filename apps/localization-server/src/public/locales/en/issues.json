@@ -37,8 +37,8 @@
         "always": "Always",
         "sometimes": "Sometimes",
         "randomly": "Randomly",
-        "notReproducible": "Not reproducible",
-        "notAttempted": "Not attempted"
+        "not_reproducible": "Not reproducible",
+        "not_attempted": "Not attempted"
     },
     "actions": {
         "columns": "Columns",
@@ -119,6 +119,13 @@
         "notFound": "Issue not found",
         "create": "Error creating issue",
         "update": "Error updating issue",
-        "delete": "Error deleting issue"
+        "delete": "Error deleting issue",
+        "AUTH_FORBIDDEN": "Insufficient permissions for this action",
+        "AUTH_FORBIDDEN_ASSIGNEE": "You don't have permission to change the assignee",
+        "AUTH_FORBIDDEN_STATUS_RESOLVED": "You don't have permission to resolve issues",
+        "AUTH_FORBIDDEN_STATUS_CLOSED": "You don't have permission to close issues",
+        "AUTH_FORBIDDEN_STATUS_NEW": "You don't have permission to set status back to New",
+        "INVALID_ASSIGNEE": "User is not a project member",
+        "INVALID_ASSIGNEE_ROLE": "User cannot be assigned as executor"
     }
 }

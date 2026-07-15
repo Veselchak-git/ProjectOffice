@@ -37,8 +37,8 @@
         "always": "Всегда",
         "sometimes": "Иногда",
         "randomly": "Случайно",
-        "notReproducible": "Не воспроизводится",
-        "notAttempted": "Не пробовал"
+        "not_reproducible": "Не воспроизводится",
+        "not_attempted": "Не пробовал"
     },
     "actions": {
         "columns": "Колонки",
@@ -119,6 +119,13 @@
         "notFound": "Задача не найдена",
         "create": "Ошибка создания задачи",
         "update": "Ошибка обновления задачи",
-        "delete": "Ошибка удаления задачи"
+        "delete": "Ошибка удаления задачи",
+        "AUTH_FORBIDDEN": "Недостаточно прав для этого действия",
+        "AUTH_FORBIDDEN_ASSIGNEE": "Нет прав на изменение исполнителя",
+        "AUTH_FORBIDDEN_STATUS_RESOLVED": "Нет прав на решение задачи",
+        "AUTH_FORBIDDEN_STATUS_CLOSED": "Нет прав на закрытие задачи",
+        "AUTH_FORBIDDEN_STATUS_NEW": "Нет прав на изменение статуса на «Новый»",
+        "INVALID_ASSIGNEE": "Пользователь не является участником проекта",
+        "INVALID_ASSIGNEE_ROLE": "Пользователь не может быть назначен исполнителем"
     }
 }
