@@ -13,6 +13,7 @@
     "columns": "Columns",
     "noData": "No data",
     "showing": "{{from}}–{{to}} of {{total}}",
+    "selectedCount": "Selected: {{count}}",
     "pagination": {
         "of": "of"
     },

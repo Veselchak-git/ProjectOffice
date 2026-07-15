@@ -14,7 +14,12 @@
     },
     "actions": {
         "columns": "Колонки",
-        "create": "Создать пользователя"
+        "create": "Создать пользователя",
+        "deleteSelected": "Удалить ({{count}})",
+        "export": "Экспорт"
+    },
+    "confirm": {
+        "deleteSelected": "Удалить {{count}} выбранных пользователей?"
     },
     "create": {
         "title": "Создание пользователя",

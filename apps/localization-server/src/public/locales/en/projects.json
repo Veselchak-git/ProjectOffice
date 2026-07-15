@@ -19,7 +19,11 @@
     "actions": {
         "create": "Create project",
         "export": "Export",
-        "columns": "Columns"
+        "columns": "Columns",
+        "deleteSelected": "Delete ({{count}})"
+    },
+    "confirm": {
+        "deleteSelected": "Delete {{count}} selected projects?"
     },
     "create": {
         "title": "Create project",

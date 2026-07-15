@@ -14,7 +14,12 @@
     },
     "actions": {
         "columns": "Columns",
-        "create": "Create user"
+        "create": "Create user",
+        "deleteSelected": "Delete ({{count}})",
+        "export": "Export"
+    },
+    "confirm": {
+        "deleteSelected": "Delete {{count}} selected users?"
     },
     "create": {
         "title": "Create user",

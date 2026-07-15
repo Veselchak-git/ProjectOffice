@@ -13,6 +13,7 @@
     "columns": "Колонки",
     "noData": "Нет данных",
     "showing": "{{from}}–{{to}} из {{total}}",
+    "selectedCount": "Выбрано: {{count}}",
     "pagination": {
         "of": "из"
     },

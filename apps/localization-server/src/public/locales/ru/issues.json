@@ -42,7 +42,11 @@
     },
     "actions": {
         "columns": "Колонки",
-        "export": "Экспорт"
+        "export": "Экспорт",
+        "deleteSelected": "Удалить ({{count}})"
+    },
+    "confirm": {
+        "deleteSelected": "Удалить {{count}} выбранных задач?"
     },
     "form": {
         "title": {

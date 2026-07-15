@@ -19,7 +19,11 @@
     "actions": {
         "create": "Создать проект",
         "export": "Экспорт",
-        "columns": "Колонки"
+        "columns": "Колонки",
+        "deleteSelected": "Удалить ({{count}})"
+    },
+    "confirm": {
+        "deleteSelected": "Удалить {{count}} выбранных проектов?"
     },
     "create": {
         "title": "Создание проекта",

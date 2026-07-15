@@ -42,7 +42,11 @@
     },
     "actions": {
         "columns": "Columns",
-        "export": "Export"
+        "export": "Export",
+        "deleteSelected": "Delete ({{count}})"
+    },
+    "confirm": {
+        "deleteSelected": "Delete {{count}} selected issues?"
     },
     "form": {
         "title": {
