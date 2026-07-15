@@ -14,7 +14,7 @@ import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -25,6 +25,7 @@ import { ProjectForm } from "@/entities/project";
 
 import { useAuth } from "@/shared/lib/auth";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
+import { useClickOutside } from "@/shared/lib/use-click-outside";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 import { useTable } from "@/shared/lib/use-table";
@@ -65,15 +66,7 @@ export const ProjectsPage: FC = () => {
     const [columnsOpen, setColumnsOpen] = useState(false);
     const columnsRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (columnsRef.current && !columnsRef.current.contains(e.target as Node)) {
-                setColumnsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    useClickOutside(columnsRef, () => setColumnsOpen(false));
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { perPage, ready } = useDynamicPerPage(containerRef, {

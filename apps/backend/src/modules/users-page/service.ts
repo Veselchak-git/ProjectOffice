@@ -1,6 +1,8 @@
 import { Role } from "@/generated/prisma/client.js";
+import { assertNotLastOfRole } from "@/shared/lib/assert-last-role/index.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { hashPassword } from "@/shared/lib/hash-password/index.js";
+import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 
 import type {
@@ -19,18 +21,15 @@ export const getUsersService = async (
     const { q, page = 1, perPage = 20, sortBy, sortOrder = "asc" } = request.query;
 
     const where = q ? { login: { contains: q } } : {};
-    const orderBy = sortBy && USER_SORT_FIELDS.has(sortBy)
-        ? { [sortBy]: sortOrder }
-        : { id: "asc" as const };
-
-    const skip = (page - 1) * perPage;
+    const orderBy = buildOrderBy(USER_SORT_FIELDS, sortBy, sortOrder, { id: "asc" });
+    const { skip, take } = paginationArgs(page, perPage);
 
     const [users, total] = await request.server.prisma.$transaction([
         request.server.prisma.user.findMany({
             where,
             orderBy,
             skip,
-            take: perPage,
+            take,
             select: { id: true, login: true, role: true, createdAt: true },
         }),
         request.server.prisma.user.count({ where }),
@@ -112,12 +111,12 @@ export const updateUserService = async (
 
     if (role !== undefined) {
         if (user.role === Role.ADMIN && role !== Role.ADMIN) {
-            const adminCount = await request.server.prisma.user.count({
-                where: { role: Role.ADMIN },
-            });
-            if (adminCount <= 1) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя понизить единственного администратора", "LAST_ADMIN");
-            }
+            await assertNotLastOfRole(
+                request.server.prisma.user,
+                { role: Role.ADMIN },
+                "Нельзя понизить единственного администратора",
+                "LAST_ADMIN",
+            );
         }
         data.role = role;
     }
@@ -158,12 +157,12 @@ export const deleteUserService = async (
     }
 
     if (user.role === Role.ADMIN) {
-        const adminCount = await request.server.prisma.user.count({
-            where: { role: Role.ADMIN },
-        });
-        if (adminCount <= 1) {
-            throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить единственного администратора", "LAST_ADMIN");
-        }
+        await assertNotLastOfRole(
+            request.server.prisma.user,
+            { role: Role.ADMIN },
+            "Нельзя удалить единственного администратора",
+            "LAST_ADMIN",
+        );
     }
 
     await request.server.prisma.user.delete({ where: { id } });

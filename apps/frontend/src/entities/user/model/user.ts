@@ -1,3 +1,5 @@
+import type { PaginationQueryParams } from "@/shared/lib/api";
+
 export interface User {
     id: number;
     login: string;
@@ -17,13 +19,7 @@ export interface UpdateUserData {
     role?: "GUEST" | "USER" | "ADMIN";
 }
 
-export interface FetchUsersParams {
-    q?: string;
-    page?: number;
-    perPage?: number;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-}
+export type FetchUsersParams = PaginationQueryParams;
 
 export interface FetchUsersResponse {
     users: User[];

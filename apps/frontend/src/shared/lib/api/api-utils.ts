@@ -1,4 +1,9 @@
-export interface PaginationParams {
+export interface ApiErrorBody {
+    code?: string;
+    message?: string;
+}
+
+export interface PaginationQueryParams {
     q?: string;
     page?: number;
     perPage?: number;
@@ -6,9 +11,17 @@ export interface PaginationParams {
     sortOrder?: "asc" | "desc";
 }
 
-export interface ApiErrorBody {
-    code?: string;
-    message?: string;
+export function buildQueryString(params?: Record<string, string | number | null | undefined> | object): string {
+    if (!params) return "";
+
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params as Record<string, unknown>)) {
+        if (value === undefined || value === null || value === "") continue;
+        searchParams.set(key, String(value));
+    }
+
+    const query = searchParams.toString();
+    return query ? `?${query}` : "";
 }
 
 export async function handleApiResponse<T>(res: Response, fallbackMessage: string): Promise<T> {

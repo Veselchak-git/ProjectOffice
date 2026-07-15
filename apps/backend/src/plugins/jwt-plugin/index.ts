@@ -15,7 +15,7 @@ import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { ENV_DECORATOR_NAME } from "../env-plugin/index.js";
 import type { JwtPayload } from "./model.js";
 
-export const JWT_PLUGIN_NAME = "jwtPlugin";
+const JWT_PLUGIN_NAME = "jwtPlugin";
 export const JWT_DECORATOR_AUTHENTICATE = "authenticate";
 export const JWT_DECORATOR_AUTHORIZE = "authorize";
 

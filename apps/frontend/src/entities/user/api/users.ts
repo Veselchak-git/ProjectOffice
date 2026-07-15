@@ -1,6 +1,6 @@
 import { NS } from "@helpdesk-portal/i18n";
 
-import { handleApiResponse } from "@/shared/lib/api";
+import { buildQueryString, handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -13,15 +13,8 @@ export async function fetchAllUsers(): Promise<User[]> {
 }
 
 export async function fetchUsers(params?: FetchUsersParams): Promise<FetchUsersResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.q) searchParams.set("q", params.q);
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.perPage) searchParams.set("perPage", String(params.perPage));
-    if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
-    if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-
-    const query = searchParams.toString();
-    const res = await apiClient(`/api/users${query ? `?${query}` : ""}`);
+    const query = buildQueryString(params);
+    const res = await apiClient(`/api/users${query}`);
     return handleApiResponse<FetchUsersResponse>(res, i18n.t(`${NS.users}:error.loading`));
 }
 

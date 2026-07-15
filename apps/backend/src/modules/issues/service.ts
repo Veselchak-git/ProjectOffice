@@ -1,6 +1,9 @@
 import type { PrismaClient } from "@/generated/prisma/client.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
+import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
+import { checkProjectMember } from "@/shared/lib/project-access/index.js";
+import { assertValidAssignee } from "@/shared/lib/validate-assignee/index.js";
 import {
     IssueCategory,
     IssuePriority,
@@ -72,12 +75,8 @@ const mapIssue = (i: IssueRow, myRole?: string): IssueResponse => ({
 
 const ISSUE_SORT_FIELDS = new Set(["title", "status", "priority", "category", "createdAt", "updatedAt"]);
 
-const buildIssueOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> => {
-    if (!sortBy || !ISSUE_SORT_FIELDS.has(sortBy)) {
-        return { createdAt: "desc" };
-    }
-    return { [sortBy]: sortOrder };
-};
+const buildIssueOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
+    buildOrderBy(ISSUE_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" });
 
 const include = {
     project: { select: { name: true } },
@@ -85,33 +84,6 @@ const include = {
     assignee: { select: { login: true } },
     reporter: { select: { login: true } },
 } as const;
-
-const checkProjectMember = async (
-    prisma: PrismaClient,
-    projectId: number,
-    userId: number,
-    requiredRoles?: string[],
-    allowAdmin = true,
-) => {
-    if (allowAdmin) {
-        const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-        if (user?.role === Role.ADMIN) return;
-    }
-
-    const member = await prisma.projectMember.findUnique({
-        where: { userId_projectId: { userId, projectId } },
-    });
-
-    if (!member) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
-    }
-
-    if (requiredRoles && !requiredRoles.includes(member.role)) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
-    }
-
-    return member;
-};
 
 const getIssueOrThrow = async (prisma: PrismaClient, id: number): Promise<IssueRow> => {
     const issue = await prisma.issue.findUnique({
@@ -156,10 +128,10 @@ export const getIssuesListService = async (
     if (category) where.category = category;
 
     const orderBy = buildIssueOrderBy(sortBy, sortOrder);
-    const skip = (page - 1) * perPage;
+    const { skip, take } = paginationArgs(page, perPage);
 
     const [issues, total] = await prisma.$transaction([
-        prisma.issue.findMany({ where, orderBy, skip, take: perPage, include }),
+        prisma.issue.findMany({ where, orderBy, skip, take, include }),
         prisma.issue.count({ where }),
     ]);
 
@@ -189,10 +161,10 @@ export const getProjectIssuesService = async (
     if (category) where.category = category;
 
     const orderBy = buildIssueOrderBy(sortBy, sortOrder);
-    const skip = (page - 1) * perPage;
+    const { skip, take } = paginationArgs(page, perPage);
 
     const [issues, total] = await prisma.$transaction([
-        prisma.issue.findMany({ where, orderBy, skip, take: perPage, include }),
+        prisma.issue.findMany({ where, orderBy, skip, take, include }),
         prisma.issue.count({ where }),
     ]);
 
@@ -234,21 +206,7 @@ export const createIssueService = async (
     }
 
     if (body.assigneeId != null) {
-        const assigneeMember = await prisma.projectMember.findUnique({
-            where: { userId_projectId: { userId: body.assigneeId, projectId } },
-        });
-        if (!assigneeMember) {
-            throw new AppError(HTTP_STATUS.BAD_REQUEST, "Пользователь не является участником проекта", "INVALID_ASSIGNEE");
-        }
-        if (assigneeMember.role !== "DEVELOPER" && assigneeMember.role !== "MANAGER") {
-            const assigneeUser = await prisma.user.findUnique({
-                where: { id: body.assigneeId },
-                select: { role: true },
-            });
-            if (assigneeUser?.role !== Role.ADMIN) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Пользователь не может быть назначен исполнителем", "INVALID_ASSIGNEE_ROLE");
-            }
-        }
+        await assertValidAssignee(prisma, projectId, body.assigneeId);
     }
 
     const issue = await prisma.issue.create({
@@ -342,21 +300,7 @@ export const updateIssueService = async (
     if (body.solution !== undefined) updateData.solution = body.solution;
 
     if (body.assigneeId !== undefined && body.assigneeId !== null) {
-        const assigneeMember = await prisma.projectMember.findUnique({
-            where: { userId_projectId: { userId: body.assigneeId, projectId: issue.projectId } },
-        });
-        if (!assigneeMember) {
-            throw new AppError(HTTP_STATUS.BAD_REQUEST, "Пользователь не является участником проекта", "INVALID_ASSIGNEE");
-        }
-        if (assigneeMember.role !== "DEVELOPER" && assigneeMember.role !== "MANAGER") {
-            const assigneeUser = await prisma.user.findUnique({
-                where: { id: body.assigneeId },
-                select: { role: true },
-            });
-            if (assigneeUser?.role !== Role.ADMIN) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Пользователь не может быть назначен исполнителем", "INVALID_ASSIGNEE_ROLE");
-            }
-        }
+        await assertValidAssignee(prisma, issue.projectId, body.assigneeId);
     }
 
     if (Object.keys(updateData).length === 0) {

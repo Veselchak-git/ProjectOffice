@@ -1,6 +1,6 @@
 import { NS } from "@helpdesk-portal/i18n";
 
-import { handleApiResponse } from "@/shared/lib/api";
+import { buildQueryString, handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -13,20 +13,14 @@ export interface FetchIssuesResponse {
     perPage: number;
 }
 
-export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.q) searchParams.set("q", params.q);
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.perPage) searchParams.set("perPage", String(params.perPage));
-    if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
-    if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-    if (params?.status) searchParams.set("status", params.status);
-    if (params?.priority) searchParams.set("priority", params.priority);
-    if (params?.category) searchParams.set("category", params.category);
-
-    const query = searchParams.toString();
-    const res = await apiClient(`/api/issues${query ? `?${query}` : ""}`);
+async function fetchIssuesByUrl(url: string, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
+    const query = buildQueryString(params);
+    const res = await apiClient(`${url}${query}`);
     return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${NS.issues}:error.loading`));
+}
+
+export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
+    return fetchIssuesByUrl("/api/issues", params);
 }
 
 export async function fetchIssue(id: number): Promise<Issue> {
@@ -35,19 +29,7 @@ export async function fetchIssue(id: number): Promise<Issue> {
 }
 
 export async function fetchProjectIssues(projectId: number, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.q) searchParams.set("q", params.q);
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.perPage) searchParams.set("perPage", String(params.perPage));
-    if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
-    if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-    if (params?.status) searchParams.set("status", params.status);
-    if (params?.priority) searchParams.set("priority", params.priority);
-    if (params?.category) searchParams.set("category", params.category);
-
-    const query = searchParams.toString();
-    const res = await apiClient(`/api/projects/${projectId}/issues${query ? `?${query}` : ""}`);
-    return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${NS.issues}:error.loading`));
+    return fetchIssuesByUrl(`/api/projects/${projectId}/issues`, params);
 }
 
 export async function createIssue(projectId: number, data: CreateIssueData): Promise<Issue> {

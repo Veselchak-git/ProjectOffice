@@ -8,7 +8,7 @@ import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type SortingState } from "@tanstack/react-table";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +17,7 @@ import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/e
 
 import { i18n } from "@/shared/lib/i18n";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
+import { useClickOutside } from "@/shared/lib/use-click-outside";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 import { useTable } from "@/shared/lib/use-table";
@@ -59,15 +60,7 @@ export const UsersPage: FC = () => {
         min: 5
     });
 
-    useEffect(() => {
-        function handleClick(e: MouseEvent) {
-            if (columnsRef.current && !columnsRef.current.contains(e.target as Node)) {
-                setColumnsOpen(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, []);
+    useClickOutside(columnsRef, () => setColumnsOpen(false));
 
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

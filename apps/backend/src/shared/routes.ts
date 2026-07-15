@@ -26,4 +26,3 @@ export const USER_PATH = `${USERS_PATH}/:id`;
 export const ISSUES_PATH = "/issues";
 export const ISSUE_PATH = `${ISSUES_PATH}/:id`;
 export const PROJECT_ISSUES_PATH = `${PROJECT_PATH}/issues`;
-export const PROJECT_ISSUE_PATH = `${PROJECT_ISSUES_PATH}/:issueId`;

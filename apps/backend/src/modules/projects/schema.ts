@@ -1,5 +1,7 @@
 import { type Static, Type } from "@fastify/type-provider-typebox";
 
+import { createPaginationQuerySchema } from "@/schemas/pagination-query/index.js";
+
 const versionSchema = Type.Object({
     id: Type.Number(),
     version: Type.String(),
@@ -37,12 +39,9 @@ export const projectListResponseSchema = Type.Object({
 
 export type ProjectListResponse = Static<typeof projectListResponseSchema>;
 
-export const getProjectsListQuerySchema = Type.Object({
-    q: Type.Optional(Type.String()),
-    page: Type.Optional(Type.Number({ default: 1 })),
-    perPage: Type.Optional(Type.Number({ default: 20 })),
-    sortBy: Type.Optional(Type.String({ default: "createdAt" })),
-    sortOrder: Type.Optional(Type.String({ default: "desc" })),
+export const getProjectsListQuerySchema = createPaginationQuerySchema({
+    sortBy: "createdAt",
+    sortOrder: "desc",
 });
 
 export type GetProjectsListQuery = Static<typeof getProjectsListQuerySchema>;

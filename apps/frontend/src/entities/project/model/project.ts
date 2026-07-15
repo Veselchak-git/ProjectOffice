@@ -1,3 +1,5 @@
+import type { PaginationQueryParams } from "@/shared/lib/api";
+
 export type ProjectMemberRole = "VIEWER" | "REPORTER" | "UPDATER" | "DEVELOPER" | "MANAGER";
 
 export interface Member {
@@ -25,13 +27,7 @@ export interface Project {
     myRole?: ProjectMemberRole;
 }
 
-export interface FetchProjectsParams {
-    q?: string;
-    page?: number;
-    perPage?: number;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-}
+export type FetchProjectsParams = PaginationQueryParams;
 
 export interface CreateProjectData {
     name: string;

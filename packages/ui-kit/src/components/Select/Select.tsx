@@ -2,9 +2,8 @@ import { Select as BaseSelect } from "@base-ui/react/select";
 import clsx from "clsx";
 import { type FC } from "react";
 
-import type { ISelectProps } from "./types";
-
 import "./Select.css";
+import type { ISelectProps } from "./types";
 
 export const Select: FC<ISelectProps> = ({
     className,
@@ -25,7 +24,9 @@ export const Select: FC<ISelectProps> = ({
         <BaseSelect.Root
             value={value}
             defaultValue={defaultValue}
-            onValueChange={onValueChange}
+            onValueChange={value => {
+                if (value !== null) onValueChange?.(value);
+            }}
             disabled={disabled}
         >
             <div
@@ -38,30 +39,18 @@ export const Select: FC<ISelectProps> = ({
                     className
                 )}
             >
-                {label ? (
-                    <BaseSelect.Label className="ui-kit-select__label">
-                        {label}
-                    </BaseSelect.Label>
-                ) : null}
+                {label ? <BaseSelect.Label className="ui-kit-select__label">{label}</BaseSelect.Label> : null}
 
                 <BaseSelect.Trigger className="ui-kit-select__trigger">
-                    {startIcon ? (
-                        <span className="ui-kit-select__icon">{startIcon}</span>
-                    ) : null}
-                    <BaseSelect.Value
-                        className="ui-kit-select__value"
-                        placeholder={placeholder}
-                    >
-                        {(currentValue) => {
+                    {startIcon ? <span className="ui-kit-select__icon">{startIcon}</span> : null}
+                    <BaseSelect.Value className="ui-kit-select__value" placeholder={placeholder}>
+                        {currentValue => {
                             if (currentValue == null) return null;
                             const option = options.find(o => o.value === currentValue);
                             return option?.label ?? currentValue;
                         }}
                     </BaseSelect.Value>
-                    <BaseSelect.Icon
-                        className="ui-kit-select__icon"
-                        data-test="select-arrow"
-                    >
+                    <BaseSelect.Icon className="ui-kit-select__icon" data-test="select-arrow">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path
                                 d="M4 6L8 10L12 6"
@@ -84,7 +73,7 @@ export const Select: FC<ISelectProps> = ({
                     <BaseSelect.Positioner>
                         <BaseSelect.Popup className="ui-kit-select__popup">
                             <BaseSelect.List className="ui-kit-select__list">
-                                {options.map((option) => (
+                                {options.map(option => (
                                     <BaseSelect.Item
                                         key={option.value}
                                         value={option.value}
@@ -101,7 +90,7 @@ export const Select: FC<ISelectProps> = ({
                 <BaseSelect.Positioner>
                     <BaseSelect.Popup className="ui-kit-select__popup">
                         <BaseSelect.List className="ui-kit-select__list">
-                            {options.map((option) => (
+                            {options.map(option => (
                                 <BaseSelect.Item
                                     key={option.value}
                                     value={option.value}

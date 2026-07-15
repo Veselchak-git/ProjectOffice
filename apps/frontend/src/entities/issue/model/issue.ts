@@ -1,3 +1,5 @@
+import type { PaginationQueryParams } from "@/shared/lib/api";
+
 export type IssueCategory = "BUG" | "FEATURE" | "TASK" | "IMPROVEMENT" | "QUESTION";
 export type IssuePriority = "CRITICAL" | "SERIOUS" | "MINOR" | "GENERAL";
 export type Reproducibility = "ALWAYS" | "SOMETIMES" | "RANDOMLY" | "NOT_REPRODUCIBLE" | "NOT_ATTEMPTED";
@@ -26,12 +28,7 @@ export interface Issue {
     updatedAt: string;
 }
 
-export interface FetchIssuesParams {
-    q?: string;
-    page?: number;
-    perPage?: number;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
+export interface FetchIssuesParams extends PaginationQueryParams {
     status?: string;
     priority?: string;
     category?: string;

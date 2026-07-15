@@ -1,10 +1,9 @@
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import type { preHandlerHookHandler } from "fastify";
 import fp from "fastify-plugin";
 
 import { JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
-import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { Role } from "@/generated/prisma/enums.js";
+import { createCheckProjectAccess } from "@/shared/lib/project-access/index.js";
 
 import {
     PROJECTS_LIST_PATH,
@@ -36,72 +35,7 @@ import {
     deleteProjectService,
 } from "./service.js";
 
-const ROLE_HIERARCHY: Record<string, number> = {
-    VIEWER: 0,
-    REPORTER: 1,
-    UPDATER: 2,
-    DEVELOPER: 3,
-    MANAGER: 4,
-};
-
-interface CheckProjectAccessOptions {
-    requireProjectRoles?: string[];
-    allowGlobalAdmin?: boolean;
-    checkSelfModification?: boolean;
-    checkRoleHierarchy?: boolean;
-}
-
-const checkProjectAccess = (options: CheckProjectAccessOptions): preHandlerHookHandler => {
-    return async request => {
-        const params = request.params as Record<string, unknown>;
-
-        if (options.checkSelfModification) {
-            const targetUserId = params.userId != null ? Number(params.userId) : undefined;
-            if (targetUserId !== undefined && targetUserId === Number(request.user.sub)) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя менять свои права", "SELF_ROLE_CHANGE");
-            }
-        }
-
-        if (options.allowGlobalAdmin && request.user.role === Role.ADMIN) return;
-
-        if (options.checkRoleHierarchy) {
-            const targetRole = (request.body as Record<string, unknown>).role as string | undefined;
-            if (targetRole) {
-                const projectId = Number(params.id);
-                const userId = Number(request.user.sub);
-
-                const member = await request.server.prisma.projectMember.findUnique({
-                    where: { userId_projectId: { userId, projectId } },
-                });
-
-                if (!member) {
-                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
-                }
-
-                const actorRank = ROLE_HIERARCHY[member.role] ?? 0;
-                const targetRank = ROLE_HIERARCHY[targetRole] ?? 0;
-                if (targetRank > actorRank) {
-                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя назначить роль выше своей", "ROLE_HIERARCHY");
-                }
-            }
-        }
-
-        const projectId = Number(params.id);
-        const userId = Number(request.user.sub);
-
-        const member = await request.server.prisma.projectMember.findUnique({
-            where: { userId_projectId: { userId, projectId } },
-        });
-
-        if (!member) {
-            throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
-        }
-
-        if (options.requireProjectRoles && !options.requireProjectRoles.includes(member.role)) {
-            throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
-        }
-    };
-};
+const checkProjectAccess = createCheckProjectAccess;
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.get(

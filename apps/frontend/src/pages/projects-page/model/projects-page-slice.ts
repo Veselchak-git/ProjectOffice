@@ -1,53 +1,11 @@
-import { type PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit";
+import { type TablePageState, createTablePageSlice } from "@/shared/lib/create-table-page-slice";
 
 import { DEFAULT_COLUMN_ORDER, DEFAULT_COLUMN_VISIBILITY } from "./columns";
 
-export interface ProjectsPageState {
-    columnVisibility: Record<string, boolean>;
-    columnOrder: string[];
-    rowSelection: Record<string, boolean>;
-}
+export type ProjectsPageState = TablePageState;
 
-const initialState: ProjectsPageState = {
-    columnVisibility: DEFAULT_COLUMN_VISIBILITY,
-    columnOrder: DEFAULT_COLUMN_ORDER,
-    rowSelection: {}
-};
+export const projectsPageSlice = createTablePageSlice("projectsPage", DEFAULT_COLUMN_VISIBILITY, DEFAULT_COLUMN_ORDER);
 
-export const projectsPageSlice = createSlice({
-    name: "projectsPage",
-    initialState,
-    reducers: {
-        setColumnVisibility(state, action: PayloadAction<Record<string, boolean>>) {
-            state.columnVisibility = action.payload;
-        },
-        setColumnOrder(state, action: PayloadAction<string[]>) {
-            state.columnOrder = action.payload;
-        },
-        setRowSelection(state, action: PayloadAction<Record<string, boolean>>) {
-            state.rowSelection = action.payload;
-        },
-        resetRowSelection(state) {
-            state.rowSelection = {};
-        },
-        resetPageState(state) {
-            state.columnVisibility = DEFAULT_COLUMN_VISIBILITY;
-            state.columnOrder = DEFAULT_COLUMN_ORDER;
-            state.rowSelection = {};
-        }
-    }
-});
+export const { setColumnVisibility, setColumnOrder, setRowSelection } = projectsPageSlice.actions;
 
-export const { setColumnVisibility, setColumnOrder, setRowSelection, resetRowSelection, resetPageState } =
-    projectsPageSlice.actions;
-
-const selectProjectsPage = (state: AppState) => state.projectsPage;
-
-export const selectColumnVisibility = createSelector(
-    selectProjectsPage,
-    page => page?.columnVisibility ?? DEFAULT_COLUMN_VISIBILITY
-);
-
-export const selectColumnOrder = createSelector(selectProjectsPage, page => page?.columnOrder ?? DEFAULT_COLUMN_ORDER);
-
-export const selectRowSelection = createSelector(selectProjectsPage, page => page?.rowSelection ?? {});
+export const { selectColumnVisibility, selectColumnOrder, selectRowSelection } = projectsPageSlice;

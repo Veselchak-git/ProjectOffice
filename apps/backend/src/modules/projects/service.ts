@@ -1,7 +1,9 @@
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { ProjectMemberRole, Role } from "@/generated/prisma/enums.js";
 import { Prisma } from "@/generated/prisma/client.js";
+import { assertNotLastOfRole } from "@/shared/lib/assert-last-role/index.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
+import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
 
 import type {
     ProjectListResponse,
@@ -28,14 +30,11 @@ const findResponsible = (memberships: { user: { login: string }; role: string }[
 
 const PROJECT_SORT_FIELDS = new Set(["name", "status", "createdAt", "taskCount", "versionCount"]);
 
-const buildProjectOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> => {
-    if (!sortBy || !PROJECT_SORT_FIELDS.has(sortBy)) {
-        return { createdAt: "desc" };
-    }
-    if (sortBy === "taskCount") return { issues: { _count: sortOrder } };
-    if (sortBy === "versionCount") return { versions: { _count: sortOrder } };
-    return { [sortBy]: sortOrder };
-};
+const buildProjectOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
+    buildOrderBy(PROJECT_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" }, {
+        taskCount: order => ({ issues: { _count: order } }),
+        versionCount: order => ({ versions: { _count: order } }),
+    });
 
 const mapProject = (p: {
     id: number;
@@ -73,7 +72,7 @@ export const getProjectsListService = async (
         where.memberships = { some: { userId } };
     }
     const orderBy = buildProjectOrderBy(sortBy, sortOrder);
-    const skip = (page - 1) * perPage;
+    const { skip, take } = paginationArgs(page, perPage);
 
     const include = {
         _count: { select: { versions: true, issues: true } },
@@ -82,7 +81,7 @@ export const getProjectsListService = async (
     } as const;
 
     const [projects, total, active] = await prisma.$transaction([
-        prisma.project.findMany({ where, orderBy, skip, take: perPage, include }),
+        prisma.project.findMany({ where, orderBy, skip, take, include }),
         prisma.project.count({ where }),
         prisma.project.count({ where: { ...where, status: "ACTIVE" } }),
     ]);
@@ -264,12 +263,12 @@ export const updateProjectMemberService = async (
         }
 
         if (existing.role === "MANAGER" && role !== "MANAGER") {
-            const managerCount = await tx.projectMember.count({
-                where: { projectId: id, role: "MANAGER" },
-            });
-            if (managerCount <= 1) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя понизить единственного менеджера проекта", "LAST_MANAGER");
-            }
+            await assertNotLastOfRole(
+                tx.projectMember,
+                { projectId: id, role: "MANAGER" },
+                "Нельзя понизить единственного менеджера проекта",
+                "LAST_MANAGER",
+            );
         }
 
         return tx.projectMember.update({
@@ -318,12 +317,12 @@ export const removeProjectMemberService = async (
         }
 
         if (existing.role === "MANAGER") {
-            const managerCount = await tx.projectMember.count({
-                where: { projectId: id, role: "MANAGER" },
-            });
-            if (managerCount <= 1) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя удалить единственного менеджера проекта", "LAST_MANAGER");
-            }
+            await assertNotLastOfRole(
+                tx.projectMember,
+                { projectId: id, role: "MANAGER" },
+                "Нельзя удалить единственного менеджера проекта",
+                "LAST_MANAGER",
+            );
         }
 
         await tx.projectMember.delete({

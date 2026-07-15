@@ -7,7 +7,6 @@
  */
 import { PrismaClient } from "@/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-// import "dotenv/config";
 import { Pool } from "pg";
 
 import { hashPassword } from "../hash-password/index.js";

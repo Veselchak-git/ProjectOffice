@@ -1,7 +1,7 @@
 import { NS } from "@helpdesk-portal/i18n";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useReducer, useState } from "react";
+import { useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router";
 import type { CreateIssueData } from "@/entities/issue";
 import { createIssue } from "@/entities/issue";
 import { IssueForm } from "@/entities/issue";
-import type { Project, UpdateProjectData } from "@/entities/project";
+import type { UpdateProjectData } from "@/entities/project";
 import { deleteProject, fetchProject, fetchProjectMembers, updateProject } from "@/entities/project";
 import { MembersBlock, ProjectForm } from "@/entities/project";
 
@@ -18,93 +18,71 @@ import { formatDateTime } from "@/shared/lib/format-date";
 
 import "./ProjectPage.css";
 
-interface ProjectPageState {
-    project: Project | null;
-    loading: boolean;
-    fetchError: string | null;
-}
-
-type ProjectPageAction = { type: "start" } | { type: "success"; project: Project } | { type: "error"; message: string };
-
-const projectReducer = (_state: ProjectPageState, action: ProjectPageAction): ProjectPageState => {
-    switch (action.type) {
-        case "start":
-            return { project: null, loading: true, fetchError: null };
-        case "success":
-            return { project: action.project, loading: false, fetchError: null };
-        case "error":
-            return { project: null, loading: false, fetchError: action.message };
-    }
-};
-
 export const ProjectPage: FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { t } = useTranslation(NS.projects);
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const [{ project, loading, fetchError }, dispatch] = useReducer(projectReducer, {
-        project: null,
-        loading: true,
-        fetchError: null
-    });
     const [editing, setEditing] = useState(false);
-    const [deleting, setDeleting] = useState(false);
     const [creatingIssue, setCreatingIssue] = useState(false);
 
     const projectId = Number(id);
 
+    const {
+        data: project,
+        isPending,
+        isError,
+        error
+    } = useQuery({
+        queryKey: ["project", projectId],
+        queryFn: () => fetchProject(projectId),
+        enabled: !!id
+    });
+
     const { data: projectMembers } = useQuery({
         queryKey: ["project-members", projectId],
         queryFn: () => fetchProjectMembers(projectId),
-        enabled: !!project && !loading
+        enabled: !!project
+    });
+
+    const { mutateAsync: updateProjectMutate } = useMutation({
+        mutationFn: (data: UpdateProjectData) => updateProject(projectId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            setEditing(false);
+        }
+    });
+
+    const { mutateAsync: deleteProjectMutate, isPending: deleting } = useMutation({
+        mutationFn: () => deleteProject(projectId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
+            navigate("/projects", { replace: true });
+        }
     });
 
     const { mutateAsync: createIssueMutate } = useMutation({
         mutationFn: (dto: CreateIssueData) => createIssue(projectId, dto),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["issues"] });
+            queryClient.invalidateQueries({ queryKey: ["project", projectId] });
             setCreatingIssue(false);
         }
     });
 
-    useEffect(() => {
-        dispatch({ type: "start" });
-        let cancelled = false;
-        fetchProject(Number(id))
-            .then(data => {
-                if (!cancelled) dispatch({ type: "success", project: data });
-            })
-            .catch(err => {
-                if (!cancelled) dispatch({ type: "error", message: err.message });
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [id]);
-
     const handleEdit = async (data: UpdateProjectData) => {
-        await updateProject(Number(id), data);
-        setEditing(false);
-        dispatch({ type: "start" });
-        fetchProject(Number(id))
-            .then(data => dispatch({ type: "success", project: data }))
-            .catch(err => dispatch({ type: "error", message: err.message }));
+        await updateProjectMutate(data);
     };
 
     const handleDelete = async () => {
         if (!window.confirm(t("detail.confirmDelete"))) return;
-        setDeleting(true);
-        try {
-            await deleteProject(Number(id));
-            queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
-            navigate("/projects", { replace: true });
-        } catch {
-            setDeleting(false);
-        }
+        await deleteProjectMutate();
     };
 
-    if (loading) {
+    if (isPending) {
         return (
             <div className="project-page">
                 <p className="project-page__loading">{t("loading")}</p>
@@ -112,19 +90,11 @@ export const ProjectPage: FC = () => {
         );
     }
 
-    if (fetchError) {
-        return (
-            <div className="project-page">
-                <p className="project-page__error">{fetchError}</p>
-            </div>
-        );
-    }
-
-    if (!project) {
+    if (isError || !project) {
         return (
             <div className="project-page">
                 <div className="project-page__not-found">
-                    <h1>{t("detail.notFound")}</h1>
+                    <h1>{error instanceof Error ? error.message : t("detail.notFound")}</h1>
                     <button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
                         {t("detail.backToList")}
                     </button>

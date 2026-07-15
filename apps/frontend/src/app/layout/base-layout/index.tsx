@@ -10,13 +10,14 @@ import TecomLogoIcon from "@helpdesk-portal/icons/TecomLogo.svg?react";
 import UserIcon from "@helpdesk-portal/icons/User.svg?react";
 import { Select, useColorMode } from "@helpdesk-portal/ui-kit";
 import { useQuery } from "@tanstack/react-query";
-import { type FC, useCallback, useEffect, useRef, useState } from "react";
+import { type FC, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { RequireAuth, apiClient, useAuth } from "@/shared/lib/auth";
 import type { UserRole } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
+import { useClickOutside } from "@/shared/lib/use-click-outside";
 
 import "./BaseLayout.css";
 
@@ -56,15 +57,7 @@ export const BaseLayout: FC = () => {
         navigate("/login", { replace: true });
     }, [logout, navigate]);
 
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-                setProfileMenuOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    useClickOutside(profileRef, () => setProfileMenuOpen(false));
 
     const { data: auditLogData } = useQuery({
         queryKey: ["audit-log-available"],
