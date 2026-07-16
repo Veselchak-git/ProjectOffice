@@ -1,0 +1,31 @@
+{
+    "title": "Home",
+    "dashboard": {
+        "projects": "Projects",
+        "assigned": "Assigned to Me",
+        "closed": "Closed",
+        "users": "Users"
+    },
+    "activity": {
+        "title": "Recent Activity",
+        "loading": "Loading...",
+        "empty": "No recent activity"
+    },
+    "error": {
+        "loading": "Loading error"
+    },
+    "status": {
+        "new": "New",
+        "acknowledged": "Acknowledged",
+        "confirmed": "Confirmed",
+        "assigned": "Assigned",
+        "resolved": "Resolved",
+        "closed": "Closed"
+    },
+    "priority": {
+        "critical": "Critical",
+        "serious": "Serious",
+        "minor": "Minor",
+        "general": "General"
+    }
+}

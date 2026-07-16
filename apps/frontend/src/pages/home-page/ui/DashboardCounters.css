@@ -1,0 +1,39 @@
+@layer pages {
+    .dashboard-counters {
+        display: flex;
+        gap: 16px;
+    }
+
+    .dashboard-counters__card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        text-decoration: none;
+        color: inherit;
+        transition: background-color 0.15s ease;
+    }
+
+    .dashboard-counters__card:hover {
+        background-color: var(--semantic-fill-primary-hover);
+    }
+
+    .dashboard-counters__card--loading {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    .dashboard-counters__label {
+        font-size: 14px;
+        color: var(--semantic-text-secondary);
+    }
+
+    .dashboard-counters__value {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+    }
+}

@@ -9,6 +9,7 @@ import type { FastifyPluginAsync } from "fastify";
 
 import { auditLogModulePlugin } from "./audit-log/index.js";
 import { authModulePlugin } from "./auth/index.js";
+import { dashboardPlugin } from "./dashboard/index.js";
 import { issuesPlugin } from "./issues/index.js";
 import { pingModulePlugin } from "./ping/index.js";
 import { projectsPlugin } from "./projects/index.js";
@@ -19,6 +20,7 @@ import { usersPagePlugin } from "./users-page/index.js";
 export const modules: FastifyPluginAsync = async fastify => {
     await fastify.register(auditLogModulePlugin);
     await fastify.register(authModulePlugin);
+    await fastify.register(dashboardPlugin);
     await fastify.register(issuesPlugin);
     await fastify.register(pingModulePlugin);
     await fastify.register(projectsPlugin);

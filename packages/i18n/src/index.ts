@@ -7,6 +7,7 @@ export const NS = {
     issues: "issues",
     audit: "audit",
     validation: "validation",
+    home: "home",
 } as const;
 
 export type Namespace = (typeof NS)[keyof typeof NS];

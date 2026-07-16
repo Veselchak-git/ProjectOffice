@@ -28,7 +28,7 @@ import {
     updateIssueSchema,
 } from "./schema.js";
 
-type IssueRow = {
+export type IssueRow = {
     id: number;
     title: string;
     projectId: number;
@@ -50,7 +50,7 @@ type IssueRow = {
     reporter: { login: string };
 };
 
-const mapIssue = (i: IssueRow, myRole?: string): IssueResponse => ({
+export const mapIssue = (i: IssueRow, myRole?: string): IssueResponse => ({
     id: i.id,
     title: i.title,
     projectId: i.projectId,
