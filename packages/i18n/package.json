@@ -16,6 +16,10 @@
         "format": "prettier --write .",
         "type-check": "tsc -b --noEmit"
     },
+    "peerDependencies": {
+        "i18next": "^26.3.1",
+        "react-i18next": "^17.0.3"
+    },
     "devDependencies": {
         "@helpdesk-portal/eslint-config": "*",
         "@helpdesk-portal/prettier-config": "*",
