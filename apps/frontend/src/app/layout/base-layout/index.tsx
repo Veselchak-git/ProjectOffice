@@ -28,7 +28,7 @@ import { type FC, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
-import { RequireAuth, apiClient, useAuth } from "@/shared/lib/auth";
+import { apiClient, useAuth } from "@/shared/lib/auth";
 import type { UserRole } from "@/shared/lib/auth";
 import { i18n } from "@/shared/lib/i18n";
 import { useClickOutside } from "@/shared/lib/use-click-outside";
@@ -62,8 +62,7 @@ export const BaseLayout: FC = () => {
 
     const roleLabels: Record<string, string> = {
         ADMIN: t(`${NAVIGATION}:role.admin`),
-        USER: t(`${NAVIGATION}:role.user`),
-        GUEST: t(`${NAVIGATION}:role.guest`)
+        USER: t(`${NAVIGATION}:role.user`)
     };
 
     const handleLogout = useCallback(async () => {
@@ -94,137 +93,125 @@ export const BaseLayout: FC = () => {
     const displayRole = user ? (roleLabels[user.role] ?? user.role) : "";
 
     return (
-        <RequireAuth>
-            <div className="base-layout">
-                <aside className={`sidebar${sidebarOpen ? "" : " sidebar--closed"}`}>
-                    <div className="sidebar__logo">
-                        <button
-                            className="sidebar__logo-icon"
-                            type="button"
-                            aria-label="Toggle menu"
-                            onClick={() => setSidebarOpen(v => !v)}
-                        >
-                            {sidebarOpen ? (
-                                <ResetInputIcon />
-                            ) : (
-                                <svg
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path d="M4 7H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                    <path
-                                        d="M4 12H20"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                    />
-                                    <path
-                                        d="M4 17H20"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                    />
-                                </svg>
-                            )}
-                        </button>
-                    </div>
-
-                    <nav className="sidebar__nav">
-                        {visibleItems.map((item, idx) => {
-                            const IconComponent = item.icon;
-                            const isActive = location.pathname === item.path;
-
-                            return (
-                                <button
-                                    key={idx}
-                                    className={`sidebar__item${isActive ? " sidebar__item--active" : ""}`}
-                                    type="button"
-                                    onClick={() => navigate(item.path)}
-                                >
-                                    <span className="sidebar__item-icon">
-                                        <IconComponent />
-                                    </span>
-                                    {sidebarOpen && <span className="sidebar__item-text">{t(item.label)}</span>}
-                                </button>
-                            );
-                        })}
-                    </nav>
-
-                    <div className="sidebar__divider" />
-                </aside>
-
-                <div className="content-area">
-                    <header className="header">
-                        <div className="header__logo">
-                            <TecomLogoIcon />
-                        </div>
-                        <div className="header__right">
-                            <div className="header__theme-switch">
-                                <SunIcon />
-                                <label className="theme-switch">
-                                    <input type="checkbox" checked={mode === "dark"} onChange={toggleMode} />
-                                    <span className="theme-switch__slider" />
-                                </label>
-                                <MoonIcon />
-                            </div>
-                            <div className="header__locale-switch">
-                                <Select
-                                    options={[
-                                        { value: "ru", label: "RU" },
-                                        { value: "en", label: "EN" }
-                                    ]}
-                                    value={i18n.language}
-                                    onValueChange={val => i18n.changeLanguage(val)}
-                                />
-                            </div>
-                            <div className="header__divider" />
-                            <div className="header__profile-wrapper" ref={profileRef}>
-                                <button
-                                    className="header__profile-btn"
-                                    type="button"
-                                    onClick={() => setProfileMenuOpen(v => !v)}
-                                >
-                                    <div className="header__avatar">
-                                        <UserIcon />
-                                    </div>
-                                    <div className="header__user">
-                                        <span className="header__user-name">{displayName}</span>
-                                        <span className="header__user-role">{displayRole}</span>
-                                    </div>
-                                </button>
-                                {profileMenuOpen && (
-                                    <div className="header__profile-menu">
-                                        <button
-                                            className="header__profile-menu-item"
-                                            type="button"
-                                            onClick={() => {
-                                                navigate("/profile");
-                                                setProfileMenuOpen(false);
-                                            }}
-                                        >
-                                            {t(`${COMMON}:edit`)}
-                                        </button>
-                                        <button
-                                            className="header__profile-menu-item header__profile-menu-item--danger"
-                                            type="button"
-                                            onClick={handleLogout}
-                                        >
-                                            {t(`${COMMON}:logout`)}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </header>
-
-                    <main className="content">
-                        <Outlet />
-                    </main>
+        <div className="base-layout">
+            <aside className={`sidebar${sidebarOpen ? "" : " sidebar--closed"}`}>
+                <div className="sidebar__logo">
+                    <button
+                        className="sidebar__logo-icon"
+                        type="button"
+                        aria-label="Toggle menu"
+                        onClick={() => setSidebarOpen(v => !v)}
+                    >
+                        {sidebarOpen ? (
+                            <ResetInputIcon />
+                        ) : (
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path d="M4 7H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                <path d="M4 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                <path d="M4 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                        )}
+                    </button>
                 </div>
+
+                <nav className="sidebar__nav">
+                    {visibleItems.map((item, idx) => {
+                        const IconComponent = item.icon;
+                        const isActive = location.pathname === item.path;
+
+                        return (
+                            <button
+                                key={idx}
+                                className={`sidebar__item${isActive ? " sidebar__item--active" : ""}`}
+                                type="button"
+                                onClick={() => navigate(item.path)}
+                            >
+                                <span className="sidebar__item-icon">
+                                    <IconComponent />
+                                </span>
+                                {sidebarOpen && <span className="sidebar__item-text">{t(item.label)}</span>}
+                            </button>
+                        );
+                    })}
+                </nav>
+
+                <div className="sidebar__divider" />
+            </aside>
+
+            <div className="content-area">
+                <header className="header">
+                    <div className="header__logo">
+                        <TecomLogoIcon />
+                    </div>
+                    <div className="header__right">
+                        <div className="header__theme-switch">
+                            <SunIcon />
+                            <label className="theme-switch">
+                                <input type="checkbox" checked={mode === "dark"} onChange={toggleMode} />
+                                <span className="theme-switch__slider" />
+                            </label>
+                            <MoonIcon />
+                        </div>
+                        <div className="header__locale-switch">
+                            <Select
+                                options={[
+                                    { value: "ru", label: "RU" },
+                                    { value: "en", label: "EN" }
+                                ]}
+                                value={i18n.language}
+                                onValueChange={val => i18n.changeLanguage(val)}
+                            />
+                        </div>
+                        <div className="header__divider" />
+                        <div className="header__profile-wrapper" ref={profileRef}>
+                            <button
+                                className="header__profile-btn"
+                                type="button"
+                                onClick={() => setProfileMenuOpen(v => !v)}
+                            >
+                                <div className="header__avatar">
+                                    <UserIcon />
+                                </div>
+                                <div className="header__user">
+                                    <span className="header__user-name">{displayName}</span>
+                                    <span className="header__user-role">{displayRole}</span>
+                                </div>
+                            </button>
+                            {profileMenuOpen && (
+                                <div className="header__profile-menu">
+                                    <button
+                                        className="header__profile-menu-item"
+                                        type="button"
+                                        onClick={() => {
+                                            navigate("/profile");
+                                            setProfileMenuOpen(false);
+                                        }}
+                                    >
+                                        {t(`${COMMON}:edit`)}
+                                    </button>
+                                    <button
+                                        className="header__profile-menu-item header__profile-menu-item--danger"
+                                        type="button"
+                                        onClick={handleLogout}
+                                    >
+                                        {t(`${COMMON}:logout`)}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </header>
+
+                <main className="content">
+                    <Outlet />
+                </main>
             </div>
-        </RequireAuth>
+        </div>
     );
 };

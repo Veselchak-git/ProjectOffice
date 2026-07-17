@@ -19,11 +19,12 @@ import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { rootReducer } from "@/app/store";
+
 import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities/project";
 import { createProject, deleteProject, fetchProjects } from "@/entities/project";
 import { ProjectForm } from "@/entities/project";
 
-import { useAuth } from "@/shared/lib/auth";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useClickOutside } from "@/shared/lib/use-click-outside";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
@@ -40,6 +41,7 @@ import {
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
+    projectsPageSlice,
     selectColumnOrder,
     selectColumnVisibility,
     selectRowSelection,
@@ -49,12 +51,13 @@ import {
 } from "../model/projects-page-slice";
 import "./ProjectsPage.css";
 
+rootReducer.inject(projectsPageSlice);
+
 const columnHelper = createColumnHelper<Project>();
 
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation(PROJECTS);
-    const { user } = useAuth();
     const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
@@ -221,12 +224,10 @@ export const ProjectsPage: FC = () => {
                     <p className="projects-page__title-subtitle">{t("page.subtitle", { active, total })}</p>
                 </div>
                 <div className="projects-page__actions">
-                    {user?.role !== "GUEST" && (
-                        <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
-                            <PlusIcon />
-                            {t("actions.create")}
-                        </button>
-                    )}
+                    <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
+                        <PlusIcon />
+                        {t("actions.create")}
+                    </button>
                     {selectedCount > 0 && (
                         <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
                             {t("actions.deleteSelected", { count: selectedCount })}

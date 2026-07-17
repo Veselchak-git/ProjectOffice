@@ -25,7 +25,6 @@ export interface GetUsersColumnsDeps {
 const columnHelper = createColumnHelper<User>();
 
 export const getRoleOptions = (t: (key: string) => string) => [
-    { value: "GUEST" as const, label: t("roles.guest") },
     { value: "USER" as const, label: t("roles.user") },
     { value: "ADMIN" as const, label: t("roles.admin") }
 ];

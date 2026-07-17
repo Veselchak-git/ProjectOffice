@@ -1,4 +1,7 @@
-import { type TablePageState, createTablePageSlice } from "@/shared/lib/create-table-page-slice";
+import { createSelector } from "@reduxjs/toolkit";
+
+import type { TablePageState } from "@/shared/lib/create-table-page-slice";
+import { createTablePageSlice } from "@/shared/lib/create-table-page-slice";
 
 import { DEFAULT_COLUMN_ORDER, DEFAULT_COLUMN_VISIBILITY } from "./columns";
 
@@ -8,4 +11,11 @@ export const usersPageSlice = createTablePageSlice("usersPage", DEFAULT_COLUMN_V
 
 export const { setColumnVisibility, setColumnOrder, setRowSelection } = usersPageSlice.actions;
 
-export const { selectColumnVisibility, selectColumnOrder, selectRowSelection } = usersPageSlice;
+const getSlice = (state: AppState) => state.usersPage;
+
+export const selectColumnVisibility = createSelector(
+    [getSlice],
+    slice => slice?.columnVisibility ?? DEFAULT_COLUMN_VISIBILITY
+);
+export const selectColumnOrder = createSelector([getSlice], slice => slice?.columnOrder ?? DEFAULT_COLUMN_ORDER);
+export const selectRowSelection = createSelector([getSlice], slice => slice?.rowSelection ?? {});

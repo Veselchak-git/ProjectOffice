@@ -1,6 +1,39 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, redirect } from "react-router";
+
+import { store } from "@/app/store";
+
+import { selectAuthLoading, selectAuthUser } from "@/shared/lib/auth/auth-slice";
 
 import { BaseLayout, LoginLayout } from "../layout";
+
+async function waitForAuth() {
+    if (!selectAuthLoading(store.getState())) return;
+    return new Promise<void>(resolve => {
+        const unsubscribe = store.subscribe(() => {
+            if (!selectAuthLoading(store.getState())) {
+                unsubscribe();
+                resolve();
+            }
+        });
+    });
+}
+
+async function requireAuth() {
+    await waitForAuth();
+    if (!selectAuthUser(store.getState())) {
+        throw redirect("/login");
+    }
+    return null;
+}
+
+async function requireRole(roles: string[]) {
+    await requireAuth();
+    const user = selectAuthUser(store.getState());
+    if (!user || !roles.includes(user.role)) {
+        throw redirect("/");
+    }
+    return null;
+}
 
 export const routes = createBrowserRouter([
     {
@@ -18,99 +51,57 @@ export const routes = createBrowserRouter([
                 path: "projects",
                 lazy: async () => {
                     const { ProjectsPage } = await import("@/pages/projects-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN", "USER"]}>
-                                <ProjectsPage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: ProjectsPage };
+                },
+                loader: () => requireRole(["ADMIN", "USER"])
             },
             {
                 path: "projects/:id",
                 lazy: async () => {
                     const { ProjectPage } = await import("@/pages/project-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN", "USER"]}>
-                                <ProjectPage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: ProjectPage };
+                },
+                loader: () => requireRole(["ADMIN", "USER"])
             },
             {
                 path: "tasks",
                 lazy: async () => {
                     const { IssuesPage } = await import("@/pages/issues-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN", "USER"]}>
-                                <IssuesPage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: IssuesPage };
+                },
+                loader: () => requireRole(["ADMIN", "USER"])
             },
             {
                 path: "tasks/:id",
                 lazy: async () => {
                     const { IssuePage } = await import("@/pages/issue-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN", "USER"]}>
-                                <IssuePage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: IssuePage };
+                },
+                loader: () => requireRole(["ADMIN", "USER"])
             },
             {
                 path: "audit-log",
                 lazy: async () => {
                     const { HomePage } = await import("@/pages/home-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN", "USER"]}>
-                                <HomePage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: HomePage };
+                },
+                loader: () => requireRole(["ADMIN", "USER"])
             },
             {
                 path: "users",
                 lazy: async () => {
                     const { UsersPage } = await import("@/pages/users-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN"]}>
-                                <UsersPage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: UsersPage };
+                },
+                loader: () => requireRole(["ADMIN"])
             },
             {
                 path: "profile",
                 lazy: async () => {
                     const { ProfilePage } = await import("@/pages/profile-page");
-                    const { RequireRole } = await import("@/shared/lib/auth");
-                    return {
-                        Component: () => (
-                            <RequireRole roles={["ADMIN", "USER"]}>
-                                <ProfilePage />
-                            </RequireRole>
-                        )
-                    };
-                }
+                    return { Component: ProfilePage };
+                },
+                loader: () => requireRole(["ADMIN", "USER"])
             }
         ]
     },

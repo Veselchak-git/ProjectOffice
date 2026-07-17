@@ -19,6 +19,8 @@ import { useRef, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
+import { rootReducer } from "@/app/store";
+
 import { createUser, deleteUser, fetchUsers, updateUser } from "@/entities/user";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/entities/user";
 
@@ -38,9 +40,12 @@ import {
     selectRowSelection,
     setColumnOrder,
     setColumnVisibility,
-    setRowSelection
+    setRowSelection,
+    usersPageSlice
 } from "../model/users-page-slice";
 import "./UsersPage.css";
+
+rootReducer.inject(usersPageSlice);
 
 export const UsersPage: FC = () => {
     const { t } = useTranslation(USERS);
@@ -312,7 +317,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
     const { t: tu } = useTranslation(USERS);
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("GUEST");
+    const [role, setRole] = useState("USER");
     const [serverError, setServerError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);

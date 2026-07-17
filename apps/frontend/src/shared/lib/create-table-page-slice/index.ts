@@ -1,4 +1,4 @@
-import { type PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit";
+import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 export interface TablePageState {
     columnVisibility: Record<string, boolean>;
@@ -17,7 +17,7 @@ export function createTablePageSlice(
         rowSelection: {}
     };
 
-    const slice = createSlice({
+    return createSlice({
         name,
         initialState,
         reducers: {
@@ -30,14 +30,11 @@ export function createTablePageSlice(
             setRowSelection(state, action: PayloadAction<Record<string, boolean>>) {
                 state.rowSelection = action.payload;
             }
+        },
+        selectors: {
+            selectColumnVisibility: state => state?.columnVisibility ?? defaultColumnVisibility,
+            selectColumnOrder: state => state?.columnOrder ?? defaultColumnOrder,
+            selectRowSelection: state => state?.rowSelection ?? {}
         }
-    });
-
-    const selectPage = (state: AppState) => state[name] as TablePageState | undefined;
-
-    return Object.assign(slice, {
-        selectColumnVisibility: createSelector(selectPage, page => page?.columnVisibility ?? defaultColumnVisibility),
-        selectColumnOrder: createSelector(selectPage, page => page?.columnOrder ?? defaultColumnOrder),
-        selectRowSelection: createSelector(selectPage, page => page?.rowSelection ?? {})
     });
 }

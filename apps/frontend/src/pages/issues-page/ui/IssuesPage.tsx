@@ -18,6 +18,8 @@ import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { rootReducer } from "@/app/store";
+
 import type { FetchIssuesParams, Issue } from "@/entities/issue";
 import { deleteIssue, fetchIssues } from "@/entities/issue";
 
@@ -37,6 +39,7 @@ import {
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
+    issuesPageSlice,
     selectColumnOrder,
     selectColumnVisibility,
     selectRowSelection,
@@ -45,6 +48,8 @@ import {
     setRowSelection
 } from "../model/issues-page-slice";
 import "./IssuesPage.css";
+
+rootReducer.inject(issuesPageSlice);
 
 const columnHelper = createColumnHelper<Issue>();
 

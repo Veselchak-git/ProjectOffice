@@ -134,7 +134,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
         }
     });
 
-    const availableUsers = users.filter(u => !members.some(m => m.userId === u.id) && u.role !== "GUEST");
+    const availableUsers = users.filter(u => !members.some(m => m.userId === u.id));
     const loading = membersPending || (canManage && usersPending);
     const error =
         actionError ?? (membersError ? (membersLoadError instanceof Error ? membersLoadError.message : null) : null);
