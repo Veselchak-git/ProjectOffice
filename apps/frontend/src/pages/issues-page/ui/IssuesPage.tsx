@@ -1,6 +1,13 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
 import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { NS } from "@helpdesk-portal/i18n";
+import { ISSUES } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
@@ -43,7 +50,7 @@ const columnHelper = createColumnHelper<Issue>();
 
 export const IssuesPage: FC = () => {
     const navigate = useNavigate();
-    const { t } = useTranslation(NS.issues);
+    const { t } = useTranslation(ISSUES);
     const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);

@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { ISSUES } from "@helpdesk-portal/i18n";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -19,7 +26,7 @@ import "./IssuePage.css";
 export const IssuePage: FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { t } = useTranslation(NS.issues);
+    const { t } = useTranslation(ISSUES);
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [editing, setEditing] = useState(false);

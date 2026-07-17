@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { AUTH } from "@helpdesk-portal/i18n";
 import { useCallback } from "react";
 
 import { i18n } from "@/shared/lib/i18n";
@@ -23,7 +30,7 @@ export function useAuth() {
 
             if (!res.ok) {
                 const body = await res.json().catch(() => null);
-                throw new Error(body?.message ?? i18n.t(`${NS.auth}:error.invalidCredentials`));
+                throw new Error(body?.message ?? i18n.t(`${AUTH}:error.invalidCredentials`));
             }
 
             const body = await res.json();

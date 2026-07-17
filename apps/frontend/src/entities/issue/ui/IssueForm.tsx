@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { COMMON, ISSUES } from "@helpdesk-portal/i18n";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import { useState } from "react";
 import type { FC, FormEvent } from "react";
@@ -19,7 +26,7 @@ interface IssueFormProps {
 }
 
 export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSubmit, onCancel, submitLabel }) => {
-    const { t } = useTranslation(NS.issues);
+    const { t } = useTranslation(ISSUES);
     const [title, setTitle] = useState(initial?.title ?? "");
     const [category, setCategory] = useState<IssueCategory>((initial?.category as IssueCategory) ?? "BUG");
     const [priority, setPriority] = useState<IssuePriority>((initial?.priority as IssuePriority) ?? "GENERAL");
@@ -251,7 +258,7 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
 
             <div className="issue-form__actions">
                 <Button type="submit" disabled={submitting || !title.trim()}>
-                    {submitting ? t(`${NS.common}:saving`) : (submitLabel ?? t("form.submit"))}
+                    {submitting ? t(`${COMMON}:saving`) : (submitLabel ?? t("form.submit"))}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel} disabled={submitting}>
                     {t("form.cancel")}

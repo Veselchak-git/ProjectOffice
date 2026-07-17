@@ -1,4 +1,18 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+/*NAVIGATION
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { COMMON, NAVIGATION } from "@helpdesk-portal/i18n";
 import ArchiveIcon from "@helpdesk-portal/icons/Archive.svg?react";
 import FolderIcon from "@helpdesk-portal/icons/Folder.svg?react";
 import HouseIcon from "@helpdesk-portal/icons/House.svg?react";
@@ -29,11 +43,11 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { label: `${NS.navigation}:menu.home`, path: "/", icon: HouseIcon },
-    { label: `${NS.navigation}:menu.projects`, path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
-    { label: `${NS.navigation}:menu.tasks`, path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
-    { label: `${NS.navigation}:menu.audit-log`, path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
-    { label: `${NS.navigation}:menu.users`, path: "/users", icon: UserIcon, roles: ["ADMIN"] }
+    { label: `${NAVIGATION}:menu.home`, path: "/", icon: HouseIcon },
+    { label: `${NAVIGATION}:menu.projects`, path: "/projects", icon: FolderIcon, roles: ["ADMIN", "USER"] },
+    { label: `${NAVIGATION}:menu.tasks`, path: "/tasks", icon: ListChecksIcon, roles: ["ADMIN", "USER"] },
+    { label: `${NAVIGATION}:menu.audit-log`, path: "/audit-log", icon: ArchiveIcon, roles: ["ADMIN", "USER"] },
+    { label: `${NAVIGATION}:menu.users`, path: "/users", icon: UserIcon, roles: ["ADMIN"] }
 ];
 
 export const BaseLayout: FC = () => {
@@ -47,9 +61,9 @@ export const BaseLayout: FC = () => {
     const profileRef = useRef<HTMLDivElement>(null);
 
     const roleLabels: Record<string, string> = {
-        ADMIN: t(`${NS.navigation}:role.admin`),
-        USER: t(`${NS.navigation}:role.user`),
-        GUEST: t(`${NS.navigation}:role.guest`)
+        ADMIN: t(`${NAVIGATION}:role.admin`),
+        USER: t(`${NAVIGATION}:role.user`),
+        GUEST: t(`${NAVIGATION}:role.guest`)
     };
 
     const handleLogout = useCallback(async () => {
@@ -76,7 +90,7 @@ export const BaseLayout: FC = () => {
         return true;
     });
 
-    const displayName = user?.login?.split("@")[0] ?? t(`${NS.navigation}:role.user`);
+    const displayName = user?.login?.split("@")[0] ?? t(`${NAVIGATION}:role.user`);
     const displayRole = user ? (roleLabels[user.role] ?? user.role) : "";
 
     return (
@@ -191,14 +205,14 @@ export const BaseLayout: FC = () => {
                                                 setProfileMenuOpen(false);
                                             }}
                                         >
-                                            {t(`${NS.common}:edit`)}
+                                            {t(`${COMMON}:edit`)}
                                         </button>
                                         <button
                                             className="header__profile-menu-item header__profile-menu-item--danger"
                                             type="button"
                                             onClick={handleLogout}
                                         >
-                                            {t(`${NS.common}:logout`)}
+                                            {t(`${COMMON}:logout`)}
                                         </button>
                                     </div>
                                 )}

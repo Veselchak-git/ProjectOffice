@@ -7,7 +7,7 @@
  */
 import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { NS } from "@helpdesk-portal/i18n";
+import { PROJECTS } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
@@ -53,7 +53,7 @@ const columnHelper = createColumnHelper<Project>();
 
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
-    const { t } = useTranslation(NS.projects);
+    const { t } = useTranslation(PROJECTS);
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
@@ -300,7 +300,7 @@ export const ProjectsPage: FC = () => {
 };
 
 const StatusBadge: FC<{ status: Project["status"] }> = ({ status }) => {
-    const { t } = useTranslation(NS.projects);
+    const { t } = useTranslation(PROJECTS);
     const isActive = status === "ACTIVE";
 
     return (

@@ -1,4 +1,18 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+/*PROJECTS
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { COMMON, PROJECTS } from "@helpdesk-portal/i18n";
 import { Button, Input } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
@@ -59,37 +73,37 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
     return (
         <form className="project-form" onSubmit={handleSubmit}>
             <Input
-                label={t(`${NS.projects}:form.name.label`)}
-                placeholder={t(`${NS.projects}:form.name.placeholder`)}
+                label={t(`${PROJECTS}:form.name.label`)}
+                placeholder={t(`${PROJECTS}:form.name.placeholder`)}
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
             />
 
             <Input
-                label={t(`${NS.projects}:form.description.label`)}
-                placeholder={t(`${NS.projects}:form.description.placeholder`)}
+                label={t(`${PROJECTS}:form.description.label`)}
+                placeholder={t(`${PROJECTS}:form.description.placeholder`)}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
             />
 
             <div className="project-form__field">
-                <label className="project-form__label">{t(`${NS.projects}:form.status.label`)}</label>
+                <label className="project-form__label">{t(`${PROJECTS}:form.status.label`)}</label>
                 <select
                     className="project-form__select"
                     value={status}
                     onChange={e => setStatus(e.target.value as "ACTIVE" | "ARCHIVED")}
                 >
-                    <option value="ACTIVE">{t(`${NS.projects}:status.active`)}</option>
-                    <option value="ARCHIVED">{t(`${NS.projects}:status.archived`)}</option>
+                    <option value="ACTIVE">{t(`${PROJECTS}:status.active`)}</option>
+                    <option value="ARCHIVED">{t(`${PROJECTS}:status.archived`)}</option>
                 </select>
             </div>
 
             <div className="project-form__field">
-                <label className="project-form__label">{t(`${NS.projects}:form.versions.label`)}</label>
+                <label className="project-form__label">{t(`${PROJECTS}:form.versions.label`)}</label>
                 <div className="project-form__versions-input">
                     <Input
-                        placeholder={t(`${NS.projects}:form.versions.placeholder`)}
+                        placeholder={t(`${PROJECTS}:form.versions.placeholder`)}
                         value={versionInput}
                         onChange={e => setVersionInput(e.target.value)}
                         onKeyDown={e => {
@@ -123,10 +137,10 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
 
             <div className="project-form__actions">
                 <Button type="submit" disabled={!name.trim() || submitting}>
-                    {initial ? t(`${NS.common}:save`) : t(`${NS.common}:create`)}
+                    {initial ? t(`${COMMON}:save`) : t(`${COMMON}:create`)}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    {t(`${NS.common}:cancel`)}
+                    {t(`${COMMON}:cancel`)}
                 </Button>
             </div>
         </form>

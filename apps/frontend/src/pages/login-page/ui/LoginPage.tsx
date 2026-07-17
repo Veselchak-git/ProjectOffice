@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { AUTH, COMMON } from "@helpdesk-portal/i18n";
 import LoginIcon from "@helpdesk-portal/icons/LoginIcon.svg?react";
 import PasswordIcon from "@helpdesk-portal/icons/PasswordIcon.svg?react";
 import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
@@ -49,7 +56,7 @@ export const LoginPage: FC = () => {
                 await login(data.login, data.password);
                 navigate("/", { replace: true });
             } catch (err) {
-                const message = err instanceof Error ? err.message : t(`${NS.common}:error.connection`);
+                const message = err instanceof Error ? err.message : t(`${COMMON}:error.connection`);
                 setServerError(message);
             } finally {
                 setSubmitting(false);
@@ -67,8 +74,8 @@ export const LoginPage: FC = () => {
             <TecomLogoIcon className="login-page__logo" />
 
             <div className="login-page__header">
-                <h2 className="login-page__heading">{t(`${NS.auth}:login.title`)}</h2>
-                <h3 className="login-page__subtitle">{t(`${NS.auth}:login.subtitle`)}</h3>
+                <h2 className="login-page__heading">{t(`${AUTH}:login.title`)}</h2>
+                <h3 className="login-page__subtitle">{t(`${AUTH}:login.subtitle`)}</h3>
             </div>
             <form
                 className="login-page__form"
@@ -88,10 +95,10 @@ export const LoginPage: FC = () => {
                         <Input
                             {...field}
                             id="login"
-                            label={t(`${NS.auth}:login.email.label`)}
+                            label={t(`${AUTH}:login.email.label`)}
                             type="email"
                             inputSize="m"
-                            placeholder={t(`${NS.auth}:login.email.placeholder`)}
+                            placeholder={t(`${AUTH}:login.email.placeholder`)}
                             autoComplete="email"
                             startIcon={<LoginIcon />}
                             endIcon={
@@ -120,10 +127,10 @@ export const LoginPage: FC = () => {
                         <Input
                             {...field}
                             id="password"
-                            label={t(`${NS.auth}:login.password.label`)}
+                            label={t(`${AUTH}:login.password.label`)}
                             type={showPassword ? "text" : "password"}
                             inputSize="m"
-                            placeholder={t(`${NS.auth}:login.password.placeholder`)}
+                            placeholder={t(`${AUTH}:login.password.placeholder`)}
                             autoComplete="current-password"
                             startIcon={<PasswordIcon />}
                             endIcon={
@@ -164,7 +171,7 @@ export const LoginPage: FC = () => {
                     type="submit"
                     disabled={!canSubmit}
                 >
-                    {submitting ? t(`${NS.auth}:login.submitting`) : t(`${NS.auth}:login.submit`)}
+                    {submitting ? t(`${AUTH}:login.submitting`) : t(`${AUTH}:login.submit`)}
                 </Button>
             </form>
         </>

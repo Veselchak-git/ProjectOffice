@@ -1,6 +1,13 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
 import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { NS } from "@helpdesk-portal/i18n";
+import { COMMON, USERS } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
@@ -36,7 +43,7 @@ import {
 import "./UsersPage.css";
 
 export const UsersPage: FC = () => {
-    const { t } = useTranslation(NS.users);
+    const { t } = useTranslation(USERS);
     const queryClient = useQueryClient();
     const [pageIndex, setPageIndex] = useState(0);
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -292,17 +299,17 @@ interface CreateUserFormProps {
 const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validateLogin(value: string): string | undefined {
-    if (!value.trim()) return i18n.t(`${NS.users}:validation.required.email`);
-    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return i18n.t(`${NS.users}:validation.invalid.email`);
+    if (!value.trim()) return i18n.t(`${USERS}:validation.required.email`);
+    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return i18n.t(`${USERS}:validation.invalid.email`);
 }
 
 function validatePasswordCreate(value: string): string | undefined {
-    if (!value) return i18n.t(`${NS.users}:validation.required.password`);
-    if (value.length < 6) return i18n.t(`${NS.users}:validation.minLength.password`);
+    if (!value) return i18n.t(`${USERS}:validation.required.password`);
+    if (value.length < 6) return i18n.t(`${USERS}:validation.minLength.password`);
 }
 
 const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
-    const { t: tu } = useTranslation(NS.users);
+    const { t: tu } = useTranslation(USERS);
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("GUEST");
@@ -323,7 +330,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
         try {
             await onSubmit({ login: login.trim(), password, role: role as CreateUserData["role"] });
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : i18n.t(`${NS.users}:create.error`));
+            setServerError(err instanceof Error ? err.message : i18n.t(`${USERS}:create.error`));
         } finally {
             setSubmitting(false);
         }
@@ -376,7 +383,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     {submitting ? tu("create.submitting") : tu("create.submit")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    {tu(`${NS.common}:cancel`)}
+                    {tu(`${COMMON}:cancel`)}
                 </Button>
             </div>
         </form>
@@ -390,7 +397,7 @@ interface EditUserFormProps {
 }
 
 const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
-    const { t: tu } = useTranslation(NS.users);
+    const { t: tu } = useTranslation(USERS);
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState<string>(user.role);
@@ -400,10 +407,10 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
 
     const loginError =
         login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim())
-            ? i18n.t(`${NS.users}:validation.invalid.email`)
+            ? i18n.t(`${USERS}:validation.invalid.email`)
             : undefined;
     const passwordError =
-        password.length > 0 && password.length < 6 ? i18n.t(`${NS.users}:validation.minLength.password`) : undefined;
+        password.length > 0 && password.length < 6 ? i18n.t(`${USERS}:validation.minLength.password`) : undefined;
     const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
     const canSubmit = !submitting && !hasFieldErrors;
 
@@ -418,13 +425,13 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             if (password) data.password = password;
             if (role !== user.role) data.role = role as User["role"];
             if (Object.keys(data).length === 0) {
-                setServerError(i18n.t(`${NS.users}:edit.noChanges`));
+                setServerError(i18n.t(`${USERS}:edit.noChanges`));
                 setSubmitting(false);
                 return;
             }
             await onSubmit(data);
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : i18n.t(`${NS.users}:edit.error`));
+            setServerError(err instanceof Error ? err.message : i18n.t(`${USERS}:edit.error`));
         } finally {
             setSubmitting(false);
         }
@@ -490,7 +497,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                     {submitting ? tu("edit.saving") : tu("edit.save")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
-                    {tu(`${NS.common}:cancel`)}
+                    {tu(`${COMMON}:cancel`)}
                 </Button>
             </div>
         </form>

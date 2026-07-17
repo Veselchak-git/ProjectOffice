@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { ISSUES } from "@helpdesk-portal/i18n";
 
 import { buildQueryString, handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
@@ -16,7 +23,7 @@ export interface FetchIssuesResponse {
 async function fetchIssuesByUrl(url: string, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
     const query = buildQueryString(params);
     const res = await apiClient(`${url}${query}`);
-    return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${NS.issues}:error.loading`));
+    return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${ISSUES}:error.loading`));
 }
 
 export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
@@ -25,7 +32,7 @@ export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssu
 
 export async function fetchIssue(id: number): Promise<Issue> {
     const res = await apiClient(`/api/issues/${id}`);
-    return handleApiResponse<Issue>(res, i18n.t(`${NS.issues}:error.loadOne`));
+    return handleApiResponse<Issue>(res, i18n.t(`${ISSUES}:error.loadOne`));
 }
 
 export async function fetchProjectIssues(projectId: number, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
@@ -38,7 +45,7 @@ export async function createIssue(projectId: number, data: CreateIssueData): Pro
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-    return handleApiResponse<Issue>(res, i18n.t(`${NS.issues}:error.create`));
+    return handleApiResponse<Issue>(res, i18n.t(`${ISSUES}:error.create`));
 }
 
 export async function updateIssue(id: number, data: UpdateIssueData): Promise<Issue> {
@@ -47,12 +54,12 @@ export async function updateIssue(id: number, data: UpdateIssueData): Promise<Is
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-    return handleApiResponse<Issue>(res, i18n.t(`${NS.issues}:error.update`));
+    return handleApiResponse<Issue>(res, i18n.t(`${ISSUES}:error.update`));
 }
 
 export async function deleteIssue(id: number): Promise<void> {
     const res = await apiClient(`/api/issues/${id}`, {
         method: "DELETE"
     });
-    await handleApiResponse<void>(res, i18n.t(`${NS.issues}:error.delete`));
+    await handleApiResponse<void>(res, i18n.t(`${ISSUES}:error.delete`));
 }

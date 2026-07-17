@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { USERS } from "@helpdesk-portal/i18n";
 import { Select } from "@helpdesk-portal/ui-kit";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
@@ -54,12 +61,12 @@ export function getUsersColumns({ t, updateRoleMutate, setEditingUser }: GetUser
             minSize: 200,
             cell: info => <UsersActionsCell user={info.row.original} onEdit={setEditingUser} />
         })
-    ];
+    ] as ColumnDef<User>[];
 }
 
 export const { ALL_COLUMNS, COLUMN_IDS, DEFAULT_COLUMN_ORDER, DEFAULT_COLUMN_VISIBILITY } = createColumnMeta([
-    { id: "login", label: `${NS.users}:table.login` },
-    { id: "role", label: `${NS.users}:table.role` },
-    { id: "createdAt", label: `${NS.users}:table.created` },
+    { id: "login", label: `${USERS}:table.login` },
+    { id: "role", label: `${USERS}:table.role` },
+    { id: "createdAt", label: `${USERS}:table.created` },
     { id: "actions", label: "" }
 ]);

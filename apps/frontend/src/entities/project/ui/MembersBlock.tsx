@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { PROJECTS } from "@helpdesk-portal/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { FC } from "react";
@@ -42,11 +49,11 @@ export const MembersBlock: FC<MembersBlockProps> = ({
     const [selectedRole, setSelectedRole] = useState<ProjectMemberRole>("VIEWER");
 
     const roleLabels: Record<ProjectMemberRole, string> = {
-        VIEWER: t(`${NS.projects}:members.roles.viewer`),
-        REPORTER: t(`${NS.projects}:members.roles.reporter`),
-        UPDATER: t(`${NS.projects}:members.roles.updater`),
-        DEVELOPER: t(`${NS.projects}:members.roles.developer`),
-        MANAGER: t(`${NS.projects}:members.roles.manager`)
+        VIEWER: t(`${PROJECTS}:members.roles.viewer`),
+        REPORTER: t(`${PROJECTS}:members.roles.reporter`),
+        UPDATER: t(`${PROJECTS}:members.roles.updater`),
+        DEVELOPER: t(`${PROJECTS}:members.roles.developer`),
+        MANAGER: t(`${PROJECTS}:members.roles.manager`)
     };
 
     const canManage = globalRole === "ADMIN" || projectRole === "MANAGER";
@@ -72,7 +79,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
     const toActionError = (err: unknown, fallbackKey: string): string => {
         const apiError = err as Error & { code?: string };
         if (apiError.code) {
-            return t(`${NS.projects}:error.${apiError.code}`, { defaultValue: apiError.message });
+            return t(`${projectId}:error.${apiError.code}`, { defaultValue: apiError.message });
         }
         if (err instanceof Error) return err.message;
         return t(fallbackKey);
@@ -92,7 +99,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
             setActionError(null);
         },
         onError: err => {
-            setActionError(toActionError(err, `${NS.projects}:members.error.add`));
+            setActionError(toActionError(err, `${projectId}:members.error.add`));
         }
     });
 
@@ -108,7 +115,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
             }
         },
         onError: err => {
-            setActionError(toActionError(err, `${NS.projects}:members.error.update`));
+            setActionError(toActionError(err, `${projectId}:members.error.update`));
         }
     });
 
@@ -123,7 +130,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
             }
         },
         onError: err => {
-            setActionError(toActionError(err, `${NS.projects}:members.error.delete`));
+            setActionError(toActionError(err, `${projectId}:members.error.delete`));
         }
     });
 
@@ -144,23 +151,23 @@ export const MembersBlock: FC<MembersBlockProps> = ({
     const handleRemove = async (userId: number) => {
         const member = members.find(m => m.userId === userId);
         const name = member?.login ?? `#${userId}`;
-        if (!window.confirm(t(`${NS.projects}:members.confirmDelete`, { name }))) return;
+        if (!window.confirm(t(`${projectId}:members.confirmDelete`, { name }))) return;
         await removeMember(userId);
     };
 
     return (
         <div className="members-block">
-            <h2 className="members-block__title">{t(`${NS.projects}:members.title`)}</h2>
+            <h2 className="members-block__title">{t(`${PROJECTS}:members.title`)}</h2>
 
             {error && <p className="members-block__error">{error}</p>}
 
             {loading ? (
-                <p className="members-block__loading">{t(`${NS.projects}:members.loading`)}</p>
+                <p className="members-block__loading">{t(`${PROJECTS}:members.loading`)}</p>
             ) : (
                 <>
                     <div className="members-block__list">
                         {members.length === 0 && (
-                            <p className="members-block__empty">{t(`${NS.projects}:members.empty`)}</p>
+                            <p className="members-block__empty">{t(`${PROJECTS}:members.empty`)}</p>
                         )}
                         {members.map(m => (
                             <div key={m.userId} className="members-block__item">
@@ -187,7 +194,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                         className="members-block__item-remove"
                                         type="button"
                                         onClick={() => handleRemove(m.userId)}
-                                        title={t(`${NS.projects}:members.deleteTooltip`)}
+                                        title={t(`${PROJECTS}:members.deleteTooltip`)}
                                     >
                                         ✕
                                     </button>
@@ -203,7 +210,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                 value={selectedUserId ?? ""}
                                 onChange={e => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
                             >
-                                <option value="">{t(`${NS.projects}:members.placeholder`)}</option>
+                                <option value="">{t(`${PROJECTS}:members.placeholder`)}</option>
                                 {availableUsers.map(u => (
                                     <option key={u.id} value={u.id}>
                                         {u.login}
@@ -227,7 +234,7 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                                 onClick={handleAdd}
                                 disabled={selectedUserId === null}
                             >
-                                {t(`${NS.projects}:members.add`)}
+                                {t(`${PROJECTS}:members.add`)}
                             </button>
                         </div>
                     )}

@@ -5,7 +5,7 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import { NS } from "@helpdesk-portal/i18n";
+import { HOME } from "@helpdesk-portal/i18n";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -44,7 +44,7 @@ function getTypeIcon(type: ActivityItemType["type"]): string {
 }
 
 export const ActivityFeed: FC<Props> = ({ activity, isLoading }) => {
-    const { t } = useTranslation(NS.home);
+    const { t } = useTranslation(HOME);
 
     if (isLoading) {
         return (

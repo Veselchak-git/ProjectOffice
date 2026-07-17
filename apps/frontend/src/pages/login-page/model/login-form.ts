@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { VALIDATION } from "@helpdesk-portal/i18n";
 import type { RegisterOptions } from "react-hook-form";
 
 export interface LoginFormValues {
@@ -8,20 +15,20 @@ export interface LoginFormValues {
 
 export function getLoginEmailRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "login"> {
     return {
-        required: t(`${NS.validation}:required.email`),
+        required: t(`${VALIDATION}:required.email`),
         pattern: {
             value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            message: t(`${NS.validation}:invalid.email`)
+            message: t(`${VALIDATION}:invalid.email`)
         }
     };
 }
 
 export function getLoginPasswordRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "password"> {
     return {
-        required: t(`${NS.validation}:required.password`),
+        required: t(`${VALIDATION}:required.password`),
         minLength: {
             value: 6,
-            message: t(`${NS.validation}:minLength.password`)
+            message: t(`${VALIDATION}:minLength.password`)
         }
     };
 }

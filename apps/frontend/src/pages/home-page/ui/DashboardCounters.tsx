@@ -1,4 +1,11 @@
-import { NS } from "@helpdesk-portal/i18n";
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+import { HOME } from "@helpdesk-portal/i18n";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -16,7 +23,7 @@ interface Props {
 }
 
 export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole }) => {
-    const { t } = useTranslation(NS.home);
+    const { t } = useTranslation(HOME);
 
     if (isLoading) {
         return (
