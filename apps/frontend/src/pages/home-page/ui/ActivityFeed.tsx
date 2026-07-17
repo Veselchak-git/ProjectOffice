@@ -6,11 +6,16 @@
  * Все права защищены
  */
 import { HOME } from "@helpdesk-portal/i18n";
+import { formatDistanceToNow } from "date-fns";
+import { enUS } from "date-fns/locale/en-US";
+import { ru } from "date-fns/locale/ru";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import type { ActivityItem as ActivityItemType } from "@/entities/dashboard/model/dashboard";
+
+import { i18n } from "@/shared/lib/i18n";
 
 import "./ActivityFeed.css";
 
@@ -20,16 +25,8 @@ interface Props {
 }
 
 function timeAgo(dateStr: string): string {
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    const seconds = Math.floor((now - then) / 1000);
-    if (seconds < 60) return `${seconds}с`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}м`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}ч`;
-    const days = Math.floor(hours / 24);
-    return `${days}д`;
+    const locale = i18n.language === "ru" ? ru : enUS;
+    return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale });
 }
 
 function getTypeIcon(type: ActivityItemType["type"]): string {
