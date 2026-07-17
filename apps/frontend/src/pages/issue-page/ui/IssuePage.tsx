@@ -95,9 +95,9 @@ export const IssuePage: FC = () => {
             <div className="issue-page">
                 <div className="issue-page__not-found">
                     <h1>{error instanceof Error ? error.message : t("error.notFound")}</h1>
-                    <button className="issue-page__back-btn" type="button" onClick={() => navigate("/tasks")}>
+                    <Button className="issue-page__back-btn" type="button" onClick={() => navigate("/tasks")}>
                         {t("detail.backToList")}
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
@@ -160,9 +160,9 @@ export const IssuePage: FC = () => {
 
     return (
         <div className="issue-page">
-            <button className="issue-page__back-btn" type="button" onClick={() => navigate(-1)}>
+            <Button className="issue-page__back-btn" type="button" onClick={() => navigate(-1)}>
                 {t("detail.back")}
-            </button>
+            </Button>
 
             <div className="issue-page__card">
                 <div className="issue-page__header">
@@ -192,13 +192,14 @@ export const IssuePage: FC = () => {
                     <div className="issue-page__field">
                         <span className="issue-page__field-label">{t("detail.info.project")}</span>
                         <span className="issue-page__field-value">
-                            <button
+                            <Button
+                                variant="link"
                                 className="issue-page__link-btn"
                                 type="button"
                                 onClick={() => navigate(`/projects/${issue.projectId}`)}
                             >
                                 {issue.projectName}
-                            </button>
+                            </Button>
                         </span>
                     </div>
 

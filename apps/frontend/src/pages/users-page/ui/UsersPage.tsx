@@ -12,7 +12,7 @@ import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
-import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
+import { Button, Input, Select, Switch } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type SortingState } from "@tanstack/react-table";
 import { useRef, useState } from "react";
@@ -199,28 +199,31 @@ export const UsersPage: FC = () => {
                     <p className="users-page__title-subtitle">{t("page.subtitle", { count: total })}</p>
                 </div>
                 <div className="users-page__actions">
-                    <button className="users-page__create-btn" type="button" onClick={() => setCreating(true)}>
-                        <PlusIcon />
+                    <Button
+                        className="users-page__create-btn"
+                        type="button"
+                        onClick={() => setCreating(true)}
+                        startIcon={<PlusIcon />}
+                    >
                         {t("actions.create")}
-                    </button>
+                    </Button>
                     {selectedCount > 0 && (
                         <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
                             {t("actions.deleteSelected", { count: selectedCount })}
                         </Button>
                     )}
-                    <button className="users-page__export-btn" type="button">
-                        <ExportIcon />
+                    <Button className="users-page__export-btn" type="button" startIcon={<ExportIcon />}>
                         {t("actions.export")}
-                    </button>
+                    </Button>
                     <div className="users-page__columns-wrapper" ref={columnsRef}>
-                        <button
+                        <Button
                             className="users-page__columns-btn"
                             type="button"
                             onClick={() => setColumnsOpen(v => !v)}
+                            startIcon={<GearIcon />}
                         >
-                            <GearIcon />
                             {t("actions.columns")}
-                        </button>
+                        </Button>
                         {columnsOpen && (
                             <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
                                 <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
@@ -372,7 +375,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     required
                 />
                 <label className="users-page__checkbox-row">
-                    <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
+                    <Switch checked={showPassword} onCheckedChange={setShowPassword} />
                     <span>{tu("form.showPassword")}</span>
                 </label>
             </div>
@@ -486,7 +489,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                     errorMessage={passwordError}
                 />
                 <label className="users-page__checkbox-row">
-                    <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
+                    <Switch checked={showPassword} onCheckedChange={setShowPassword} />
                     <span>{tu("edit.showPassword")}</span>
                 </label>
             </div>

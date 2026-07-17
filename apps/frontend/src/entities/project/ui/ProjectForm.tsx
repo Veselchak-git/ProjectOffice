@@ -13,7 +13,7 @@
  * Все права защищены
  */
 import { COMMON, PROJECTS } from "@helpdesk-portal/i18n";
-import { Button, Input } from "@helpdesk-portal/ui-kit";
+import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -87,17 +87,15 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                 onChange={e => setDescription(e.target.value)}
             />
 
-            <div className="project-form__field">
-                <label className="project-form__label">{t(`${PROJECTS}:form.status.label`)}</label>
-                <select
-                    className="project-form__select"
-                    value={status}
-                    onChange={e => setStatus(e.target.value as "ACTIVE" | "ARCHIVED")}
-                >
-                    <option value="ACTIVE">{t(`${PROJECTS}:status.active`)}</option>
-                    <option value="ARCHIVED">{t(`${PROJECTS}:status.archived`)}</option>
-                </select>
-            </div>
+            <Select
+                label={t(`${PROJECTS}:form.status.label`)}
+                options={[
+                    { value: "ACTIVE", label: t(`${PROJECTS}:status.active`) },
+                    { value: "ARCHIVED", label: t(`${PROJECTS}:status.archived`) }
+                ]}
+                value={status}
+                onValueChange={v => setStatus(v as "ACTIVE" | "ARCHIVED")}
+            />
 
             <div className="project-form__field">
                 <label className="project-form__label">{t(`${PROJECTS}:form.versions.label`)}</label>
@@ -122,13 +120,13 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                         {versions.map(v => (
                             <span key={v} className="project-form__tag">
                                 {v}
-                                <button
+                                <Button
                                     type="button"
                                     className="project-form__tag-remove"
                                     onClick={() => removeVersion(v)}
                                 >
                                     ×
-                                </button>
+                                </Button>
                             </span>
                         ))}
                     </div>

@@ -137,7 +137,6 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
                 checkProjectAccess({
                     requireProjectRoles: ["MANAGER"],
                     allowGlobalAdmin: true,
-                    checkSelfModification: true,
                 }),
             ],
         },

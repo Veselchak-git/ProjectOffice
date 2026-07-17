@@ -7,18 +7,18 @@ export interface TableSettings {
     columnOrder: string[];
 }
 
-export async function fetchUserPreference(page: string): Promise<TableSettings | null> {
+export async function fetchUserPreference(page: string): Promise<Record<string, unknown> | null> {
     const res = await apiClient(`/api/users/me/preferences?page=${encodeURIComponent(page)}`);
 
     if (!res.ok) {
         return null;
     }
 
-    const data = (await res.json()) as { settings?: TableSettings };
+    const data = (await res.json()) as { settings?: Record<string, unknown> };
     return data.settings ?? null;
 }
 
-export async function saveUserPreference(page: string, settings: TableSettings): Promise<void> {
+export async function saveUserPreference(page: string, settings: Record<string, unknown>): Promise<void> {
     await apiClient("/api/users/me/preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

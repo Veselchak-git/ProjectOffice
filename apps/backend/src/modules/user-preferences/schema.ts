@@ -6,10 +6,7 @@ export const getPreferencesQuerySchema = Type.Object({
 
 export type GetPreferencesQuery = Static<typeof getPreferencesQuerySchema>;
 
-export const tableSettingsSchema = Type.Object({
-    columnVisibility: Type.Record(Type.String(), Type.Boolean()),
-    columnOrder: Type.Array(Type.String()),
-});
+export const tableSettingsSchema = Type.Record(Type.String(), Type.Unknown());
 
 export type TableSettings = Static<typeof tableSettingsSchema>;
 

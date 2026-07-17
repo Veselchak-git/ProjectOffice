@@ -224,28 +224,31 @@ export const ProjectsPage: FC = () => {
                     <p className="projects-page__title-subtitle">{t("page.subtitle", { active, total })}</p>
                 </div>
                 <div className="projects-page__actions">
-                    <button className="projects-page__create-btn" type="button" onClick={() => setCreating(true)}>
-                        <PlusIcon />
+                    <Button
+                        className="projects-page__create-btn"
+                        type="button"
+                        onClick={() => setCreating(true)}
+                        startIcon={<PlusIcon />}
+                    >
                         {t("actions.create")}
-                    </button>
+                    </Button>
                     {selectedCount > 0 && (
                         <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
                             {t("actions.deleteSelected", { count: selectedCount })}
                         </Button>
                     )}
-                    <button className="projects-page__export-btn" type="button">
-                        <ExportIcon />
+                    <Button className="projects-page__export-btn" type="button" startIcon={<ExportIcon />}>
                         {t("actions.export")}
-                    </button>
+                    </Button>
                     <div className="projects-page__columns-wrapper" ref={columnsRef}>
-                        <button
+                        <Button
                             className="projects-page__columns-btn"
                             type="button"
                             onClick={() => setColumnsOpen(v => !v)}
+                            startIcon={<GearIcon />}
                         >
-                            <GearIcon />
                             {t("actions.columns")}
-                        </button>
+                        </Button>
                         {columnsOpen && (
                             <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
                                 <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>

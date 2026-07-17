@@ -6,6 +6,7 @@
  * Все права защищены
  */
 import { PROJECTS } from "@helpdesk-portal/i18n";
+import { Button, Select } from "@helpdesk-portal/ui-kit";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { FC } from "react";
@@ -30,18 +31,10 @@ const ROLES: ProjectMemberRole[] = ["VIEWER", "REPORTER", "UPDATER", "DEVELOPER"
 interface MembersBlockProps {
     projectId: number;
     globalRole: string | undefined;
-    currentLogin: string | undefined;
-    currentUserId: number | undefined;
     projectRole: ProjectMemberRole | undefined;
 }
 
-export const MembersBlock: FC<MembersBlockProps> = ({
-    projectId,
-    globalRole,
-    currentLogin,
-    currentUserId,
-    projectRole
-}) => {
+export const MembersBlock: FC<MembersBlockProps> = ({ projectId, globalRole, projectRole }) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [actionError, setActionError] = useState<string | null>(null);
@@ -103,6 +96,123 @@ export const MembersBlock: FC<MembersBlockProps> = ({
         }
     });
 
+    const availableUsers = users.filter(u => !members.some(m => m.userId === u.id));
+    const loading = membersPending || (canManage && usersPending);
+    const error =
+        actionError ?? (membersError ? (membersLoadError instanceof Error ? membersLoadError.message : null) : null);
+
+    const handleAdd = async () => {
+        if (selectedUserId === null) return;
+        await addMember();
+    };
+
+    return (
+        <div className="members-block">
+            {error && <p className="members-block__error">{error}</p>}
+
+            {loading ? (
+                <p className="members-block__loading">{t(`${PROJECTS}:members.loading`)}</p>
+            ) : (
+                <>
+                    {canManage && availableUsers.length > 0 && (
+                        <div className="members-block__add">
+                            <div className="members-block__add-user">
+                                <Select
+                                    options={[
+                                        { value: "", label: t(`${PROJECTS}:members.placeholder`) },
+                                        ...availableUsers.map(u => ({ value: String(u.id), label: u.login }))
+                                    ]}
+                                    value={selectedUserId != null ? String(selectedUserId) : ""}
+                                    onValueChange={v => setSelectedUserId(v ? Number(v) : null)}
+                                    inputSize="s"
+                                    usePortal={false}
+                                />
+                            </div>
+                            <div className="members-block__add-role">
+                                <Select
+                                    options={assignableRoles.map(r => ({ value: r, label: roleLabels[r] ?? r }))}
+                                    value={selectedRole}
+                                    onValueChange={v => setSelectedRole(v as ProjectMemberRole)}
+                                    inputSize="s"
+                                    usePortal={false}
+                                />
+                            </div>
+                            <Button
+                                className="members-block__add-btn"
+                                type="button"
+                                onClick={handleAdd}
+                                disabled={selectedUserId === null}
+                            >
+                                {t(`${PROJECTS}:members.add`)}
+                            </Button>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
+interface MembersListModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    projectId: number;
+    globalRole: string | undefined;
+    currentLogin: string | undefined;
+    currentUserId: number | undefined;
+    projectRole: ProjectMemberRole | undefined;
+}
+
+export const MembersListModal: FC<MembersListModalProps> = ({
+    isOpen,
+    onClose,
+    projectId,
+    globalRole,
+    currentLogin,
+    currentUserId,
+    projectRole
+}) => {
+    const { t } = useTranslation();
+    const queryClient = useQueryClient();
+    const [actionError, setActionError] = useState<string | null>(null);
+
+    const roleLabels: Record<ProjectMemberRole, string> = {
+        VIEWER: t(`${PROJECTS}:members.roles.viewer`),
+        REPORTER: t(`${PROJECTS}:members.roles.reporter`),
+        UPDATER: t(`${PROJECTS}:members.roles.updater`),
+        DEVELOPER: t(`${PROJECTS}:members.roles.developer`),
+        MANAGER: t(`${PROJECTS}:members.roles.manager`)
+    };
+
+    const canManage = globalRole === "ADMIN" || projectRole === "MANAGER";
+    const maxAssignableRank = globalRole === "ADMIN" ? 4 : (ROLE_HIERARCHY[projectRole ?? "VIEWER"] ?? 0);
+    const assignableRoles = ROLES.filter(r => (ROLE_HIERARCHY[r] ?? 0) <= maxAssignableRank);
+
+    const {
+        data: members = [],
+        isPending: membersPending,
+        isError: membersError,
+        error: membersLoadError
+    } = useQuery({
+        queryKey: ["project-members", projectId],
+        queryFn: () => fetchProjectMembers(projectId),
+        enabled: isOpen
+    });
+
+    const toActionError = (err: unknown, fallbackKey: string): string => {
+        const apiError = err as Error & { code?: string };
+        if (apiError.code) {
+            return t(`${projectId}:error.${apiError.code}`, { defaultValue: apiError.message });
+        }
+        if (err instanceof Error) return err.message;
+        return t(fallbackKey);
+    };
+
+    const invalidateMembers = () => {
+        queryClient.invalidateQueries({ queryKey: ["project-members", projectId] });
+        queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+    };
+
     const { mutateAsync: updateMember } = useMutation({
         mutationFn: ({ userId, role }: { userId: number; role: ProjectMemberRole }) =>
             updateProjectMember(projectId, userId, role),
@@ -134,15 +244,9 @@ export const MembersBlock: FC<MembersBlockProps> = ({
         }
     });
 
-    const availableUsers = users.filter(u => !members.some(m => m.userId === u.id));
-    const loading = membersPending || (canManage && usersPending);
+    const loading = membersPending;
     const error =
         actionError ?? (membersError ? (membersLoadError instanceof Error ? membersLoadError.message : null) : null);
-
-    const handleAdd = async () => {
-        if (selectedUserId === null) return;
-        await addMember();
-    };
 
     const handleRoleChange = async (userId: number, role: ProjectMemberRole) => {
         await updateMember({ userId, role });
@@ -155,16 +259,28 @@ export const MembersBlock: FC<MembersBlockProps> = ({
         await removeMember(userId);
     };
 
+    const handleLeave = async () => {
+        if (!window.confirm(t(`${PROJECTS}:members.confirmLeave`))) return;
+        await removeMember(currentUserId!);
+    };
+
+    if (!isOpen) return null;
+
     return (
-        <div className="members-block">
-            <h2 className="members-block__title">{t(`${PROJECTS}:members.title`)}</h2>
+        <div className="members-block-modal__overlay" onClick={onClose}>
+            <div className="members-block-modal__content" onClick={e => e.stopPropagation()}>
+                <div className="members-block-modal__header">
+                    <h2 className="members-block-modal__title">{t(`${PROJECTS}:members.title`)}</h2>
+                    <Button className="members-block-modal__close" type="button" onClick={onClose}>
+                        ✕
+                    </Button>
+                </div>
 
-            {error && <p className="members-block__error">{error}</p>}
+                {error && <p className="members-block__error">{error}</p>}
 
-            {loading ? (
-                <p className="members-block__loading">{t(`${PROJECTS}:members.loading`)}</p>
-            ) : (
-                <>
+                {loading ? (
+                    <p className="members-block__loading">{t(`${PROJECTS}:members.loading`)}</p>
+                ) : (
                     <div className="members-block__list">
                         {members.length === 0 && (
                             <p className="members-block__empty">{t(`${PROJECTS}:members.empty`)}</p>
@@ -173,73 +289,43 @@ export const MembersBlock: FC<MembersBlockProps> = ({
                             <div key={m.userId} className="members-block__item">
                                 <span className="members-block__item-login">{m.login}</span>
                                 {canManage && m.login !== currentLogin ? (
-                                    <select
-                                        className="members-block__item-role"
-                                        value={m.role}
-                                        onChange={e => handleRoleChange(m.userId, e.target.value as ProjectMemberRole)}
-                                    >
-                                        {assignableRoles.map(r => (
-                                            <option key={r} value={r}>
-                                                {roleLabels[r] ?? r}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="members-block__item-role">
+                                        <Select
+                                            options={assignableRoles.map(r => ({
+                                                value: r,
+                                                label: roleLabels[r] ?? r
+                                            }))}
+                                            value={m.role}
+                                            onValueChange={v => handleRoleChange(m.userId, v as ProjectMemberRole)}
+                                            inputSize="s"
+                                            usePortal={false}
+                                        />
+                                    </div>
                                 ) : (
                                     <span className="members-block__item-role-text">
                                         {roleLabels[m.role] ?? m.role}
                                     </span>
                                 )}
                                 {canManage && m.login !== currentLogin && (
-                                    <button
+                                    <Button
                                         className="members-block__item-remove"
                                         type="button"
                                         onClick={() => handleRemove(m.userId)}
                                         title={t(`${PROJECTS}:members.deleteTooltip`)}
                                     >
                                         ✕
-                                    </button>
+                                    </Button>
+                                )}
+                                {m.userId === currentUserId && (
+                                    <Button className="members-block__item-remove" type="button" onClick={handleLeave}>
+                                        ✕
+                                    </Button>
                                 )}
                             </div>
                         ))}
                     </div>
-
-                    {canManage && availableUsers.length > 0 && (
-                        <div className="members-block__add">
-                            <select
-                                className="members-block__add-user"
-                                value={selectedUserId ?? ""}
-                                onChange={e => setSelectedUserId(e.target.value ? Number(e.target.value) : null)}
-                            >
-                                <option value="">{t(`${PROJECTS}:members.placeholder`)}</option>
-                                {availableUsers.map(u => (
-                                    <option key={u.id} value={u.id}>
-                                        {u.login}
-                                    </option>
-                                ))}
-                            </select>
-                            <select
-                                className="members-block__add-role"
-                                value={selectedRole}
-                                onChange={e => setSelectedRole(e.target.value as ProjectMemberRole)}
-                            >
-                                {assignableRoles.map(r => (
-                                    <option key={r} value={r}>
-                                        {roleLabels[r] ?? r}
-                                    </option>
-                                ))}
-                            </select>
-                            <button
-                                className="members-block__add-btn"
-                                type="button"
-                                onClick={handleAdd}
-                                disabled={selectedUserId === null}
-                            >
-                                {t(`${PROJECTS}:members.add`)}
-                            </button>
-                        </div>
-                    )}
-                </>
-            )}
+                )}
+            </div>
         </div>
     );
 };

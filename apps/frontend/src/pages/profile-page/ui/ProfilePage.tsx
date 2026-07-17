@@ -6,10 +6,10 @@
  * Все права защищены
  */
 import { AUTH, COMMON, VALIDATION } from "@helpdesk-portal/i18n";
+import UserIcon from "@helpdesk-portal/icons/AvatarPlaceholder.svg?react";
 import PasswordIcon from "@helpdesk-portal/icons/PasswordIcon.svg?react";
 import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
-import UserIcon from "@helpdesk-portal/icons/User.svg?react";
-import { Button, Input } from "@helpdesk-portal/ui-kit";
+import { Button, Input, Switch } from "@helpdesk-portal/ui-kit";
 import { useCallback, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -107,13 +107,13 @@ export const ProfilePage: FC = () => {
                             startIcon={<PasswordIcon />}
                             endIcon={
                                 currentValue?.length > 0 ? (
-                                    <button
+                                    <Button
                                         className="profile-page__reset"
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
                                         <ResetInputIcon />
-                                    </button>
+                                    </Button>
                                 ) : undefined
                             }
                             color={serverError || currentError ? "error" : "default"}
@@ -142,13 +142,13 @@ export const ProfilePage: FC = () => {
                             startIcon={<PasswordIcon />}
                             endIcon={
                                 newValue?.length > 0 ? (
-                                    <button
+                                    <Button
                                         className="profile-page__reset"
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
                                         <ResetInputIcon />
-                                    </button>
+                                    </Button>
                                 ) : undefined
                             }
                             color={newError ? "error" : "default"}
@@ -177,13 +177,13 @@ export const ProfilePage: FC = () => {
                             startIcon={<PasswordIcon />}
                             endIcon={
                                 confirmValue?.length > 0 ? (
-                                    <button
+                                    <Button
                                         className="profile-page__reset"
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
                                         <ResetInputIcon />
-                                    </button>
+                                    </Button>
                                 ) : undefined
                             }
                             color={confirmError ? "error" : "default"}
@@ -194,7 +194,7 @@ export const ProfilePage: FC = () => {
                 />
 
                 <label className="profile-page__show-all">
-                    <input type="checkbox" checked={showPasswords} onChange={() => setShowPasswords(v => !v)} />
+                    <Switch checked={showPasswords} onCheckedChange={setShowPasswords} />
                     <span>{t(`${AUTH}:profile.showPasswords`)}</span>
                 </label>
 

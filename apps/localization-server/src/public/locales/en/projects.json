@@ -96,6 +96,8 @@
             "developer": "Developer",
             "manager": "Manager"
         },
+        "btnLabel": "Members ({{count}})",
+        "confirmLeave": "Are you sure you want to leave the project?",
         "error": {
             "add": "Error adding member",
             "update": "Error updating member",

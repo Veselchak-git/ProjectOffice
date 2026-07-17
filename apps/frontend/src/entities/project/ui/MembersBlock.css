@@ -38,6 +38,8 @@
     flex-direction: column;
     gap: 8px;
     margin-bottom: 16px;
+    max-height: 450px;
+    overflow-y: auto;
 }
 
 .members-block__item {
@@ -145,4 +147,58 @@
 
 .members-block__add-btn:not(:disabled):hover {
     background-color: var(--semantic-btn-accent-fill-hover-bg);
+}
+
+@layer pages {
+    .members-block-modal__overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+
+    .members-block-modal__content {
+        background-color: var(--semantic-bg-surface);
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 12px;
+        padding: 32px;
+        width: 90%;
+        max-width: 560px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .members-block-modal__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .members-block-modal__title {
+        margin: 0;
+        font-family: Geologica;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+    }
+
+    .members-block-modal__close {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        color: var(--semantic-text-secondary);
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        transition: color 0.15s;
+    }
+
+    .members-block-modal__close:hover {
+        color: var(--semantic-text-primary);
+    }
 }

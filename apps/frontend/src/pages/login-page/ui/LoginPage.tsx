@@ -103,13 +103,13 @@ export const LoginPage: FC = () => {
                             startIcon={<LoginIcon />}
                             endIcon={
                                 loginValue?.length > 0 ? (
-                                    <button
+                                    <Button
                                         className="login-page__reset-toggle"
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
                                         <ResetInputIcon />
-                                    </button>
+                                    </Button>
                                 ) : undefined
                             }
                             color={hasServerError || emailError ? "error" : "default"}
@@ -138,21 +138,21 @@ export const LoginPage: FC = () => {
                                     className="login-page__end-icons"
                                     style={{ paddingRight: passwordValue?.length > 0 ? "12px" : "0" }}
                                 >
-                                    <button
+                                    <Button
                                         className="login-page__password-toggle"
                                         type="button"
                                         onClick={() => setShowPassword(v => !v)}
                                     >
                                         <ShowPasswordIcon />
-                                    </button>
+                                    </Button>
                                     {passwordValue?.length > 0 ? (
-                                        <button
+                                        <Button
                                             className="login-page__reset-toggle"
                                             type="button"
                                             onClick={() => field.onChange("")}
                                         >
                                             <ResetInputIcon />
-                                        </button>
+                                        </Button>
                                     ) : null}
                                 </div>
                             }

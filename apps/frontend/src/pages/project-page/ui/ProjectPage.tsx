@@ -6,6 +6,7 @@
  * Все права защищены
  */
 import { PROJECTS } from "@helpdesk-portal/i18n";
+import ParticipantsIcon from "@helpdesk-portal/icons/Participants.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -18,7 +19,7 @@ import { createIssue } from "@/entities/issue";
 import { IssueForm } from "@/entities/issue";
 import type { UpdateProjectData } from "@/entities/project";
 import { deleteProject, fetchProject, fetchProjectMembers, updateProject } from "@/entities/project";
-import { MembersBlock, ProjectForm } from "@/entities/project";
+import { MembersBlock, MembersListModal, ProjectForm } from "@/entities/project";
 
 import { useAuth } from "@/shared/lib/auth";
 import { formatDateTime } from "@/shared/lib/format-date";
@@ -33,6 +34,7 @@ export const ProjectPage: FC = () => {
     const queryClient = useQueryClient();
     const [editing, setEditing] = useState(false);
     const [creatingIssue, setCreatingIssue] = useState(false);
+    const [membersOpen, setMembersOpen] = useState(false);
 
     const projectId = Number(id);
 
@@ -102,9 +104,9 @@ export const ProjectPage: FC = () => {
             <div className="project-page">
                 <div className="project-page__not-found">
                     <h1>{error instanceof Error ? error.message : t("detail.notFound")}</h1>
-                    <button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
+                    <Button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
                         {t("detail.backToList")}
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
@@ -130,9 +132,9 @@ export const ProjectPage: FC = () => {
 
     return (
         <div className="project-page">
-            <button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
+            <Button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
                 {t("detail.back")}
-            </button>
+            </Button>
 
             <div className="project-page__card">
                 <div className="project-page__header">
@@ -158,6 +160,9 @@ export const ProjectPage: FC = () => {
                                 {deleting ? t("detail.deleting") : t("detail.delete")}
                             </Button>
                         )}
+                        <Button startIcon={<ParticipantsIcon />} onClick={() => setMembersOpen(true)}>
+                            ({projectMembers?.length ?? 0})
+                        </Button>
                     </div>
                 </div>
 
@@ -195,7 +200,11 @@ export const ProjectPage: FC = () => {
                 </div>
             </div>
 
-            <MembersBlock
+            <MembersBlock projectId={project.id} globalRole={user?.role} projectRole={project.myRole} />
+
+            <MembersListModal
+                isOpen={membersOpen}
+                onClose={() => setMembersOpen(false)}
                 projectId={project.id}
                 globalRole={user?.role}
                 currentLogin={user?.login}

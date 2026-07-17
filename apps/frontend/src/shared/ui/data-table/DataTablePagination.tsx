@@ -2,6 +2,7 @@ import ArrowLeftIcon from "@helpdesk-portal/icons/ArrowLeft.svg?react";
 import ArrowRightIcon from "@helpdesk-portal/icons/ArrowRight.svg?react";
 import DoubleArrowLeftIcon from "@helpdesk-portal/icons/DoubleArrowLeft.svg?react";
 import DoubleArrowRightIcon from "@helpdesk-portal/icons/DoubleArrowRight.svg?react";
+import { Button } from "@helpdesk-portal/ui-kit";
 import { type Table } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
 
@@ -20,20 +21,24 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
 
     return (
         <div className="data-table-pagination">
-            <button
+            <Button
+                variant="stroke"
+                size="s"
                 className="data-table-pagination__btn"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
             >
                 <DoubleArrowLeftIcon width={16} height={16} />
-            </button>
-            <button
+            </Button>
+            <Button
+                variant="stroke"
+                size="s"
                 className="data-table-pagination__btn"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
             >
                 <ArrowLeftIcon width={16} height={16} />
-            </button>
+            </Button>
 
             <span className="data-table-pagination__info">{t("showing", { from, to, total })}</span>
 
@@ -41,20 +46,24 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
                 <span className="data-table-pagination__selected">{t("selectedCount", { count: selectedCount })}</span>
             )}
 
-            <button
+            <Button
+                variant="stroke"
+                size="s"
                 className="data-table-pagination__btn"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
             >
                 <ArrowRightIcon width={16} height={16} />
-            </button>
-            <button
+            </Button>
+            <Button
+                variant="stroke"
+                size="s"
                 className="data-table-pagination__btn"
                 onClick={() => table.setPageIndex(pageCount - 1)}
                 disabled={!table.getCanNextPage()}
             >
                 <DoubleArrowRightIcon width={16} height={16} />
-            </button>
+            </Button>
         </div>
     );
 }

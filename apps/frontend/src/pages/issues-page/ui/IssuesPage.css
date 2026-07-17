@@ -43,9 +43,7 @@
     }
 
     .issues-page__export-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: 1px solid var(--semantic-border-default);
@@ -66,19 +64,12 @@
         border-color: var(--semantic-btn-accent-fill-hover-bg);
     }
 
-    .issues-page__export-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-
     .issues-page__columns-wrapper {
         position: relative;
     }
 
     .issues-page__columns-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: 1px solid var(--semantic-border-default);
@@ -92,12 +83,6 @@
         transition:
             background-color 0.15s,
             border-color 0.15s;
-    }
-
-    .issues-page__columns-btn svg {
-        width: 20px;
-        height: 20px;
-        color: var(--semantic-text-primary);
     }
 
     .issues-page__columns-btn:hover {

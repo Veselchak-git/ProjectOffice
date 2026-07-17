@@ -137,6 +137,15 @@
         pointer-events: none;
     }
 
+    /* Size S */
+    .ui-kit-select-size-s {
+        --select-min-height: 32px;
+        --select-padding-inline: 8px;
+        --select-padding-block: 6px;
+        --select-font-size: 13px;
+        --select-icon-size: 14px;
+    }
+
     /* Size L */
     .ui-kit-select-size-l {
         --select-min-height: 48px;

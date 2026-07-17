@@ -5,6 +5,11 @@ import { fetchUserPreference, saveUserPreference } from "@/entities/user-prefere
 
 type OnChange<T> = (updater: T | ((prev: T) => T)) => void;
 
+interface PersistedTableSettings {
+    columnVisibility?: VisibilityState;
+    columnOrder?: string[];
+}
+
 export interface UsePersistColumnSettingsOptions {
     page: string;
     columnVisibility: VisibilityState;
@@ -36,11 +41,13 @@ export function usePersistColumnSettings({
 
             if (!settings) return;
 
-            if (settings.columnVisibility && Object.keys(settings.columnVisibility).length > 0) {
-                visibilityRef.current(settings.columnVisibility);
+            const persisted = settings as PersistedTableSettings;
+
+            if (persisted.columnVisibility && Object.keys(persisted.columnVisibility).length > 0) {
+                visibilityRef.current(persisted.columnVisibility);
             }
-            if (settings.columnOrder && settings.columnOrder.length > 0) {
-                orderRef.current(settings.columnOrder);
+            if (persisted.columnOrder && persisted.columnOrder.length > 0) {
+                orderRef.current(persisted.columnOrder);
             }
         });
     }, [page]);

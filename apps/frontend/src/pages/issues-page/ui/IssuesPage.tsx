@@ -230,19 +230,18 @@ export const IssuesPage: FC = () => {
                             {t("actions.deleteSelected", { count: selectedCount })}
                         </Button>
                     )}
-                    <button className="issues-page__export-btn" type="button">
-                        <ExportIcon />
+                    <Button className="issues-page__export-btn" type="button" startIcon={<ExportIcon />}>
                         {t("actions.export")}
-                    </button>
+                    </Button>
                     <div className="issues-page__columns-wrapper" ref={columnsRef}>
-                        <button
+                        <Button
                             className="issues-page__columns-btn"
                             type="button"
                             onClick={() => setColumnsOpen(v => !v)}
+                            startIcon={<GearIcon />}
                         >
-                            <GearIcon />
                             {t("actions.columns")}
-                        </button>
+                        </Button>
 
                         {columnsOpen && (
                             <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>

@@ -64,9 +64,7 @@
     }
 
     .users-page__create-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: none;
@@ -82,11 +80,6 @@
 
     .users-page__create-btn:hover {
         background-color: var(--semantic-btn-accent-fill-bg);
-    }
-
-    .users-page__create-btn svg {
-        width: 20px;
-        height: 20px;
     }
 
     .users-page__controls {
@@ -209,9 +202,7 @@
     }
 
     .users-page__export-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: 1px solid var(--semantic-border-default);
@@ -232,19 +223,12 @@
         border-color: var(--semantic-btn-accent-fill-hover-bg);
     }
 
-    .users-page__export-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-
     .users-page__columns-wrapper {
         position: relative;
     }
 
     .users-page__columns-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: 1px solid var(--semantic-border-default);
@@ -258,12 +242,6 @@
         transition:
             background-color 0.15s,
             border-color 0.15s;
-    }
-
-    .users-page__columns-btn svg {
-        width: 20px;
-        height: 20px;
-        color: var(--semantic-text-primary);
     }
 
     .users-page__columns-btn:hover {

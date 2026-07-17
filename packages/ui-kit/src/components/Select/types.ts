@@ -6,7 +6,7 @@ export interface ISelectOption {
 export interface ISelectProps {
     className?: string;
     color?: "default" | "error";
-    inputSize?: "m" | "l";
+    inputSize?: "s" | "m" | "l";
     label?: string;
     errorMessage?: string;
     placeholder?: string;

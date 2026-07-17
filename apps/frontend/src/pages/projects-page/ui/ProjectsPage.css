@@ -37,9 +37,7 @@
     }
 
     .projects-page__create-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: none;
@@ -57,11 +55,6 @@
         background-color: var(--semantic-btn-accent-fill-bg);
     }
 
-    .projects-page__create-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-
     .projects-page__actions {
         display: flex;
         align-items: center;
@@ -69,9 +62,7 @@
     }
 
     .projects-page__export-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: 1px solid var(--semantic-border-default);
@@ -90,11 +81,6 @@
     .projects-page__export-btn:hover {
         background-color: var(--semantic-fill-primary-hover);
         border-color: var(--semantic-btn-accent-fill-hover-bg);
-    }
-
-    .projects-page__export-btn svg {
-        width: 20px;
-        height: 20px;
     }
 
     .projects-table__version-extra {
@@ -145,9 +131,7 @@
     }
 
     .projects-page__columns-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        --btn-icon-size: 20px;
         height: 40px;
         padding: 0 20px;
         border: 1px solid var(--semantic-border-default);
@@ -161,12 +145,6 @@
         transition:
             background-color 0.15s,
             border-color 0.15s;
-    }
-
-    .projects-page__columns-btn svg {
-        width: 20px;
-        height: 20px;
-        color: var(--semantic-text-primary);
     }
 
     .projects-page__columns-btn:hover {

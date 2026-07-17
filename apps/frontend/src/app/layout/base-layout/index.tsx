@@ -14,19 +14,22 @@
  */
 import { COMMON, NAVIGATION } from "@helpdesk-portal/i18n";
 import ArchiveIcon from "@helpdesk-portal/icons/Archive.svg?react";
+import UserIcon from "@helpdesk-portal/icons/AvatarPlaceholder.svg?react";
 import FolderIcon from "@helpdesk-portal/icons/Folder.svg?react";
 import HouseIcon from "@helpdesk-portal/icons/House.svg?react";
 import ListChecksIcon from "@helpdesk-portal/icons/ListChecks.svg?react";
 import MoonIcon from "@helpdesk-portal/icons/Moon.svg?react";
-import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
+import OpenSidebarIcon from "@helpdesk-portal/icons/OpenSidebar.svg?react";
+import CloseSidebarIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import SunIcon from "@helpdesk-portal/icons/Sun.svg?react";
 import TecomLogoIcon from "@helpdesk-portal/icons/TecomLogo.svg?react";
-import UserIcon from "@helpdesk-portal/icons/User.svg?react";
-import { Select, useColorMode } from "@helpdesk-portal/ui-kit";
+import { Button, Select, Switch, useColorMode } from "@helpdesk-portal/ui-kit";
 import { useQuery } from "@tanstack/react-query";
-import { type FC, useCallback, useRef, useState } from "react";
+import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router";
+
+import { fetchUserPreference, saveUserPreference } from "@/entities/user-preferences";
 
 import { apiClient, useAuth } from "@/shared/lib/auth";
 import type { UserRole } from "@/shared/lib/auth";
@@ -56,9 +59,29 @@ export const BaseLayout: FC = () => {
     const location = useLocation();
     const { mode, toggleMode } = useColorMode();
     const { user, logout } = useAuth();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState<boolean | null>(null);
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        fetchUserPreference("sidebar").then(settings => {
+            if (settings && typeof settings.sidebarOpen === "boolean") {
+                setSidebarOpen(settings.sidebarOpen);
+            } else {
+                setSidebarOpen(true);
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        if (sidebarOpen === null) return;
+
+        const timer = setTimeout(() => {
+            saveUserPreference("sidebar", { sidebarOpen });
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [sidebarOpen]);
 
     const roleLabels: Record<string, string> = {
         ADMIN: t(`${NAVIGATION}:role.admin`),
@@ -94,39 +117,22 @@ export const BaseLayout: FC = () => {
 
     return (
         <div className="base-layout">
-            <aside className={`sidebar${sidebarOpen ? "" : " sidebar--closed"}`}>
-                <div className="sidebar__logo">
-                    <button
-                        className="sidebar__logo-icon"
-                        type="button"
-                        aria-label="Toggle menu"
-                        onClick={() => setSidebarOpen(v => !v)}
-                    >
-                        {sidebarOpen ? (
-                            <ResetInputIcon />
-                        ) : (
-                            <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path d="M4 7H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                <path d="M4 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                <path d="M4 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                            </svg>
-                        )}
-                    </button>
-                </div>
-
+            <aside className={`sidebar${sidebarOpen !== false ? "" : " sidebar--closed"}`}>
+                <Button
+                    className="sidebar__logo-icon"
+                    type="button"
+                    aria-label="Toggle menu"
+                    onClick={() => setSidebarOpen(v => !v)}
+                >
+                    {sidebarOpen !== false ? <CloseSidebarIcon /> : <OpenSidebarIcon />}
+                </Button>
                 <nav className="sidebar__nav">
                     {visibleItems.map((item, idx) => {
                         const IconComponent = item.icon;
                         const isActive = location.pathname === item.path;
 
                         return (
-                            <button
+                            <Button
                                 key={idx}
                                 className={`sidebar__item${isActive ? " sidebar__item--active" : ""}`}
                                 type="button"
@@ -136,7 +142,7 @@ export const BaseLayout: FC = () => {
                                     <IconComponent />
                                 </span>
                                 {sidebarOpen && <span className="sidebar__item-text">{t(item.label)}</span>}
-                            </button>
+                            </Button>
                         );
                     })}
                 </nav>
@@ -152,10 +158,7 @@ export const BaseLayout: FC = () => {
                     <div className="header__right">
                         <div className="header__theme-switch">
                             <SunIcon />
-                            <label className="theme-switch">
-                                <input type="checkbox" checked={mode === "dark"} onChange={toggleMode} />
-                                <span className="theme-switch__slider" />
-                            </label>
+                            <Switch checked={mode === "dark"} onCheckedChange={() => toggleMode()} />
                             <MoonIcon />
                         </div>
                         <div className="header__locale-switch">
@@ -170,7 +173,7 @@ export const BaseLayout: FC = () => {
                         </div>
                         <div className="header__divider" />
                         <div className="header__profile-wrapper" ref={profileRef}>
-                            <button
+                            <Button
                                 className="header__profile-btn"
                                 type="button"
                                 onClick={() => setProfileMenuOpen(v => !v)}
@@ -182,10 +185,10 @@ export const BaseLayout: FC = () => {
                                     <span className="header__user-name">{displayName}</span>
                                     <span className="header__user-role">{displayRole}</span>
                                 </div>
-                            </button>
+                            </Button>
                             {profileMenuOpen && (
                                 <div className="header__profile-menu">
-                                    <button
+                                    <Button
                                         className="header__profile-menu-item"
                                         type="button"
                                         onClick={() => {
@@ -194,14 +197,14 @@ export const BaseLayout: FC = () => {
                                         }}
                                     >
                                         {t(`${COMMON}:edit`)}
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         className="header__profile-menu-item header__profile-menu-item--danger"
                                         type="button"
                                         onClick={handleLogout}
                                     >
                                         {t(`${COMMON}:logout`)}
-                                    </button>
+                                    </Button>
                                 </div>
                             )}
                         </div>

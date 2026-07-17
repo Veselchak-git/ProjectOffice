@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import GripIcon from "@helpdesk-portal/icons/GripIcon.svg?react";
-import { Checkbox } from "@helpdesk-portal/ui-kit";
+import { Button, Checkbox } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 
 interface SortableColumnItemProps {
@@ -26,9 +26,16 @@ export const SortableColumnItem: FC<SortableColumnItemProps> = ({ id, label, isV
             style={style}
             className={`sortable-column-item${isDragging ? " sortable-column-item--dragging" : ""}`}
         >
-            <button className="sortable-column-item__drag-btn" type="button" {...attributes} {...listeners}>
+            <Button
+                variant="link"
+                size="s"
+                className="sortable-column-item__drag-btn"
+                type="button"
+                {...attributes}
+                {...listeners}
+            >
                 <GripIcon />
-            </button>
+            </Button>
             <Checkbox inputSize="m" checked={isVisible} onCheckedChange={onToggle} />
             <span className="sortable-column-item__label" onClick={onToggle}>
                 {label}
