@@ -28,7 +28,7 @@ export const authSlice = createSlice({
         setLoading(state, action: PayloadAction<boolean>) {
             state.loading = action.payload;
         },
-        loginSuccess(state, action: PayloadAction<{ user: AuthUser; accessToken: string }>) {
+        loginSuccess(state, action: PayloadAction<{ user: AuthUser }>) {
             state.user = action.payload.user;
             state.loading = false;
         },

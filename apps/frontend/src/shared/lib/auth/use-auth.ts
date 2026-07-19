@@ -35,7 +35,7 @@ export function useAuth() {
 
             const body = await res.json();
             setToken(body.accessToken);
-            dispatch(loginSuccess({ user: body.user, accessToken: body.accessToken }));
+            dispatch(loginSuccess({ user: body.user }));
         },
         [dispatch]
     );
