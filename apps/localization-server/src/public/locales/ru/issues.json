@@ -122,6 +122,7 @@
         "delete": "Ошибка удаления задачи",
         "AUTH_FORBIDDEN": "Недостаточно прав для этого действия",
         "AUTH_FORBIDDEN_ASSIGNEE": "Нет прав на изменение исполнителя",
+        "AUTH_FORBIDDEN_PRIORITY": "Разработчик не может менять приоритет задачи",
         "AUTH_FORBIDDEN_STATUS_RESOLVED": "Нет прав на решение задачи",
         "AUTH_FORBIDDEN_STATUS_CLOSED": "Нет прав на закрытие задачи",
         "AUTH_FORBIDDEN_STATUS_NEW": "Нет прав на изменение статуса на «Новый»",
