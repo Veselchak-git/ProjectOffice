@@ -15,6 +15,8 @@ import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
+import { getLoginPasswordRules } from "@/shared/lib/validation";
+
 import { changePasswordRequest } from "../api/changePassword";
 import type { ChangePasswordFormValues } from "../model/change-password-form";
 import "./ProfilePage.css";
@@ -126,10 +128,7 @@ export const ProfilePage: FC = () => {
                 <Controller
                     name="newPassword"
                     control={control}
-                    rules={{
-                        required: t(`${VALIDATION}:required.password`),
-                        minLength: { value: 6, message: t(`${VALIDATION}:minLength.password`) }
-                    }}
+                    rules={getLoginPasswordRules(t)}
                     render={({ field }) => (
                         <Input
                             {...field}

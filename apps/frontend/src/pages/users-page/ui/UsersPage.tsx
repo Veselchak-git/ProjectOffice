@@ -31,6 +31,7 @@ import { useClickOutside } from "@/shared/lib/use-click-outside";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 import { useTable } from "@/shared/lib/use-table";
+import { getLoginEmailRules, getLoginPasswordRules } from "@/shared/lib/validation";
 
 import { DataTable, SortableColumnItem, reorderColumn } from "@/shared/ui/data-table";
 
@@ -327,14 +328,8 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
         defaultValues: { login: "", password: "", role: "USER" }
     });
 
-    const loginRules = {
-        required: i18n.t(`${USERS}:validation.required.email`),
-        pattern: { value: LOGIN_EMAIL_PATTERN, message: i18n.t(`${USERS}:validation.invalid.email`) }
-    };
-    const passwordRules = {
-        required: i18n.t(`${USERS}:validation.required.password`),
-        minLength: { value: 6, message: i18n.t(`${USERS}:validation.minLength.password`) }
-    };
+    const loginRules = getLoginEmailRules(i18n.t);
+    const passwordRules = getLoginPasswordRules(i18n.t);
 
     const hasErrors = Object.keys(errors).length > 0;
     const canSubmit = !hasErrors && !isSubmitting;

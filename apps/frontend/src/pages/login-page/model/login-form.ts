@@ -5,30 +5,11 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import { VALIDATION } from "@helpdesk-portal/i18n";
-import type { RegisterOptions } from "react-hook-form";
+import { getLoginEmailRules, getLoginPasswordRules } from "@/shared/lib/validation";
 
 export interface LoginFormValues {
     login: string;
     password: string;
 }
 
-export function getLoginEmailRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "login"> {
-    return {
-        required: t(`${VALIDATION}:required.email`),
-        pattern: {
-            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            message: t(`${VALIDATION}:invalid.email`)
-        }
-    };
-}
-
-export function getLoginPasswordRules(t: (key: string) => string): RegisterOptions<LoginFormValues, "password"> {
-    return {
-        required: t(`${VALIDATION}:required.password`),
-        minLength: {
-            value: 6,
-            message: t(`${VALIDATION}:minLength.password`)
-        }
-    };
-}
+export { getLoginEmailRules, getLoginPasswordRules };
