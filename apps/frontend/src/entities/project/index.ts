@@ -11,4 +11,4 @@ export {
     removeProjectMember
 } from "./api/projects";
 export { ProjectForm } from "./ui/ProjectForm";
-export { MembersBlock, MembersListModal } from "./ui/MembersBlock";
+export { MembersListModal } from "./ui/MembersBlock";

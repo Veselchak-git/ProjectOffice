@@ -19,7 +19,7 @@ import { createIssue } from "@/entities/issue";
 import { IssueForm } from "@/entities/issue";
 import type { UpdateProjectData } from "@/entities/project";
 import { deleteProject, fetchProject, fetchProjectMembers, updateProject } from "@/entities/project";
-import { MembersBlock, MembersListModal, ProjectForm } from "@/entities/project";
+import { MembersListModal, ProjectForm } from "@/entities/project";
 
 import { useAuth } from "@/shared/lib/auth";
 import { formatDateTime } from "@/shared/lib/format-date";
@@ -199,8 +199,6 @@ export const ProjectPage: FC = () => {
                     </div>
                 </div>
             </div>
-
-            <MembersBlock projectId={project.id} globalRole={user?.role} projectRole={project.myRole} />
 
             <MembersListModal
                 isOpen={membersOpen}
