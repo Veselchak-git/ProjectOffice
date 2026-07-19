@@ -67,9 +67,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
     const title = watch("title");
 
     const fieldMap: Record<string, string> = {
-        AUTH_FORBIDDEN_ASSIGNEE: "assigneeId",
+        AUTH_FORBIDDEN_PRIORITY: "priority",
         AUTH_FORBIDDEN_STATUS_RESOLVED: "status",
-        AUTH_FORBIDDEN_STATUS_CLOSED: "status",
         AUTH_FORBIDDEN_STATUS_NEW: "status"
     };
 

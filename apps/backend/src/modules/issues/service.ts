@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+
 import type { PrismaClient } from "@/generated/prisma/client.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
@@ -229,7 +237,11 @@ export const createIssueService = async (
     return mapIssue(issue as unknown as IssueRow, member?.role);
 };
 
-const DEVELOPER_ROLES: ProjectMemberRole[] = [ProjectMemberRole.DEVELOPER, ProjectMemberRole.MANAGER];
+const DEVELOPER_ROLES: ProjectMemberRole[] = [
+    ProjectMemberRole.DEVELOPER,
+    ProjectMemberRole.UPDATER,
+    ProjectMemberRole.MANAGER,
+];
 
 export const updateIssueService = async (
     request: FastifyRequestTypeBox<typeof updateIssueSchema>
@@ -252,12 +264,12 @@ export const updateIssueService = async (
     }
 
     if (
-        body.assigneeId !== undefined &&
-        body.assigneeId !== issue.assigneeId &&
+        body.priority !== undefined &&
+        body.priority !== issue.priority &&
         member !== undefined &&
-        !DEVELOPER_ROLES.includes(member.role)
+        member.role === ProjectMemberRole.DEVELOPER
     ) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на назначение исполнителя", "AUTH_FORBIDDEN_ASSIGNEE");
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Разработчик не может менять приоритет задачи", "AUTH_FORBIDDEN_PRIORITY");
     }
 
     if (
@@ -276,15 +288,6 @@ export const updateIssueService = async (
         !DEVELOPER_ROLES.includes(member.role)
     ) {
         throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на решение задачи", "AUTH_FORBIDDEN_STATUS_RESOLVED");
-    }
-
-    if (
-        body.status === "CLOSED" &&
-        issue.status !== "CLOSED" &&
-        member !== undefined &&
-        !DEVELOPER_ROLES.includes(member.role)
-    ) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нет прав на закрытие задачи", "AUTH_FORBIDDEN_STATUS_CLOSED");
     }
 
     const updateData: Record<string, unknown> = {};
