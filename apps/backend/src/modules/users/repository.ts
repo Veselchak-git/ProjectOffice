@@ -29,14 +29,14 @@ export class UserRepository implements IUserRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
     async findUserRecordByLogin(login: string) {
-        return this.prisma.user.findUnique({
-            where: { login }
+        return this.prisma.user.findFirst({
+            where: { login, deletedAt: null }
         });
     }
 
     async findUserById(id: number) {
-        return this.prisma.user.findUnique({
-            where: { id }
+        return this.prisma.user.findFirst({
+            where: { id, deletedAt: null }
         });
     }
 

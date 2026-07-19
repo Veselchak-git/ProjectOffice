@@ -16,8 +16,10 @@ export async function assertNotLastOfRole(
     where: Record<string, unknown>,
     message: string,
     code: string,
+    extraWhere?: Record<string, unknown>,
 ): Promise<void> {
-    const count = await model.count({ where });
+    const mergedWhere = extraWhere ? { ...where, ...extraWhere } : where;
+    const count = await model.count({ where: mergedWhere });
     if (count <= 1) {
         throw new AppError(HTTP_STATUS.FORBIDDEN, message, code);
     }

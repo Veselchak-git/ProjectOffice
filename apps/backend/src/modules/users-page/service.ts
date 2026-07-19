@@ -20,7 +20,7 @@ export const getUsersService = async (
 ): Promise<{ users: UserResponse[]; total: number; page: number; perPage: number }> => {
     const { q, page = 1, perPage = 20, sortBy, sortOrder = "asc" } = request.query;
 
-    const where = q ? { login: { contains: q } } : {};
+    const where = { deletedAt: null, ...(q ? { login: { contains: q } } : {}) };
     const orderBy = buildOrderBy(USER_SORT_FIELDS, sortBy, sortOrder, { id: "asc" });
     const { skip, take } = paginationArgs(page, perPage);
 
@@ -116,6 +116,7 @@ export const updateUserService = async (
                 { role: Role.ADMIN },
                 "Нельзя понизить единственного администратора",
                 "LAST_ADMIN",
+                { deletedAt: null },
             );
         }
         data.role = role;
@@ -162,10 +163,14 @@ export const deleteUserService = async (
             { role: Role.ADMIN },
             "Нельзя удалить единственного администратора",
             "LAST_ADMIN",
+            { deletedAt: null },
         );
     }
 
-    await request.server.prisma.user.delete({ where: { id } });
+    await request.server.prisma.user.update({
+        where: { id },
+        data: { deletedAt: new Date() }
+    });
 
     return null;
 };
