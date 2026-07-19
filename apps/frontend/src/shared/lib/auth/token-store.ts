@@ -1,23 +1,17 @@
+import { BrowserStorage } from "@helpdesk-portal/ui-kit";
+
 const STORAGE_KEY = "accessToken";
 
-let accessToken: string | null = (() => {
-    try {
-        return localStorage.getItem(STORAGE_KEY);
-    } catch {
-        return null;
-    }
-})();
+const storage = BrowserStorage.create();
+
+let accessToken: string | null = storage?.getValue(STORAGE_KEY) ?? null;
 
 export function setToken(token: string | null) {
     accessToken = token;
-    try {
-        if (token) {
-            localStorage.setItem(STORAGE_KEY, token);
-        } else {
-            localStorage.removeItem(STORAGE_KEY);
-        }
-    } catch {
-        /* ignore */
+    if (token) {
+        storage?.setValue(STORAGE_KEY, token);
+    } else {
+        storage?.remove(STORAGE_KEY);
     }
 }
 

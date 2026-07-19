@@ -7,7 +7,11 @@
  */
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
+import { BrowserStorage } from "../services/browser-storage";
+
 export type ColorMode = "light" | "dark";
+
+const storage = new BrowserStorage(localStorage);
 
 interface ColorModeContextValue {
     mode: ColorMode;
@@ -26,19 +30,19 @@ const STORAGE_KEY = "ui-kit-color-mode";
 const getSystemMode = (): ColorMode => (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 const getInitialMode = (): ColorMode => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = storage.getValue(STORAGE_KEY);
     if (stored === "light" || stored === "dark") return stored;
     return getSystemMode();
 };
 
 export const useColorModeState = (): ColorModeContextValue => {
     const [mode, setModeState] = useState<ColorMode>(getInitialMode);
-    const userExplicitlySet = useRef(!!localStorage.getItem(STORAGE_KEY));
+    const userExplicitlySet = useRef(!!storage.getValue(STORAGE_KEY));
 
     useEffect(() => {
         const media = window.matchMedia("(prefers-color-scheme: dark)");
         const handler = (e: MediaQueryListEvent) => {
-            if (!localStorage.getItem(STORAGE_KEY)) {
+            if (!storage.getValue(STORAGE_KEY)) {
                 setModeState(e.matches ? "dark" : "light");
             }
         };
@@ -49,7 +53,7 @@ export const useColorModeState = (): ColorModeContextValue => {
     useEffect(() => {
         document.documentElement.setAttribute("data-color-mode", mode);
         if (userExplicitlySet.current) {
-            localStorage.setItem(STORAGE_KEY, mode);
+            storage.setValue(STORAGE_KEY, mode);
         }
     }, [mode]);
 

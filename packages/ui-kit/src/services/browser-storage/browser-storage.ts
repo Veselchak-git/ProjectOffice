@@ -23,11 +23,19 @@ export class BrowserStorage implements IBrowserStorage {
     constructor(private readonly storage: Storage) {}
 
     getValue(key: string): StorageValue {
-        return this.storage.getItem(key);
+        try {
+            return this.storage.getItem(key);
+        } catch {
+            return null;
+        }
     }
 
     setValue(key: string, value: string): void {
-        this.storage.setItem(key, value);
+        try {
+            this.storage.setItem(key, value);
+        } catch {
+            // Silently ignore storage errors
+        }
     }
 
     getBoolean(key: string): boolean | null {
@@ -65,10 +73,26 @@ export class BrowserStorage implements IBrowserStorage {
     }
 
     remove(key: string): void {
-        this.storage.removeItem(key);
+        try {
+            this.storage.removeItem(key);
+        } catch {
+            // Silently ignore storage errors
+        }
     }
 
     reset(): void {
-        this.storage.clear();
+        try {
+            this.storage.clear();
+        } catch {
+            // Silently ignore storage errors
+        }
+    }
+
+    static create(storage: Storage = localStorage): BrowserStorage | null {
+        try {
+            return new BrowserStorage(storage);
+        } catch {
+            return null;
+        }
     }
 }
