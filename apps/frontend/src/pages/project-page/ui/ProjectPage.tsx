@@ -147,7 +147,7 @@ export const ProjectPage: FC = () => {
                         </span>
                     </div>
                     <div className="project-page__actions">
-                        {project.myRole && project.myRole !== "VIEWER" && (
+                        {(user?.role === "ADMIN" || (project.myRole && project.myRole !== "VIEWER")) && (
                             <Button onClick={() => setCreatingIssue(true)}>{t("detail.issues.create")}</Button>
                         )}
                         {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (

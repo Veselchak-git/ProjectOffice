@@ -17,6 +17,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { type SortingState } from "@tanstack/react-table";
 import { useRef, useState } from "react";
 import type { FC } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { rootReducer } from "@/app/store";
@@ -306,89 +307,114 @@ interface CreateUserFormProps {
 
 const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validateLogin(value: string): string | undefined {
-    if (!value.trim()) return i18n.t(`${USERS}:validation.required.email`);
-    if (!LOGIN_EMAIL_PATTERN.test(value.trim())) return i18n.t(`${USERS}:validation.invalid.email`);
-}
-
-function validatePasswordCreate(value: string): string | undefined {
-    if (!value) return i18n.t(`${USERS}:validation.required.password`);
-    if (value.length < 6) return i18n.t(`${USERS}:validation.minLength.password`);
+interface CreateFormValues {
+    login: string;
+    password: string;
+    role: string;
 }
 
 const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
     const { t: tu } = useTranslation(USERS);
-    const [login, setLogin] = useState("");
-    const [password, setPassword] = useState("");
-    const [role, setRole] = useState("USER");
-    const [serverError, setServerError] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const loginError = validateLogin(login);
-    const passwordError = validatePasswordCreate(password);
-    const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
-    const canSubmit = !submitting && !hasFieldErrors;
+    const {
+        control,
+        handleSubmit: rhfHandleSubmit,
+        formState: { errors, isSubmitting },
+        setError
+    } = useForm<CreateFormValues>({
+        mode: "onChange",
+        defaultValues: { login: "", password: "", role: "USER" }
+    });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!canSubmit) return;
-        setServerError(null);
-        setSubmitting(true);
+    const loginRules = {
+        required: i18n.t(`${USERS}:validation.required.email`),
+        pattern: { value: LOGIN_EMAIL_PATTERN, message: i18n.t(`${USERS}:validation.invalid.email`) }
+    };
+    const passwordRules = {
+        required: i18n.t(`${USERS}:validation.required.password`),
+        minLength: { value: 6, message: i18n.t(`${USERS}:validation.minLength.password`) }
+    };
+
+    const hasErrors = Object.keys(errors).length > 0;
+    const canSubmit = !hasErrors && !isSubmitting;
+
+    const handleFormSubmit = async (data: CreateFormValues) => {
         try {
-            await onSubmit({ login: login.trim(), password, role: role as CreateUserData["role"] });
+            await onSubmit({
+                login: data.login.trim(),
+                password: data.password,
+                role: data.role as CreateUserData["role"]
+            });
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : i18n.t(`${USERS}:create.error`));
-        } finally {
-            setSubmitting(false);
+            setError("root", { message: err instanceof Error ? err.message : i18n.t(`${USERS}:create.error`) });
         }
     };
 
     return (
         <form
             className="users-page__form"
-            onSubmit={handleSubmit}
+            onSubmit={rhfHandleSubmit(handleFormSubmit)}
+            noValidate
             onChange={() => {
-                if (serverError) setServerError(null);
+                if (errors.root) setError("root", { message: "" });
             }}
         >
-            {serverError ? <div className="users-page__form-error">{serverError}</div> : null}
-            <Input
-                label={tu("form.login.label")}
-                type="email"
-                placeholder={tu("form.login.placeholder")}
-                value={login}
-                onChange={e => setLogin(e.target.value)}
-                color={loginError ? "error" : "default"}
-                errorMessage={loginError}
-                required
+            {errors.root?.message ? <div className="users-page__form-error">{errors.root.message}</div> : null}
+            <Controller
+                name="login"
+                control={control}
+                rules={loginRules}
+                render={({ field, fieldState }) => (
+                    <Input
+                        {...field}
+                        label={tu("form.login.label")}
+                        type="email"
+                        placeholder={tu("form.login.placeholder")}
+                        color={fieldState.error ? "error" : "default"}
+                        errorMessage={fieldState.error?.message}
+                        required
+                    />
+                )}
             />
             <div className="users-page__password-field">
-                <Input
-                    label={tu("form.password.label")}
-                    type={showPassword ? "text" : "password"}
-                    placeholder={tu("form.password.placeholder")}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    color={passwordError ? "error" : "default"}
-                    errorMessage={passwordError}
-                    required
+                <Controller
+                    name="password"
+                    control={control}
+                    rules={passwordRules}
+                    render={({ field, fieldState }) => (
+                        <Input
+                            {...field}
+                            label={tu("form.password.label")}
+                            type={showPassword ? "text" : "password"}
+                            placeholder={tu("form.password.placeholder")}
+                            color={fieldState.error ? "error" : "default"}
+                            errorMessage={fieldState.error?.message}
+                            required
+                        />
+                    )}
                 />
                 <label className="users-page__checkbox-row">
                     <Switch checked={showPassword} onCheckedChange={setShowPassword} />
                     <span>{tu("form.showPassword")}</span>
                 </label>
             </div>
-            <Select
-                label={tu("form.role")}
-                options={getRoleOptions(tu)}
-                value={role}
-                usePortal={false}
-                onValueChange={setRole}
+            <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                    <Select
+                        label={tu("form.role")}
+                        options={getRoleOptions(tu)}
+                        value={field.value}
+                        usePortal={false}
+                        onValueChange={field.onChange}
+                    />
+                )}
             />
             <div className="users-page__form-actions">
                 <Button type="submit" disabled={!canSubmit}>
-                    {submitting ? tu("create.submitting") : tu("create.submit")}
+                    {isSubmitting ? tu("create.submitting") : tu("create.submit")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
                     {tu(`${COMMON}:cancel`)}
@@ -404,56 +430,62 @@ interface EditUserFormProps {
     onCancel(): void;
 }
 
+interface EditFormValues {
+    login: string;
+    password: string;
+    role: string;
+}
+
 const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
     const { t: tu } = useTranslation(USERS);
-    const [login, setLogin] = useState("");
-    const [password, setPassword] = useState("");
-    const [role, setRole] = useState<string>(user.role);
     const [showPassword, setShowPassword] = useState(false);
-    const [serverError, setServerError] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
 
-    const loginError =
-        login.trim() && !LOGIN_EMAIL_PATTERN.test(login.trim())
-            ? i18n.t(`${USERS}:validation.invalid.email`)
-            : undefined;
-    const passwordError =
-        password.length > 0 && password.length < 6 ? i18n.t(`${USERS}:validation.minLength.password`) : undefined;
-    const hasFieldErrors = loginError !== undefined || passwordError !== undefined;
-    const canSubmit = !submitting && !hasFieldErrors;
+    const {
+        control,
+        handleSubmit: rhfHandleSubmit,
+        formState: { errors, isSubmitting, isDirty },
+        setError
+    } = useForm<EditFormValues>({
+        mode: "onChange",
+        defaultValues: { login: "", password: "", role: user.role }
+    });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!canSubmit) return;
-        setServerError(null);
-        setSubmitting(true);
+    const loginRules = {
+        pattern: { value: LOGIN_EMAIL_PATTERN, message: i18n.t(`${USERS}:validation.invalid.email`) }
+    };
+    const passwordRules = {
+        validate: (value: string) => !value || value.length >= 6 || i18n.t(`${USERS}:validation.minLength.password`)
+    };
+
+    const hasErrors = Object.keys(errors).length > 0;
+    const canSubmit = isDirty && !hasErrors && !isSubmitting;
+
+    const handleFormSubmit = async (data: EditFormValues) => {
         try {
-            const data: UpdateUserData = {};
-            if (login.trim()) data.login = login.trim();
-            if (password) data.password = password;
-            if (role !== user.role) data.role = role as User["role"];
-            if (Object.keys(data).length === 0) {
-                setServerError(i18n.t(`${USERS}:edit.noChanges`));
-                setSubmitting(false);
+            const updateData: UpdateUserData = {};
+            if (data.login.trim()) updateData.login = data.login.trim();
+            if (data.password) updateData.password = data.password;
+            if (data.role !== user.role) updateData.role = data.role as User["role"];
+            if (Object.keys(updateData).length === 0) {
+                setError("root", { message: i18n.t(`${USERS}:edit.noChanges`) });
                 return;
             }
-            await onSubmit(data);
+            await onSubmit(updateData);
         } catch (err) {
-            setServerError(err instanceof Error ? err.message : i18n.t(`${USERS}:edit.error`));
-        } finally {
-            setSubmitting(false);
+            setError("root", { message: err instanceof Error ? err.message : i18n.t(`${USERS}:edit.error`) });
         }
     };
 
     return (
         <form
             className="users-page__form"
-            onSubmit={handleSubmit}
+            onSubmit={rhfHandleSubmit(handleFormSubmit)}
+            noValidate
             onChange={() => {
-                if (serverError) setServerError(null);
+                if (errors.root) setError("root", { message: "" });
             }}
         >
-            {serverError ? <div className="users-page__form-error">{serverError}</div> : null}
+            {errors.root?.message ? <div className="users-page__form-error">{errors.root.message}</div> : null}
 
             <div className="users-page__old-data">
                 <span className="users-page__old-data-label">{tu("edit.currentData")}</span>
@@ -469,40 +501,58 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                 </div>
             </div>
 
-            <Input
-                label={tu("edit.newLogin")}
-                type="email"
-                placeholder={tu("edit.newLoginPlaceholder")}
-                value={login}
-                onChange={e => setLogin(e.target.value)}
-                color={loginError ? "error" : "default"}
-                errorMessage={loginError}
+            <Controller
+                name="login"
+                control={control}
+                rules={loginRules}
+                render={({ field, fieldState }) => (
+                    <Input
+                        {...field}
+                        label={tu("edit.newLogin")}
+                        type="email"
+                        placeholder={tu("edit.newLoginPlaceholder")}
+                        color={fieldState.error ? "error" : "default"}
+                        errorMessage={fieldState.error?.message}
+                    />
+                )}
             />
             <div className="users-page__password-field">
-                <Input
-                    label={tu("edit.newPassword")}
-                    type={showPassword ? "text" : "password"}
-                    placeholder={tu("edit.newPasswordPlaceholder")}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    color={passwordError ? "error" : "default"}
-                    errorMessage={passwordError}
+                <Controller
+                    name="password"
+                    control={control}
+                    rules={passwordRules}
+                    render={({ field, fieldState }) => (
+                        <Input
+                            {...field}
+                            label={tu("edit.newPassword")}
+                            type={showPassword ? "text" : "password"}
+                            placeholder={tu("edit.newPasswordPlaceholder")}
+                            color={fieldState.error ? "error" : "default"}
+                            errorMessage={fieldState.error?.message}
+                        />
+                    )}
                 />
                 <label className="users-page__checkbox-row">
                     <Switch checked={showPassword} onCheckedChange={setShowPassword} />
                     <span>{tu("edit.showPassword")}</span>
                 </label>
             </div>
-            <Select
-                label={tu("form.role")}
-                options={getRoleOptions(tu)}
-                value={role}
-                usePortal={false}
-                onValueChange={setRole}
+            <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                    <Select
+                        label={tu("form.role")}
+                        options={getRoleOptions(tu)}
+                        value={field.value}
+                        usePortal={false}
+                        onValueChange={field.onChange}
+                    />
+                )}
             />
             <div className="users-page__form-actions">
                 <Button type="submit" disabled={!canSubmit}>
-                    {submitting ? tu("edit.saving") : tu("edit.save")}
+                    {isSubmitting ? tu("edit.saving") : tu("edit.save")}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
                     {tu(`${COMMON}:cancel`)}

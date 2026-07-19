@@ -16,6 +16,7 @@ import { COMMON, PROJECTS } from "@helpdesk-portal/i18n";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import type { CreateProjectData, ProjectVersion, UpdateProjectData } from "../model/project";
@@ -32,14 +33,32 @@ interface ProjectFormProps {
     onCancel(): void;
 }
 
+interface FormValues {
+    name: string;
+    description: string;
+    status: "ACTIVE" | "ARCHIVED";
+}
+
 export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel }) => {
     const { t } = useTranslation();
-    const [name, setName] = useState(initial?.name ?? "");
-    const [description, setDescription] = useState(initial?.description ?? "");
-    const [status, setStatus] = useState<"ACTIVE" | "ARCHIVED">(initial?.status ?? "ACTIVE");
     const [versions, setVersions] = useState<string[]>(initial?.versions.map(v => v.version) ?? []);
     const [versionInput, setVersionInput] = useState("");
-    const [submitting, setSubmitting] = useState(false);
+
+    const {
+        control,
+        handleSubmit,
+        watch,
+        formState: { isSubmitting }
+    } = useForm<FormValues>({
+        mode: "onChange",
+        defaultValues: {
+            name: initial?.name ?? "",
+            description: initial?.description ?? "",
+            status: initial?.status ?? "ACTIVE"
+        }
+    });
+
+    const nameValue = watch("name");
 
     const addVersion = () => {
         const v = versionInput.trim();
@@ -53,48 +72,57 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
         setVersions(prev => prev.filter(x => x !== v));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (submitting) return;
-        setSubmitting(true);
-        try {
-            const data: Record<string, unknown> = {
-                name,
-                versions
-            };
-            if (description) data.description = description;
-            if (initial) data.status = status;
-            await onSubmit(data as CreateProjectData | UpdateProjectData);
-        } finally {
-            setSubmitting(false);
-        }
+    const onSubmitHandler = async (data: FormValues) => {
+        const payload: Record<string, unknown> = {
+            name: data.name,
+            versions
+        };
+        if (data.description) payload.description = data.description;
+        if (initial) payload.status = data.status;
+        await onSubmit(payload as CreateProjectData | UpdateProjectData);
     };
 
     return (
-        <form className="project-form" onSubmit={handleSubmit}>
-            <Input
-                label={t(`${PROJECTS}:form.name.label`)}
-                placeholder={t(`${PROJECTS}:form.name.placeholder`)}
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
+        <form className="project-form" onSubmit={handleSubmit(onSubmitHandler)} noValidate>
+            <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                    <Input
+                        {...field}
+                        label={t(`${PROJECTS}:form.name.label`)}
+                        placeholder={t(`${PROJECTS}:form.name.placeholder`)}
+                        required
+                    />
+                )}
             />
 
-            <Input
-                label={t(`${PROJECTS}:form.description.label`)}
-                placeholder={t(`${PROJECTS}:form.description.placeholder`)}
-                value={description}
-                onChange={e => setDescription(e.target.value)}
+            <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                    <Input
+                        {...field}
+                        label={t(`${PROJECTS}:form.description.label`)}
+                        placeholder={t(`${PROJECTS}:form.description.placeholder`)}
+                    />
+                )}
             />
 
-            <Select
-                label={t(`${PROJECTS}:form.status.label`)}
-                options={[
-                    { value: "ACTIVE", label: t(`${PROJECTS}:status.active`) },
-                    { value: "ARCHIVED", label: t(`${PROJECTS}:status.archived`) }
-                ]}
-                value={status}
-                onValueChange={v => setStatus(v as "ACTIVE" | "ARCHIVED")}
+            <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                    <Select
+                        label={t(`${PROJECTS}:form.status.label`)}
+                        options={[
+                            { value: "ACTIVE", label: t(`${PROJECTS}:status.active`) },
+                            { value: "ARCHIVED", label: t(`${PROJECTS}:status.archived`) }
+                        ]}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                    />
+                )}
             />
 
             <div className="project-form__field">
@@ -134,7 +162,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
             </div>
 
             <div className="project-form__actions">
-                <Button type="submit" disabled={!name.trim() || submitting}>
+                <Button type="submit" disabled={!nameValue.trim() || isSubmitting}>
                     {initial ? t(`${COMMON}:save`) : t(`${COMMON}:create`)}
                 </Button>
                 <Button type="button" variant="stroke" onClick={onCancel}>
