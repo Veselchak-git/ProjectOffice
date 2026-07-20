@@ -22,6 +22,7 @@
     },
     "error": {
         "loading": "Loading error",
-        "connection": "Connection error"
+        "connection": "Connection error",
+        "default": "Error"
     }
 }

@@ -79,7 +79,14 @@
         "create": "Error creating project",
         "update": "Error updating project",
         "delete": "Error deleting project",
-        "LAST_MANAGER": "Cannot remove or demote the last project manager"
+        "LAST_MANAGER": "Cannot remove or demote the last project manager",
+        "PROJECT_NOT_FOUND": "Project not found",
+        "MEMBER_ALREADY_EXISTS": "Member already added to the project",
+        "MEMBER_NOT_FOUND": "Member not found in the project",
+        "SELF_ROLE_CHANGE": "Cannot change your own permissions",
+        "ROLE_HIERARCHY": "Cannot assign a role higher than your own",
+        "AUTH_FORBIDDEN": "Insufficient permissions for this action",
+        "USER_NOT_FOUND": "User not found"
     },
     "members": {
         "title": "Project members",

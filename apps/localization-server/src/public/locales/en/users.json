@@ -52,7 +52,13 @@
         "loading": "Error loading users",
         "create": "Error creating user",
         "update": "Error updating user",
-        "delete": "Error deleting user"
+        "delete": "Error deleting user",
+        "USER_LOGIN_EXISTS": "A user with this login already exists",
+        "USER_NOT_FOUND": "User not found",
+        "NO_FIELDS_TO_UPDATE": "No fields to update",
+        "SELF_DELETE": "Cannot delete yourself",
+        "LAST_ADMIN": "Cannot delete or demote the last administrator",
+        "AUTH_FORBIDDEN": "Insufficient permissions for this action"
     },
     "form": {
         "login": {

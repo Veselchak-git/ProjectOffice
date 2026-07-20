@@ -117,6 +117,7 @@
         "loading": "Error loading issues",
         "loadOne": "Error loading issue",
         "notFound": "Issue not found",
+        "ISSUE_NOT_FOUND": "Issue not found",
         "create": "Error creating issue",
         "update": "Error updating issue",
         "delete": "Error deleting issue",
