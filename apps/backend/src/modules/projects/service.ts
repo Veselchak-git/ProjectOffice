@@ -228,10 +228,6 @@ export const addProjectMemberService = async (
     if (!user) {
         throw new AppError(HTTP_STATUS.NOT_FOUND, "Пользователь не найден", "USER_NOT_FOUND");
     }
-    if (user.role === "GUEST") {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя добавить гостя в проект", "GUEST_NOT_ALLOWED");
-    }
-
     const existing = await prisma.projectMember.findUnique({
         where: { userId_projectId: { userId, projectId: id } },
     });

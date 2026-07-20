@@ -57,7 +57,7 @@ describe("jwtPlugin", () => {
         const accessToken = await app.jwt.sign({
             sub: "1",
             login: "student@example.com",
-            role: Role.GUEST
+            role: Role.USER
         } satisfies JwtPayload);
 
         const response = await app.inject({
@@ -94,7 +94,7 @@ describe("jwtPlugin", () => {
         const accessToken = await app.jwt.sign({
             sub: "1",
             login: "student@example.com",
-            role: Role.GUEST
+            role: Role.USER
         } satisfies JwtPayload);
 
         const response = await app.inject({

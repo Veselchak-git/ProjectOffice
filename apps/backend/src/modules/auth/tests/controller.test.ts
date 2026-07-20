@@ -39,10 +39,11 @@ const buildTestApp = async (jwtAccessTtl = "15m") => {
                 {
                     id: 1,
                     login: "student@example.com",
-                    role: Role.GUEST,
+                    role: Role.USER,
                     hashPassword: await hashPassword("student123", "test-salt-secret"),
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    deletedAt: null
                 },
                 {
                     id: 2,
@@ -50,7 +51,8 @@ const buildTestApp = async (jwtAccessTtl = "15m") => {
                     role: Role.ADMIN,
                     hashPassword: await hashPassword("admin123", "test-salt-secret"),
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    deletedAt: null
                 }
             ];
 
@@ -61,10 +63,11 @@ const buildTestApp = async (jwtAccessTtl = "15m") => {
                 {
                     id: 1,
                     login: "student@example.com",
-                    role: Role.GUEST,
+                    role: Role.USER,
                     hashPassword: await hashPassword("student123", "test-salt-secret"),
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    deletedAt: null
                 },
                 {
                     id: 2,
@@ -72,7 +75,8 @@ const buildTestApp = async (jwtAccessTtl = "15m") => {
                     role: Role.ADMIN,
                     hashPassword: await hashPassword("admin123", "test-salt-secret"),
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    deletedAt: null
                 }
             ];
 
@@ -82,10 +86,11 @@ const buildTestApp = async (jwtAccessTtl = "15m") => {
             return {
                 id,
                 login: "student@example.com",
-                role: Role.GUEST,
+                role: Role.USER,
                 hashPassword: newHashPassword,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                deletedAt: null
             };
         },
         createRefreshToken: async (userId: number, tokenHash: string, expiresAt: Date) => {
@@ -221,7 +226,7 @@ describe("authController", () => {
         expect(body.user).toEqual({
             id: "1",
             login: "student@example.com",
-            role: "GUEST"
+            role: "USER"
         });
     });
 
@@ -251,7 +256,7 @@ describe("authController", () => {
             {
                 sub: "user-1",
                 login: "student@example.com",
-                role: Role.GUEST
+                role: Role.USER
             } satisfies JwtPayload,
             { expiresIn: "-1s" }
         );

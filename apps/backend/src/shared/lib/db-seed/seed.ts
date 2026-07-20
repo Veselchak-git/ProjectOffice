@@ -23,7 +23,7 @@ async function main() {
         create: {
             login: "user@example.com",
             hashPassword: await hashPassword("Test123456", process.env.SALT_SECRET ?? ""),
-            role: "GUEST"
+            role: "USER"
         }
     });
     const user2 = await prisma.user.upsert({

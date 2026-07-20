@@ -8,7 +8,6 @@ datasource db {
 }
 
 enum Role {
-  GUEST
   USER
   ADMIN
 }
@@ -62,7 +61,7 @@ model User {
   id        Int    @id @default(autoincrement())
   login     String @unique
   hashPassword String
-  role      Role   @default(GUEST)
+  role      Role   @default(USER)
 
   refreshTokens      RefreshToken[]
   projectMemberships ProjectMember[]

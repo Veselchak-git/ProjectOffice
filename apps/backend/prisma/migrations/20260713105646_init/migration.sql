@@ -2,7 +2,7 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('GUEST', 'USER', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "ProjectStatus" AS ENUM ('ACTIVE', 'ARCHIVED');
@@ -27,9 +27,10 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "login" TEXT NOT NULL,
     "hashPassword" TEXT NOT NULL,
-    "role" "Role" NOT NULL DEFAULT 'GUEST',
+    "role" "Role" NOT NULL DEFAULT 'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3) DEFAULT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -112,6 +113,16 @@ CREATE TABLE "AuditLog" (
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "UserTableSetting" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "page" TEXT NOT NULL,
+    "settings" JSONB NOT NULL,
+
+    CONSTRAINT "UserTableSetting_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_login_key" ON "User"("login");
 
@@ -120,6 +131,9 @@ CREATE UNIQUE INDEX "ProjectMember_userId_projectId_key" ON "ProjectMember"("use
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProductVersion_projectId_version_key" ON "ProductVersion"("projectId", "version");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserTableSetting_userId_page_key" ON "UserTableSetting"("userId", "page");
 
 -- AddForeignKey
 ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -147,3 +161,6 @@ ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserTableSetting" ADD CONSTRAINT "UserTableSetting_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
