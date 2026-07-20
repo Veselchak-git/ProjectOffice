@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
 import { createBrowserRouter, redirect } from "react-router";
 
 import { store } from "@/app/store";
@@ -18,21 +25,25 @@ async function waitForAuth() {
     });
 }
 
-async function requireAuth() {
+async function isAuth() {
     await waitForAuth();
-    if (!selectAuthUser(store.getState())) {
-        throw redirect("/login");
-    }
-    return null;
+    return !!selectAuthUser(store.getState());
 }
 
-async function requireRole(roles: string[]) {
-    await requireAuth();
-    const user = selectAuthUser(store.getState());
-    if (!user || !roles.includes(user.role)) {
-        throw redirect("/");
-    }
-    return null;
+function requireAuth() {
+    return isAuth().then(auth => {
+        if (!auth) throw redirect("/login");
+    });
+}
+
+function requireRole(roles: string[]) {
+    return isAuth().then(auth => {
+        if (!auth) throw redirect("/login");
+        const user = selectAuthUser(store.getState());
+        if (!user || !roles.includes(user.role)) {
+            throw redirect("/");
+        }
+    });
 }
 
 export const routes = createBrowserRouter([
@@ -53,7 +64,7 @@ export const routes = createBrowserRouter([
                     const { ProjectsPage } = await import("@/pages/projects-page");
                     return { Component: ProjectsPage };
                 },
-                loader: () => requireRole(["ADMIN", "USER"])
+                loader: requireAuth
             },
             {
                 path: "projects/:id",
@@ -61,7 +72,7 @@ export const routes = createBrowserRouter([
                     const { ProjectPage } = await import("@/pages/project-page");
                     return { Component: ProjectPage };
                 },
-                loader: () => requireRole(["ADMIN", "USER"])
+                loader: requireAuth
             },
             {
                 path: "tasks",
@@ -69,7 +80,7 @@ export const routes = createBrowserRouter([
                     const { IssuesPage } = await import("@/pages/issues-page");
                     return { Component: IssuesPage };
                 },
-                loader: () => requireRole(["ADMIN", "USER"])
+                loader: requireAuth
             },
             {
                 path: "tasks/:id",
@@ -77,7 +88,7 @@ export const routes = createBrowserRouter([
                     const { IssuePage } = await import("@/pages/issue-page");
                     return { Component: IssuePage };
                 },
-                loader: () => requireRole(["ADMIN", "USER"])
+                loader: requireAuth
             },
             {
                 path: "audit-log",
@@ -85,7 +96,7 @@ export const routes = createBrowserRouter([
                     const { HomePage } = await import("@/pages/home-page");
                     return { Component: HomePage };
                 },
-                loader: () => requireRole(["ADMIN", "USER"])
+                loader: requireAuth
             },
             {
                 path: "users",
@@ -101,13 +112,14 @@ export const routes = createBrowserRouter([
                     const { ProfilePage } = await import("@/pages/profile-page");
                     return { Component: ProfilePage };
                 },
-                loader: () => requireRole(["ADMIN", "USER"])
+                loader: requireAuth
             }
         ]
     },
     {
         path: "/login",
         element: <LoginLayout />,
+        loader: isAuth,
         children: [
             {
                 index: true,
