@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
+import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
 
 import type {
     getPreferencesSchema,
@@ -11,31 +12,39 @@ import type {
 export const getPreferencesService = async (
     request: FastifyRequestTypeBox<typeof getPreferencesSchema>
 ): Promise<{ settings?: TableSettings }> => {
-    const userId = Number(request.user.sub);
-    const { page } = request.query;
+    try {
+        const userId = Number(request.user.sub);
+        const { page } = request.query;
 
-    const record = await request.server.prisma.userTableSetting.findUnique({
-        where: { userId_page: { userId, page } },
-    });
+        const record = await request.server.prisma.userTableSetting.findUnique({
+            where: { userId_page: { userId, page } },
+        });
 
-    if (!record) {
-        return {};
+        if (!record) {
+            return {};
+        }
+
+        return { settings: record.settings as unknown as TableSettings };
+    } catch (error) {
+        throw handlePrismaError(error);
     }
-
-    return { settings: record.settings as unknown as TableSettings };
 };
 
 export const putPreferencesService = async (
     request: FastifyRequestTypeBox<typeof putPreferencesSchema>
 ): Promise<{ settings: TableSettings }> => {
-    const userId = Number(request.user.sub);
-    const { page, settings } = request.body as PutPreferencesBody;
+    try {
+        const userId = Number(request.user.sub);
+        const { page, settings } = request.body as PutPreferencesBody;
 
-    const record = await request.server.prisma.userTableSetting.upsert({
-        where: { userId_page: { userId, page } },
-        update: { settings: settings as Prisma.InputJsonValue },
-        create: { userId, page, settings: settings as Prisma.InputJsonValue },
-    });
+        const record = await request.server.prisma.userTableSetting.upsert({
+            where: { userId_page: { userId, page } },
+            update: { settings: settings as Prisma.InputJsonValue },
+            create: { userId, page, settings: settings as Prisma.InputJsonValue },
+        });
 
-    return { settings: record.settings as unknown as TableSettings };
+        return { settings: record.settings as unknown as TableSettings };
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
 };

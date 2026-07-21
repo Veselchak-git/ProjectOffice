@@ -76,7 +76,7 @@ export const loginService = async (
     const userRecord = await request.server.userRepository.findUserRecordByLogin(login);
 
     if (!userRecord) {
-        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_INVALID_CREDENTIALS");
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid credentials", "AUTH_INVALID_CREDENTIALS");
     }
 
     const isPasswordValid = await verifyPassword(
@@ -86,7 +86,7 @@ export const loginService = async (
     );
 
     if (!isPasswordValid) {
-        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_INVALID_CREDENTIALS");
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid credentials", "AUTH_INVALID_CREDENTIALS");
     }
 
     const user = toAuthUser(userRecord);
@@ -128,7 +128,7 @@ export const refreshService = async (
 ): Promise<RefreshResponse> => {
     const rawRefreshToken = request.cookies[REFRESH_COOKIE];
     if (!rawRefreshToken) {
-        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "No refresh token", "AUTH_NO_REFRESH_TOKEN");
+        throw new AppError(HTTP_STATUS.UNAUTHORIZED, "No refresh token provided", "AUTH_NO_REFRESH_TOKEN");
     }
 
     const tokenHash = hashRefreshToken(rawRefreshToken);

@@ -9,7 +9,6 @@ import { ISSUES } from "@helpdesk-portal/i18n";
 
 import { buildQueryString, handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
-import { i18n } from "@/shared/lib/i18n";
 
 import type { CreateIssueData, FetchIssuesParams, Issue, UpdateIssueData } from "../model/issue";
 
@@ -23,7 +22,7 @@ export interface FetchIssuesResponse {
 async function fetchIssuesByUrl(url: string, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
     const query = buildQueryString(params);
     const res = await apiClient(`${url}${query}`);
-    return handleApiResponse<FetchIssuesResponse>(res, i18n.t(`${ISSUES}:error.loading`));
+    return handleApiResponse<FetchIssuesResponse>(res, ISSUES, "error.loading");
 }
 
 export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
@@ -32,7 +31,7 @@ export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssu
 
 export async function fetchIssue(id: number): Promise<Issue> {
     const res = await apiClient(`/api/issues/${id}`);
-    return handleApiResponse<Issue>(res, i18n.t(`${ISSUES}:error.loadOne`));
+    return handleApiResponse<Issue>(res, ISSUES, "error.loadOne");
 }
 
 export async function fetchProjectIssues(projectId: number, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
@@ -45,7 +44,7 @@ export async function createIssue(projectId: number, data: CreateIssueData): Pro
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-    return handleApiResponse<Issue>(res, i18n.t(`${ISSUES}:error.create`));
+    return handleApiResponse<Issue>(res, ISSUES, "error.create");
 }
 
 export async function updateIssue(id: number, data: UpdateIssueData): Promise<Issue> {
@@ -54,12 +53,12 @@ export async function updateIssue(id: number, data: UpdateIssueData): Promise<Is
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-    return handleApiResponse<Issue>(res, i18n.t(`${ISSUES}:error.update`));
+    return handleApiResponse<Issue>(res, ISSUES, "error.update");
 }
 
 export async function deleteIssue(id: number): Promise<void> {
     const res = await apiClient(`/api/issues/${id}`, {
         method: "DELETE"
     });
-    await handleApiResponse<void>(res, i18n.t(`${ISSUES}:error.delete`));
+    await handleApiResponse<void>(res, ISSUES, "error.delete");
 }

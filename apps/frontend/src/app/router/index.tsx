@@ -10,6 +10,7 @@ import { createBrowserRouter, redirect } from "react-router";
 import { store } from "@/app/store";
 
 import { selectAuthLoading, selectAuthUser } from "@/shared/lib/auth/auth-slice";
+import { ErrorElement } from "@/shared/lib/error-boundary/error-element";
 
 import { BaseLayout, LoginLayout } from "../layout";
 
@@ -50,13 +51,15 @@ export const routes = createBrowserRouter([
     {
         path: "/",
         element: <BaseLayout />,
+        errorElement: <ErrorElement />,
         children: [
             {
                 index: true,
                 lazy: async () => {
                     const { HomePage } = await import("@/pages/home-page");
                     return { Component: HomePage };
-                }
+                },
+                errorElement: <ErrorElement />
             },
             {
                 path: "projects",
@@ -64,7 +67,8 @@ export const routes = createBrowserRouter([
                     const { ProjectsPage } = await import("@/pages/projects-page");
                     return { Component: ProjectsPage };
                 },
-                loader: requireAuth
+                loader: requireAuth,
+                errorElement: <ErrorElement />
             },
             {
                 path: "projects/:id",
@@ -72,7 +76,8 @@ export const routes = createBrowserRouter([
                     const { ProjectPage } = await import("@/pages/project-page");
                     return { Component: ProjectPage };
                 },
-                loader: requireAuth
+                loader: requireAuth,
+                errorElement: <ErrorElement />
             },
             {
                 path: "tasks",
@@ -80,7 +85,8 @@ export const routes = createBrowserRouter([
                     const { IssuesPage } = await import("@/pages/issues-page");
                     return { Component: IssuesPage };
                 },
-                loader: requireAuth
+                loader: requireAuth,
+                errorElement: <ErrorElement />
             },
             {
                 path: "tasks/:id",
@@ -88,7 +94,8 @@ export const routes = createBrowserRouter([
                     const { IssuePage } = await import("@/pages/issue-page");
                     return { Component: IssuePage };
                 },
-                loader: requireAuth
+                loader: requireAuth,
+                errorElement: <ErrorElement />
             },
             {
                 path: "audit-log",
@@ -96,7 +103,8 @@ export const routes = createBrowserRouter([
                     const { HomePage } = await import("@/pages/home-page");
                     return { Component: HomePage };
                 },
-                loader: requireAuth
+                loader: requireAuth,
+                errorElement: <ErrorElement />
             },
             {
                 path: "users",
@@ -104,7 +112,8 @@ export const routes = createBrowserRouter([
                     const { UsersPage } = await import("@/pages/users-page");
                     return { Component: UsersPage };
                 },
-                loader: () => requireRole(["ADMIN"])
+                loader: () => requireRole(["ADMIN"]),
+                errorElement: <ErrorElement />
             },
             {
                 path: "profile",
@@ -112,7 +121,8 @@ export const routes = createBrowserRouter([
                     const { ProfilePage } = await import("@/pages/profile-page");
                     return { Component: ProfilePage };
                 },
-                loader: requireAuth
+                loader: requireAuth,
+                errorElement: <ErrorElement />
             }
         ]
     },
@@ -120,13 +130,15 @@ export const routes = createBrowserRouter([
         path: "/login",
         element: <LoginLayout />,
         loader: isAuth,
+        errorElement: <ErrorElement />,
         children: [
             {
                 index: true,
                 lazy: async () => {
                     const { LoginPage } = await import("@/pages/login-page");
                     return { Component: LoginPage };
-                }
+                },
+                errorElement: <ErrorElement />
             }
         ]
     }

@@ -1,5 +1,7 @@
+import { COMMON } from "@helpdesk-portal/i18n";
 import type { VisibilityState } from "@tanstack/react-table";
 
+import { handleApiResponse } from "@/shared/lib/api";
 import { apiClient } from "@/shared/lib/auth";
 
 export interface TableSettings {
@@ -19,9 +21,10 @@ export async function fetchUserPreference(page: string): Promise<Record<string, 
 }
 
 export async function saveUserPreference(page: string, settings: Record<string, unknown>): Promise<void> {
-    await apiClient("/api/users/me/preferences", {
+    const res = await apiClient("/api/users/me/preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ page, settings })
     });
+    await handleApiResponse<void>(res, COMMON, "error.connection");
 }

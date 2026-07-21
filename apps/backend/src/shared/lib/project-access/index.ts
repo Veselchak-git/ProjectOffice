@@ -28,11 +28,11 @@ export async function checkProjectMember(
     });
 
     if (!member) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
     }
 
     if (requiredRoles && !requiredRoles.includes(member.role)) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
     }
 
     return member;
@@ -62,7 +62,7 @@ export const createCheckProjectAccess = (options: CheckProjectAccessOptions): pr
         if (options.checkSelfModification) {
             const targetUserId = params.userId != null ? Number(params.userId) : undefined;
             if (targetUserId !== undefined && targetUserId === userId) {
-                throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя менять свои права", "SELF_ROLE_CHANGE");
+                throw new AppError(HTTP_STATUS.FORBIDDEN, "Cannot change your own role", "SELF_ROLE_CHANGE");
             }
         }
 
@@ -70,7 +70,7 @@ export const createCheckProjectAccess = (options: CheckProjectAccessOptions): pr
 
         const member = await checkProjectMember(request.server.prisma, projectId, userId, undefined, false);
         if (!member) {
-            throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
+            throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
         }
 
         if (options.checkRoleHierarchy) {
@@ -79,13 +79,13 @@ export const createCheckProjectAccess = (options: CheckProjectAccessOptions): pr
                 const actorRank = ROLE_HIERARCHY[member.role] ?? 0;
                 const targetRank = ROLE_HIERARCHY[targetRole] ?? 0;
                 if (targetRank > actorRank) {
-                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Нельзя назначить роль выше своей", "ROLE_HIERARCHY");
+                    throw new AppError(HTTP_STATUS.FORBIDDEN, "Insufficient role hierarchy", "ROLE_HIERARCHY");
                 }
             }
         }
 
         if (options.requireProjectRoles && !options.requireProjectRoles.includes(member.role)) {
-            throw new AppError(HTTP_STATUS.FORBIDDEN, "Доступ запрещён", "AUTH_FORBIDDEN");
+            throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
         }
     };
 };

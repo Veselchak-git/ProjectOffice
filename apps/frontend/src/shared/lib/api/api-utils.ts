@@ -1,3 +1,5 @@
+import { i18n } from "@/shared/lib/i18n";
+
 export interface ApiErrorBody {
     code?: string;
     message?: string;
@@ -24,12 +26,28 @@ export function buildQueryString(params?: Record<string, string | number | null 
     return query ? `?${query}` : "";
 }
 
-export async function handleApiResponse<T>(res: Response, fallbackMessage: string): Promise<T> {
+export async function handleApiResponse<T>(res: Response, namespace: string, fallbackKey: string): Promise<T> {
     if (!res.ok) {
         const body: ApiErrorBody | null = await res.json().catch(() => null);
-        const error = new Error(body?.message ?? fallbackMessage);
-        if (body?.code) {
-            (error as Error & { code: string }).code = body.code;
+        const code = body?.code;
+
+        let message: string | undefined;
+        if (code) {
+            const localized = i18n.t(`${namespace}:error.${code}`);
+            if (localized !== `${namespace}:error.${code}`) {
+                message = localized;
+            }
+        }
+        if (!message) {
+            message = i18n.t(`${namespace}:${fallbackKey}`);
+        }
+        if (!message || message === `${namespace}:${fallbackKey}`) {
+            message = "Error";
+        }
+
+        const error = new Error(message);
+        if (code) {
+            (error as Error & { code: string }).code = code;
         }
         throw error;
     }

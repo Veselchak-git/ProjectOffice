@@ -18,11 +18,7 @@ export async function assertValidAssignee(
         where: { userId_projectId: { userId: assigneeId, projectId } },
     });
     if (!assigneeMember) {
-        throw new AppError(
-            HTTP_STATUS.BAD_REQUEST,
-            "Пользователь не является участником проекта",
-            "INVALID_ASSIGNEE",
-        );
+        throw new AppError(HTTP_STATUS.BAD_REQUEST, "Invalid assignee", "INVALID_ASSIGNEE");
     }
     if (assigneeMember.role !== "DEVELOPER" && assigneeMember.role !== "MANAGER") {
         const assigneeUser = await prisma.user.findUnique({
@@ -30,11 +26,7 @@ export async function assertValidAssignee(
             select: { role: true },
         });
         if (assigneeUser?.role !== Role.ADMIN) {
-            throw new AppError(
-                HTTP_STATUS.FORBIDDEN,
-                "Пользователь не может быть назначен исполнителем",
-                "INVALID_ASSIGNEE_ROLE",
-            );
+            throw new AppError(HTTP_STATUS.FORBIDDEN, "Assignee has insufficient role", "INVALID_ASSIGNEE_ROLE");
         }
     }
 }

@@ -18,7 +18,7 @@ import { UsersActionsCell } from "../ui/UsersActionsCell";
 
 export interface GetUsersColumnsDeps {
     t: TFunction;
-    updateRoleMutate: (params: { id: number; role: User["role"] }) => void;
+    updateRoleMutate: (id: number, role: User["role"]) => void;
     setEditingUser: (user: User | null) => void;
 }
 
@@ -43,12 +43,7 @@ export function getUsersColumns({ t, updateRoleMutate, setEditingUser }: GetUser
                 <Select
                     options={getRoleOptions(t)}
                     value={info.getValue()}
-                    onValueChange={value =>
-                        updateRoleMutate({
-                            id: info.row.original.id,
-                            role: value as User["role"]
-                        })
-                    }
+                    onValueChange={value => updateRoleMutate(info.row.original.id, value as User["role"])}
                 />
             )
         }),

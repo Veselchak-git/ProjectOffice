@@ -22,10 +22,11 @@ import { pinoLogger } from "@/shared/lib/logger/pino.js";
 import { PREFIX } from "@/shared/routes.js";
 
 const hasStatusCode = (error: unknown): error is { statusCode: number } =>
-    typeof error === "object" && error !== null && "statusCode" in error && typeof error.statusCode === "number";
-
-const getErrorMessage = (error: unknown, statusCode: number) =>
-    error instanceof Error ? error.message : (STATUS_CODES[statusCode] ?? "Error");
+    !isAppError(error) &&
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error &&
+    typeof error.statusCode === "number";
 
 export const app = async () => {
     const fastify = Fastify({
@@ -50,8 +51,8 @@ export const app = async () => {
         void reply.status(statusCode).send({
             statusCode,
             code: isAppError(error) ? error.code : "INTERNAL_SERVER_ERROR",
-            error: STATUS_CODES[statusCode] ?? "Error",
-            message: getErrorMessage(error, statusCode)
+            message: isAppError(error) ? error.message : "INTERNAL_SERVER_ERROR",
+            error: STATUS_CODES[statusCode] ?? "Error"
         });
     });
 

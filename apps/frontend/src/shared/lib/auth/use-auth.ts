@@ -8,7 +8,7 @@
 import { AUTH } from "@helpdesk-portal/i18n";
 import { useCallback } from "react";
 
-import { i18n } from "@/shared/lib/i18n";
+import { handleApiResponse } from "@/shared/lib/api";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 
 import { apiClient } from "./api-client";
@@ -29,8 +29,7 @@ export function useAuth() {
             });
 
             if (!res.ok) {
-                const body = await res.json().catch(() => null);
-                throw new Error(body?.message ?? i18n.t(`${AUTH}:error.invalidCredentials`));
+                await handleApiResponse<never>(res, AUTH, "error.AUTH_INVALID_CREDENTIALS");
             }
 
             const body = await res.json();

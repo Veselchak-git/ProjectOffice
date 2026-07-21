@@ -56,6 +56,7 @@ export const UsersPage: FC = () => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [searchInput, setSearchInput] = useState("");
     const [debouncedQ, setDebouncedQ] = useState("");
+    const [pageError, setPageError] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +81,7 @@ export const UsersPage: FC = () => {
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
+        setPageError(null);
         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = setTimeout(() => {
             setDebouncedQ(value);
@@ -117,11 +119,6 @@ export const UsersPage: FC = () => {
         }
     });
 
-    const { mutate: updateRoleMutate } = useMutation({
-        mutationFn: ({ id, role }: { id: number; role: User["role"] }) => updateUser(id, { role }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] })
-    });
-
     const { mutateAsync: editUserMutate } = useMutation({
         mutationFn: ({ id, data }: { id: number; data: UpdateUserData }) => updateUser(id, data),
         onSuccess: () => {
@@ -133,18 +130,36 @@ export const UsersPage: FC = () => {
     const selectedIds = Object.keys(rowSelection).map(Number);
     const selectedCount = selectedIds.length;
 
-    const { mutateAsync: deleteSelectedMutate } = useMutation({
-        mutationFn: (id: number) => deleteUser(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] })
-    });
-
     const handleDeleteSelected = async () => {
+        setPageError(null);
         if (!window.confirm(t("confirm.deleteSelected", { count: selectedCount }))) return;
-        await Promise.all(selectedIds.map(id => deleteSelectedMutate(id)));
-        dispatch(setRowSelection({}));
+        try {
+            await Promise.all(selectedIds.map(id => deleteUser(id)));
+            await queryClient.invalidateQueries({ queryKey: ["users"] });
+            dispatch(setRowSelection({}));
+        } catch (err) {
+            setPageError(err instanceof Error ? err.message : "Error");
+        }
     };
 
-    const columns = getUsersColumns({ t, updateRoleMutate, setEditingUser });
+    const handleRoleChange = async (id: number, role: User["role"]) => {
+        setPageError(null);
+        try {
+            await updateUser(id, { role });
+            await queryClient.invalidateQueries({ queryKey: ["users"] });
+        } catch (err) {
+            setPageError(err instanceof Error ? err.message : "Error");
+        }
+    };
+
+    const columns = getUsersColumns({
+        t,
+        updateRoleMutate: handleRoleChange,
+        setEditingUser: user => {
+            setPageError(null);
+            setEditingUser(user);
+        }
+    });
 
     function handleDragEnd(event: DragEndEvent) {
         reorderColumn(event, columnOrder, next => dispatch(setColumnOrder(next)));
@@ -204,7 +219,10 @@ export const UsersPage: FC = () => {
                     <Button
                         className="users-page__create-btn"
                         type="button"
-                        onClick={() => setCreating(true)}
+                        onClick={() => {
+                            setPageError(null);
+                            setCreating(true);
+                        }}
                         startIcon={<PlusIcon />}
                     >
                         {t("actions.create")}
@@ -262,6 +280,12 @@ export const UsersPage: FC = () => {
                     onChange={e => handleSearchChange(e.target.value)}
                 />
             </div>
+
+            {pageError && (
+                <div className="users-page__form-error" style={{ marginBottom: 16 }}>
+                    {pageError}
+                </div>
+            )}
 
             <div className="users-page__table-area" ref={containerRef}>
                 {isPending && !data ? (

@@ -14,13 +14,12 @@ type CountClient = {
 export async function assertNotLastOfRole(
     model: CountClient,
     where: Record<string, unknown>,
-    message: string,
     code: string,
     extraWhere?: Record<string, unknown>,
 ): Promise<void> {
     const mergedWhere = extraWhere ? { ...where, ...extraWhere } : where;
     const count = await model.count({ where: mergedWhere });
     if (count <= 1) {
-        throw new AppError(HTTP_STATUS.FORBIDDEN, message, code);
+        throw new AppError(HTTP_STATUS.FORBIDDEN, "Cannot remove the last member with this role", code);
     }
 }

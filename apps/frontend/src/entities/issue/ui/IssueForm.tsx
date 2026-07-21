@@ -157,6 +157,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                         render={({ field }) => (
                             <Select
                                 usePortal={false}
+                                color={errors.priority ? "error" : "default"}
+                                errorMessage={errors.priority?.message ?? ""}
                                 options={[
                                     { value: "CRITICAL", label: t("priority.critical") },
                                     { value: "SERIOUS", label: t("priority.serious") },
