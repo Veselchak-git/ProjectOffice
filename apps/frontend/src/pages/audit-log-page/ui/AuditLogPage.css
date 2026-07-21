@@ -1,0 +1,238 @@
+@layer pages {
+    .audit-log-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .audit-log-page__title-area {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .audit-log-page__title-text {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .audit-log-page__title-heading {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    .audit-log-page__title-subtitle {
+        font-family: Geologica;
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 140%;
+        color: var(--semantic-text-secondary);
+        margin: 0;
+    }
+
+    .audit-log-page__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .audit-log-page__export-btn {
+        --btn-icon-size: 20px;
+        height: 40px;
+        padding: 0 20px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: transparent;
+        color: var(--semantic-text-primary);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
+    }
+
+    .audit-log-page__export-btn:hover {
+        background-color: var(--semantic-fill-primary-hover);
+        border-color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .audit-log-page__columns-wrapper {
+        position: relative;
+    }
+
+    .audit-log-page__columns-btn {
+        --btn-icon-size: 20px;
+        height: 40px;
+        padding: 0 20px;
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        background-color: transparent;
+        color: var(--semantic-text-primary);
+        font-family: Geologica;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
+    }
+
+    .audit-log-page__columns-btn:hover {
+        background-color: var(--semantic-fill-primary-hover);
+        border-color: var(--semantic-btn-accent-fill-hover-bg);
+    }
+
+    .audit-log-page__columns-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        min-width: 200px;
+        background-color: var(--semantic-bg-surface-elevated);
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        z-index: 100;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .audit-log-page__table-area {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .audit-log-page__empty {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--semantic-text-secondary);
+        font-size: 14px;
+    }
+
+    .audit-log-page__table-area .data-table {
+        min-width: 1200px;
+    }
+
+    .audit-log-page__overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .audit-log-page__modal {
+        background-color: var(--semantic-bg-surface-elevated);
+        border-radius: 12px;
+        padding: 32px;
+        min-width: 500px;
+        max-width: 720px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+    }
+
+    .audit-log-page__modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .audit-log-page__modal-title {
+        margin: 0;
+        font-family: Geologica;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+    }
+
+    .audit-log-page__modal-close {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        color: var(--semantic-text-secondary);
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        transition: color 0.15s;
+    }
+
+    .audit-log-page__modal-close:hover {
+        color: var(--semantic-text-primary);
+    }
+
+    .audit-log-page__modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .audit-log-page__modal-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .audit-log-page__modal-label {
+        font-family: Geologica;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--semantic-text-secondary);
+    }
+
+    .audit-log-page__modal-value {
+        font-family: Geologica;
+        font-size: 14px;
+        color: var(--semantic-text-primary);
+    }
+
+    .audit-log-page__modal-diff {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 8px 12px;
+        background-color: var(--semantic-bg-surface);
+        border: 1px solid var(--semantic-border-default);
+        border-radius: 6px;
+        font-family: Geologica;
+        font-size: 13px;
+    }
+
+    .audit-log-page__modal-diff-field {
+        font-weight: 600;
+        color: var(--semantic-text-primary);
+        white-space: nowrap;
+    }
+
+    .audit-log-page__modal-diff-old {
+        color: var(--semantic-text-secondary);
+        text-decoration: line-through;
+        word-break: break-all;
+    }
+
+    .audit-log-page__modal-diff-arrow {
+        color: var(--semantic-text-secondary);
+        flex-shrink: 0;
+    }
+
+    .audit-log-page__modal-diff-new {
+        color: var(--semantic-text-primary);
+        word-break: break-all;
+    }
+}

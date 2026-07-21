@@ -21,6 +21,7 @@ import {
     Reproducibility,
     Role,
 } from "@/generated/prisma/enums.js";
+import { auditLogEmitter } from "@/modules/audit-log/emitter.js";
 
 
 import type {
@@ -252,6 +253,17 @@ export const createIssueService = async (
             include,
         });
 
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "ISSUE_CREATED",
+            subjectType: "USER",
+            objectType: "ISSUE",
+            subjectId: userId,
+            objectId: issue.id,
+            newValue: JSON.stringify({ title: body.title, projectId, category: body.category, priority: body.priority, projectName: issue.project.name }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return mapIssue(issue as unknown as IssueRow, member?.role);
     } catch (error) {
         throw handlePrismaError(error);
@@ -323,6 +335,18 @@ export const updateIssueService = async (
             include,
         });
 
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "ISSUE_UPDATED",
+            subjectType: "USER",
+            objectType: "ISSUE",
+            subjectId: userId,
+            objectId: id,
+            oldValue: JSON.stringify({ title: issue.title, status: issue.status, priority: issue.priority, assigneeLogin: issue.assignee?.login ?? null }),
+            newValue: JSON.stringify({ title: updated.title, status: updated.status, priority: updated.priority, assigneeLogin: updated.assignee?.login ?? null }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return mapIssue(updated as unknown as IssueRow, member?.role);
     } catch (error) {
         throw handlePrismaError(error);
@@ -342,6 +366,17 @@ export const deleteIssueService = async (
         await checkProjectMember(prisma, issue.projectId, userId, ["MANAGER"], true);
 
         await prisma.issue.delete({ where: { id } });
+
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "ISSUE_DELETED",
+            subjectType: "USER",
+            objectType: "ISSUE",
+            subjectId: userId,
+            objectId: id,
+            oldValue: JSON.stringify({ title: issue.title, projectName: issue.project.name }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
 
         return null;
     } catch (error) {

@@ -100,10 +100,10 @@ export const routes = createBrowserRouter([
             {
                 path: "audit-log",
                 lazy: async () => {
-                    const { HomePage } = await import("@/pages/home-page");
-                    return { Component: HomePage };
+                    const { AuditLogPage } = await import("@/pages/audit-log-page");
+                    return { Component: AuditLogPage };
                 },
-                loader: requireAuth,
+                loader: () => requireRole(["ADMIN", "MANAGER"]),
                 errorElement: <ErrorElement />
             },
             {

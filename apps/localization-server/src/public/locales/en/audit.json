@@ -1,1 +1,44 @@
-{}
+{
+    "page": {
+        "title": "Audit Log",
+        "subtitle": "Total records: {{total}}"
+    },
+    "table": {
+        "eventType": "Event Type",
+        "subjectType": "Subject Type",
+        "objectType": "Object Type",
+        "subjectId": "Subject ID",
+        "objectId": "Object ID",
+        "changes": "Changes",
+        "created": "Date"
+    },
+    "actions": {
+        "columns": "Columns",
+        "export": "Export"
+    },
+    "loading": "Loading audit log…",
+    "error": {
+        "loading": "Error loading audit log",
+        "stream": "Error connecting to event stream"
+    },
+    "modal": {
+        "title": "Log Details",
+        "eventType": "Event Type",
+        "oldValue": "Old Data",
+        "newValue": "New Data",
+        "noChanges": "No changes",
+        "memberAdded": "{{login}} added to project «{{projectName}}» as «{{role}}»",
+        "memberRemoved": "{{login}} removed from project",
+        "memberUpdated": "Role of member {{login}} updated in project «{{projectName}}»",
+        "projectCreated": "Project «{{name}}» created",
+        "projectDeleted": "Project «{{name}}» deleted",
+        "issueCreated": "Task «{{title}}» created in project «{{projectName}}»",
+        "issueDeleted": "Task «{{title}}» deleted from project «{{projectName}}»",
+        "issueUpdated": "Changes in task «{{title}}»:"
+    },
+    "event": {
+        "create": "Create",
+        "update": "Update",
+        "delete": "Delete"
+    }
+}

@@ -1,4 +1,5 @@
 import { Role } from "@/generated/prisma/client.js";
+import { auditLogEmitter } from "@/modules/audit-log/emitter.js";
 import { assertNotLastOfRole } from "@/shared/lib/assert-last-role/index.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
@@ -74,6 +75,17 @@ export const createUserService = async (
             select: { id: true, login: true, role: true, createdAt: true },
         });
 
+        auditLogEmitter.emitAuditLog(request.server.prisma, {
+            eventType: "USER_CREATED",
+            subjectType: "USER",
+            objectType: "USER",
+            subjectId: Number(request.user.sub),
+            objectId: user.id,
+            newValue: JSON.stringify({ login: user.login, role: user.role }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return {
             id: user.id,
             login: user.login,
@@ -141,6 +153,18 @@ export const updateUserService = async (
             select: { id: true, login: true, role: true, createdAt: true },
         });
 
+        auditLogEmitter.emitAuditLog(request.server.prisma, {
+            eventType: "USER_UPDATED",
+            subjectType: "USER",
+            objectType: "USER",
+            subjectId: Number(request.user.sub),
+            objectId: id,
+            oldValue: JSON.stringify({ login: user.login, role: user.role }),
+            newValue: JSON.stringify({ login: updated.login, role: updated.role }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return {
             id: updated.id,
             login: updated.login,
@@ -160,7 +184,7 @@ export const deleteUserService = async (
 
         const user = await request.server.prisma.user.findUnique({
             where: { id },
-            select: { id: true, role: true },
+            select: { id: true, login: true, role: true },
         });
         if (!user) {
             throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "USER_NOT_FOUND");
@@ -182,6 +206,17 @@ export const deleteUserService = async (
         await request.server.prisma.user.update({
             where: { id },
             data: { deletedAt: new Date() }
+        });
+
+        auditLogEmitter.emitAuditLog(request.server.prisma, {
+            eventType: "USER_DELETED",
+            subjectType: "USER",
+            objectType: "USER",
+            subjectId: Number(request.user.sub),
+            objectId: id,
+            oldValue: JSON.stringify({ login: user.login, role: user.role }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
         });
 
         return null;

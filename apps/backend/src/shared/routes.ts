@@ -21,6 +21,7 @@ export const PROJECT_MEMBERS_PATH = `${PROJECT_PATH}/members`;
 export const PROJECT_MEMBER_PATH = `${PROJECT_PATH}/members/:userId`;
 export const AUDIT_LOG_PATH = "/audit-log";
 export const AUDIT_LOG_AVAILABLE_PATH = `${AUDIT_LOG_PATH}/available`;
+export const AUDIT_LOG_STREAM_PATH = `${AUDIT_LOG_PATH}/stream`;
 export const USERS_PATH = "/users";
 export const USER_PATH = `${USERS_PATH}/:id`;
 export const ISSUES_PATH = "/issues";

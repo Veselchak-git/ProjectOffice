@@ -59,6 +59,7 @@ export const UsersPage: FC = () => {
     const [pageError, setPageError] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [bulkRoleChange, setBulkRoleChange] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const dispatch = useAppDispatch();
@@ -69,9 +70,9 @@ export const UsersPage: FC = () => {
     const columnsRef = useRef<HTMLDivElement>(null);
 
     const { perPage, ready } = useDynamicPerPage(containerRef, {
-        rowHeight: 57,
-        theadHeight: 41,
-        paginationHeight: 36,
+        rowHeight: 48,
+        theadHeight: 36,
+        paginationHeight: 34,
         min: 5
     });
 
@@ -142,24 +143,7 @@ export const UsersPage: FC = () => {
         }
     };
 
-    const handleRoleChange = async (id: number, role: User["role"]) => {
-        setPageError(null);
-        try {
-            await updateUser(id, { role });
-            await queryClient.invalidateQueries({ queryKey: ["users"] });
-        } catch (err) {
-            setPageError(err instanceof Error ? err.message : "Error");
-        }
-    };
-
-    const columns = getUsersColumns({
-        t,
-        updateRoleMutate: handleRoleChange,
-        setEditingUser: user => {
-            setPageError(null);
-            setEditingUser(user);
-        }
-    });
+    const columns = getUsersColumns({ t });
 
     function handleDragEnd(event: DragEndEvent) {
         reorderColumn(event, columnOrder, next => dispatch(setColumnOrder(next)));
@@ -230,6 +214,24 @@ export const UsersPage: FC = () => {
                     {selectedCount > 0 && (
                         <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
                             {t("actions.deleteSelected", { count: selectedCount })}
+                        </Button>
+                    )}
+                    {selectedCount > 0 && (
+                        <Button
+                            variant="stroke"
+                            size="m"
+                            onClick={() => {
+                                setPageError(null);
+                                if (selectedCount === 1) {
+                                    const userId = selectedIds[0];
+                                    const user = users.find(u => u.id === userId);
+                                    if (user) setEditingUser(user);
+                                } else {
+                                    setBulkRoleChange(true);
+                                }
+                            }}
+                        >
+                            {t("table.edit")}
                         </Button>
                     )}
                     <Button className="users-page__export-btn" type="button" startIcon={<ExportIcon />}>
@@ -320,6 +322,24 @@ export const UsersPage: FC = () => {
                         />
                     </div>
                 </div>
+            )}
+
+            {bulkRoleChange && (
+                <BulkRoleChangeModal
+                    count={selectedCount}
+                    onConfirm={async role => {
+                        setPageError(null);
+                        try {
+                            await Promise.all(selectedIds.map(id => updateUser(id, { role })));
+                            await queryClient.invalidateQueries({ queryKey: ["users"] });
+                            dispatch(setRowSelection({}));
+                            setBulkRoleChange(false);
+                        } catch (err) {
+                            setPageError(err instanceof Error ? err.message : "Error");
+                        }
+                    }}
+                    onCancel={() => setBulkRoleChange(false)}
+                />
             )}
         </div>
     );
@@ -578,5 +598,54 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                 </Button>
             </div>
         </form>
+    );
+};
+
+interface BulkRoleChangeModalProps {
+    count: number;
+    onConfirm(role: User["role"]): Promise<void>;
+    onCancel(): void;
+}
+
+const BulkRoleChangeModal: FC<BulkRoleChangeModalProps> = ({ count, onConfirm, onCancel }) => {
+    const { t: tu } = useTranslation(USERS);
+    const [role, setRole] = useState<User["role"]>("USER");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const hasChanges = role !== "USER";
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await onConfirm(role);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="users-page__overlay">
+            <div className="users-page__modal">
+                <h2 className="users-page__modal-title">{tu("bulkRoleChange.title", { count })}</h2>
+                <form className="users-page__form" onSubmit={handleSubmit}>
+                    <Select
+                        label={tu("form.role")}
+                        options={getRoleOptions(tu)}
+                        value={role}
+                        usePortal={false}
+                        onValueChange={value => setRole(value as User["role"])}
+                    />
+                    <div className="users-page__form-actions">
+                        <Button type="submit" disabled={isSubmitting || !hasChanges}>
+                            {isSubmitting ? tu("bulkRoleChange.submitting") : tu("bulkRoleChange.submit")}
+                        </Button>
+                        <Button type="button" variant="stroke" onClick={onCancel} disabled={isSubmitting}>
+                            {tu(`${COMMON}:cancel`)}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 };

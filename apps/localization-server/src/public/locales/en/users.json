@@ -88,5 +88,10 @@
         "minLength": {
             "password": "Password must be at least 6 characters"
         }
+    },
+    "bulkRoleChange": {
+        "title": "Change role ({{count}} users)",
+        "submit": "Apply",
+        "submitting": "Applying…"
     }
 }

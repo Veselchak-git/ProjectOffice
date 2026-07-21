@@ -1,1 +1,44 @@
-{}
+{
+    "page": {
+        "title": "Аудит-лог",
+        "subtitle": "Всего записей: {{total}}"
+    },
+    "table": {
+        "eventType": "Тип события",
+        "subjectType": "Тип субъекта",
+        "objectType": "Тип объекта",
+        "subjectId": "ID субъекта",
+        "objectId": "ID объекта",
+        "changes": "Изменения",
+        "created": "Дата"
+    },
+    "actions": {
+        "columns": "Колонки",
+        "export": "Экспорт"
+    },
+    "loading": "Загрузка аудит-лога…",
+    "error": {
+        "loading": "Ошибка загрузки аудит-лога",
+        "stream": "Ошибка подключения к потоку событий"
+    },
+    "modal": {
+        "title": "Детали лога",
+        "eventType": "Тип события",
+        "oldValue": "Старые данные",
+        "newValue": "Новые данные",
+        "noChanges": "Изменений нет",
+        "memberAdded": "{{login}} добавлен в проект «{{projectName}}» на роль «{{role}}»",
+        "memberRemoved": "{{login}} удалён из проекта",
+        "memberUpdated": "В проекте «{{projectName}}» изменена роль участника {{login}}",
+        "projectCreated": "Создан проект «{{name}}»",
+        "projectDeleted": "Удалён проект «{{name}}»",
+        "issueCreated": "В проекте «{{projectName}}» создана задача «{{title}}»",
+        "issueDeleted": "В проекте «{{projectName}}» удалена задача «{{title}}»",
+        "issueUpdated": "Изменения в задаче «{{title}}»:"
+    },
+    "event": {
+        "create": "Создание",
+        "update": "Обновление",
+        "delete": "Удаление"
+    }
+}

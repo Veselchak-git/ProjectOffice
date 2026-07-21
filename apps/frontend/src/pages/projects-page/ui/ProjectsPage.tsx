@@ -73,9 +73,9 @@ export const ProjectsPage: FC = () => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { perPage, ready } = useDynamicPerPage(containerRef, {
-        rowHeight: 57,
-        theadHeight: 41,
-        paginationHeight: 36,
+        rowHeight: 48,
+        theadHeight: 36,
+        paginationHeight: 34,
         min: 5
     });
 

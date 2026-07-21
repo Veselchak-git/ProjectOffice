@@ -5,6 +5,7 @@ import { assertNotLastOfRole } from "@/shared/lib/assert-last-role/index.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
 import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
+import { auditLogEmitter } from "@/modules/audit-log/emitter.js";
 
 import type {
     ProjectListResponse,
@@ -168,6 +169,17 @@ export const createProjectService = async (
             },
         });
 
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "PROJECT_CREATED",
+            subjectType: "USER",
+            objectType: "PROJECT",
+            subjectId: creatorId,
+            objectId: project.id,
+            newValue: JSON.stringify({ name: project.name, description }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return { id: project.id, name: project.name };
     } catch (error) {
         throw handlePrismaError(error);
@@ -213,6 +225,18 @@ export const updateProjectService = async (
         if (!project) {
             throw new AppError(HTTP_STATUS.NOT_FOUND, "Project not found", "PROJECT_NOT_FOUND");
         }
+
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "PROJECT_UPDATED",
+            subjectType: "USER",
+            objectType: "PROJECT",
+            subjectId: Number(request.user.sub),
+            objectId: id,
+            oldValue: JSON.stringify({ name: existing.name, status: existing.status }),
+            newValue: JSON.stringify({ name: project.name, ...(body.name !== undefined ? { name: body.name } : {}), ...(body.status !== undefined ? { status: body.status } : {}) }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
 
         return { id: project.id, name: project.name };
     } catch (error) {
@@ -262,6 +286,19 @@ export const addProjectMemberService = async (
             select: { userId: true, role: true, user: { select: { login: true } } },
         });
 
+        const project = await prisma.project.findUnique({ where: { id }, select: { name: true } });
+
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "MEMBER_ADDED",
+            subjectType: "USER",
+            objectType: "PROJECT",
+            subjectId: Number(request.user.sub),
+            objectId: id,
+            newValue: JSON.stringify({ userId, role, login: member.user.login, projectName: project?.name }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return { userId: member.userId, login: member.user.login, role: member.role };
     } catch (error) {
         throw handlePrismaError(error);
@@ -276,7 +313,7 @@ export const updateProjectMemberService = async (
         const { id, userId } = request.params;
         const { role } = request.body;
 
-        const member = await prisma.$transaction(async tx => {
+        const { existing, member } = await prisma.$transaction(async tx => {
             const existing = await tx.projectMember.findUnique({
                 where: { userId_projectId: { userId, projectId: id } },
             });
@@ -292,12 +329,28 @@ export const updateProjectMemberService = async (
                 );
             }
 
-            return tx.projectMember.update({
+            const member = await tx.projectMember.update({
                 where: { userId_projectId: { userId, projectId: id } },
                 data: { role },
                 select: { userId: true, role: true, user: { select: { login: true } } },
             });
+
+            return { existing, member };
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+
+        const project = await prisma.project.findUnique({ where: { id }, select: { name: true } });
+
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "MEMBER_UPDATED",
+            subjectType: "USER",
+            objectType: "PROJECT",
+            subjectId: Number(request.user.sub),
+            objectId: id,
+            oldValue: JSON.stringify({ userId, role: existing.role, login: member.user.login, projectName: project?.name }),
+            newValue: JSON.stringify({ userId, role: member.role, login: member.user.login, projectName: project?.name }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
 
         return { userId: member.userId, login: member.user.login, role: member.role };
     } catch (error) {
@@ -324,6 +377,17 @@ export const deleteProjectService = async (
             prisma.project.delete({ where: { id } }),
         ]);
 
+        auditLogEmitter.emitAuditLog(prisma, {
+            eventType: "PROJECT_DELETED",
+            subjectType: "USER",
+            objectType: "PROJECT",
+            subjectId: Number(request.user.sub),
+            objectId: id,
+            oldValue: JSON.stringify({ name: existing.name }),
+            subjectLogin: request.user.login,
+            createdAt: new Date().toISOString(),
+        });
+
         return null;
     } catch (error) {
         throw handlePrismaError(error);
@@ -336,6 +400,11 @@ export const removeProjectMemberService = async (
     try {
         const prisma = request.server.prisma;
         const { id, userId } = request.params;
+
+        const existingMember = await prisma.projectMember.findUnique({
+            where: { userId_projectId: { userId, projectId: id } },
+            select: { role: true, user: { select: { login: true } } },
+        });
 
         await prisma.$transaction(async tx => {
             const existing = await tx.projectMember.findUnique({
@@ -357,6 +426,19 @@ export const removeProjectMemberService = async (
                 where: { userId_projectId: { userId, projectId: id } },
             });
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+
+        if (existingMember) {
+            auditLogEmitter.emitAuditLog(prisma, {
+                eventType: "MEMBER_REMOVED",
+                subjectType: "USER",
+                objectType: "PROJECT",
+                subjectId: Number(request.user.sub),
+                objectId: id,
+                oldValue: JSON.stringify({ userId, role: existingMember.role, login: existingMember.user.login }),
+                subjectLogin: request.user.login,
+                createdAt: new Date().toISOString(),
+            });
+        }
 
         return null;
     } catch (error) {

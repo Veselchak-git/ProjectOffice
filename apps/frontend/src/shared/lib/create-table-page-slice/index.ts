@@ -7,7 +7,7 @@ export interface TablePageState {
 }
 
 export function createTablePageSlice(
-    name: "projectsPage" | "issuesPage" | "usersPage",
+    name: "projectsPage" | "issuesPage" | "usersPage" | "auditLogPage",
     defaultColumnVisibility: Record<string, boolean>,
     defaultColumnOrder: string[]
 ) {
