@@ -6,6 +6,8 @@ import { Button } from "@helpdesk-portal/ui-kit";
 import { type Table } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
 
+import styles from "./DataTable.module.css";
+
 interface DataTablePaginationProps<TData> {
     table: Table<TData>;
     total: number;
@@ -20,11 +22,11 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
     const selectedCount = table.getSelectedRowModel().rows.length;
 
     return (
-        <div className="data-table-pagination">
+        <div className={styles["data-table-pagination"]}>
             <Button
                 variant="stroke"
                 size="s"
-                className="data-table-pagination__btn"
+                className={styles["data-table-pagination__btn"]}
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
             >
@@ -33,23 +35,25 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
             <Button
                 variant="stroke"
                 size="s"
-                className="data-table-pagination__btn"
+                className={styles["data-table-pagination__btn"]}
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
             >
                 <ArrowLeftIcon width={16} height={16} />
             </Button>
 
-            <span className="data-table-pagination__info">{t("showing", { from, to, total })}</span>
+            <span className={styles["data-table-pagination__info"]}>{t("showing", { from, to, total })}</span>
 
             {selectedCount > 0 && (
-                <span className="data-table-pagination__selected">{t("selectedCount", { count: selectedCount })}</span>
+                <span className={styles["data-table-pagination__selected"]}>
+                    {t("selectedCount", { count: selectedCount })}
+                </span>
             )}
 
             <Button
                 variant="stroke"
                 size="s"
-                className="data-table-pagination__btn"
+                className={styles["data-table-pagination__btn"]}
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
             >
@@ -58,7 +62,7 @@ export function DataTablePagination<TData>({ table, total }: DataTablePagination
             <Button
                 variant="stroke"
                 size="s"
-                className="data-table-pagination__btn"
+                className={styles["data-table-pagination__btn"]}
                 onClick={() => table.setPageIndex(pageCount - 1)}
                 disabled={!table.getCanNextPage()}
             >

@@ -16,7 +16,7 @@ import { useAuth } from "@/shared/lib/auth";
 
 import { ActivityFeed } from "./ActivityFeed";
 import { DashboardCounters } from "./DashboardCounters";
-import "./HomePage.css";
+import styles from "./HomePage.module.css";
 
 export const HomePage: FC = () => {
     const { t } = useTranslation(HOME);
@@ -28,21 +28,23 @@ export const HomePage: FC = () => {
 
     if (isError) {
         return (
-            <div className="home-page">
-                <p className="home-page__error">{error instanceof Error ? error.message : t("error.loading")}</p>
+            <div className={styles["home-page"]}>
+                <p className={styles["home-page__error"]}>
+                    {error instanceof Error ? error.message : t("error.loading")}
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="home-page">
+        <div className={styles["home-page"]}>
             <DashboardCounters
                 {...(data?.summary !== undefined ? { summary: data.summary } : {})}
                 isLoading={isPending}
                 {...(user?.role !== undefined ? { userRole: user.role } : {})}
             />
-            <section className="home-page__section">
-                <h2 className="home-page__section-title">{t("activity.title")}</h2>
+            <section className={styles["home-page__section"]}>
+                <h2 className={styles["home-page__section-title"]}>{t("activity.title")}</h2>
                 <ActivityFeed activity={data?.activity ?? []} isLoading={isPending} />
             </section>
         </div>

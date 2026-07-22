@@ -8,10 +8,12 @@
 import type { FC } from "react";
 import { Outlet } from "react-router";
 
+import styles from "@/pages/login-page/ui/LoginPage.module.css";
+
 export const LoginLayout: FC = () => {
     return (
-        <div className="login-layout">
-            <div className="login-card">
+        <div className={styles["login-layout"]}>
+            <div className={styles["login-card"]}>
                 <Outlet />
             </div>
         </div>

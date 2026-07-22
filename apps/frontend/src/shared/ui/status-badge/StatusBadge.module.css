@@ -1,0 +1,128 @@
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge--new {
+    background-color: var(--orange-100);
+    color: var(--orange-800);
+}
+
+.status-badge--acknowledged {
+    background-color: var(--neutral-300);
+    color: var(--neutral-800);
+}
+
+.status-badge--confirmed {
+    background-color: var(--orange-200);
+    color: var(--orange-900);
+}
+
+.status-badge--assigned {
+    background-color: var(--red-100);
+    color: var(--red-800);
+}
+
+.status-badge--resolved {
+    background-color: var(--green-100);
+    color: var(--green-800);
+}
+
+.status-badge--closed {
+    background-color: var(--neutral-400);
+    color: var(--neutral-900);
+}
+
+.status-badge--active {
+    background-color: var(--green-100);
+    color: var(--green-700);
+}
+
+.status-badge--archived {
+    background-color: var(--semantic-bg-surface-elevated);
+    color: var(--semantic-text-tertiary);
+}
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.priority-badge--critical {
+    background-color: var(--red-100);
+    color: var(--red-800);
+}
+
+.priority-badge--serious {
+    background-color: var(--orange-200);
+    color: var(--orange-900);
+}
+
+.priority-badge--minor {
+    background-color: var(--orange-100);
+    color: var(--orange-800);
+}
+
+.priority-badge--general {
+    background-color: var(--semantic-bg-surface-elevated);
+    color: var(--semantic-text-secondary);
+}
+
+[data-color-mode="dark"] :global(.status-badge--new) {
+    background-color: var(--orange-900);
+    color: var(--orange-300);
+}
+
+[data-color-mode="dark"] :global(.status-badge--confirmed) {
+    background-color: var(--orange-800);
+    color: var(--orange-200);
+}
+
+[data-color-mode="dark"] :global(.status-badge--assigned) {
+    background-color: var(--red-900);
+    color: var(--red-300);
+}
+
+[data-color-mode="dark"] :global(.status-badge--resolved) {
+    background-color: var(--green-900);
+    color: var(--green-300);
+}
+
+[data-color-mode="dark"] :global(.status-badge--acknowledged) {
+    background-color: var(--neutral-800);
+    color: var(--neutral-300);
+}
+
+[data-color-mode="dark"] :global(.status-badge--closed) {
+    background-color: var(--neutral-700);
+    color: var(--neutral-200);
+}
+
+[data-color-mode="dark"] :global(.status-badge--active) {
+    background-color: var(--green-900);
+    color: var(--green-300);
+}
+
+[data-color-mode="dark"] :global(.priority-badge--critical) {
+    background-color: var(--red-900);
+    color: var(--red-300);
+}
+
+[data-color-mode="dark"] :global(.priority-badge--serious) {
+    background-color: var(--orange-800);
+    color: var(--orange-200);
+}
+
+[data-color-mode="dark"] :global(.priority-badge--minor) {
+    background-color: var(--orange-900);
+    color: var(--orange-300);
+}

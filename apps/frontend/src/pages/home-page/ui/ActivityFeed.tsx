@@ -17,7 +17,7 @@ import type { ActivityItem as ActivityItemType } from "@/entities/dashboard/mode
 
 import { i18n } from "@/shared/lib/i18n";
 
-import "./ActivityFeed.css";
+import styles from "./ActivityFeed.module.css";
 
 interface Props {
     activity: ActivityItemType[];
@@ -45,30 +45,30 @@ export const ActivityFeed: FC<Props> = ({ activity, isLoading }) => {
 
     if (isLoading) {
         return (
-            <div className="activity-feed">
-                <p className="activity-feed__empty">{t("activity.loading")}</p>
+            <div className={styles["activity-feed"]}>
+                <p className={styles["activity-feed__empty"]}>{t("activity.loading")}</p>
             </div>
         );
     }
 
     if (!activity.length) {
         return (
-            <div className="activity-feed">
-                <p className="activity-feed__empty">{t("activity.empty")}</p>
+            <div className={styles["activity-feed"]}>
+                <p className={styles["activity-feed__empty"]}>{t("activity.empty")}</p>
             </div>
         );
     }
 
     return (
-        <div className="activity-feed">
-            <ul className="activity-feed__list">
+        <div className={styles["activity-feed"]}>
+            <ul className={styles["activity-feed__list"]}>
                 {activity.map(item => (
-                    <li key={item.id} className="activity-feed__item">
-                        <div className="activity-feed__line">
-                            <span className="activity-feed__icon">{getTypeIcon(item.type)}</span>
-                            <span className="activity-feed__message">
+                    <li key={item.id} className={styles["activity-feed__item"]}>
+                        <div className={styles["activity-feed__line"]}>
+                            <span className={styles["activity-feed__icon"]}>{getTypeIcon(item.type)}</span>
+                            <span className={styles["activity-feed__message"]}>
                                 {item.issueId ? (
-                                    <Link to={`/tasks/${item.issueId}`} className="activity-feed__link">
+                                    <Link to={`/tasks/${item.issueId}`} className={styles["activity-feed__link"]}>
                                         {item.message}
                                     </Link>
                                 ) : (
@@ -76,7 +76,7 @@ export const ActivityFeed: FC<Props> = ({ activity, isLoading }) => {
                                 )}
                             </span>
                         </div>
-                        <span className="activity-feed__time">{timeAgo(item.timestamp)}</span>
+                        <span className={styles["activity-feed__time"]}>{timeAgo(item.timestamp)}</span>
                     </li>
                 ))}
             </ul>

@@ -1,8 +1,17 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import GripIcon from "@helpdesk-portal/icons/GripIcon.svg?react";
 import { Button, Checkbox } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
+
+import styles from "./DataTable.module.css";
 
 interface SortableColumnItemProps {
     id: string;
@@ -24,12 +33,14 @@ export const SortableColumnItem: FC<SortableColumnItemProps> = ({ id, label, isV
         <div
             ref={setNodeRef}
             style={style}
-            className={`sortable-column-item${isDragging ? " sortable-column-item--dragging" : ""}`}
+            className={
+                styles["sortable-column-item"] + (isDragging ? ` ${styles["sortable-column-item--dragging"]}` : "")
+            }
         >
             <Button
                 variant="link"
                 size="s"
-                className="sortable-column-item__drag-btn"
+                className={styles["sortable-column-item__drag-btn"]}
                 type="button"
                 {...attributes}
                 {...listeners}
@@ -37,7 +48,7 @@ export const SortableColumnItem: FC<SortableColumnItemProps> = ({ id, label, isV
                 <GripIcon />
             </Button>
             <Checkbox inputSize="m" checked={isVisible} onCheckedChange={onToggle} />
-            <span className="sortable-column-item__label" onClick={onToggle}>
+            <span className={styles["sortable-column-item__label"]} onClick={onToggle}>
                 {label}
             </span>
         </div>

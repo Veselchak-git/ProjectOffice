@@ -14,7 +14,7 @@ import type { DashboardSummary } from "@/entities/dashboard";
 
 import type { UserRole } from "@/shared/lib/auth";
 
-import "./DashboardCounters.css";
+import styles from "./DashboardCounters.module.css";
 
 interface Props {
     summary?: DashboardSummary;
@@ -27,18 +27,18 @@ export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole }) =
 
     if (isLoading) {
         return (
-            <div className="dashboard-counters">
-                <div className="dashboard-counters__card dashboard-counters__card--loading">
-                    <span className="dashboard-counters__label">&nbsp;</span>
-                    <span className="dashboard-counters__value">&mdash;</span>
+            <div className={styles["dashboard-counters"]}>
+                <div className={`${styles["dashboard-counters__card"]} ${styles["dashboard-counters__card--loading"]}`}>
+                    <span className={styles["dashboard-counters__label"]}>&nbsp;</span>
+                    <span className={styles["dashboard-counters__value"]}>&mdash;</span>
                 </div>
-                <div className="dashboard-counters__card dashboard-counters__card--loading">
-                    <span className="dashboard-counters__label">&nbsp;</span>
-                    <span className="dashboard-counters__value">&mdash;</span>
+                <div className={`${styles["dashboard-counters__card"]} ${styles["dashboard-counters__card--loading"]}`}>
+                    <span className={styles["dashboard-counters__label"]}>&nbsp;</span>
+                    <span className={styles["dashboard-counters__value"]}>&mdash;</span>
                 </div>
-                <div className="dashboard-counters__card dashboard-counters__card--loading">
-                    <span className="dashboard-counters__label">&nbsp;</span>
-                    <span className="dashboard-counters__value">&mdash;</span>
+                <div className={`${styles["dashboard-counters__card"]} ${styles["dashboard-counters__card--loading"]}`}>
+                    <span className={styles["dashboard-counters__label"]}>&nbsp;</span>
+                    <span className={styles["dashboard-counters__value"]}>&mdash;</span>
                 </div>
             </div>
         );
@@ -59,11 +59,11 @@ export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole }) =
     }
 
     return (
-        <div className="dashboard-counters">
+        <div className={styles["dashboard-counters"]}>
             {counters.map(counter => (
-                <Link key={counter.to + counter.label} to={counter.to} className="dashboard-counters__card">
-                    <span className="dashboard-counters__label">{counter.label}</span>
-                    <span className="dashboard-counters__value">{counter.value}</span>
+                <Link key={counter.to + counter.label} to={counter.to} className={styles["dashboard-counters__card"]}>
+                    <span className={styles["dashboard-counters__label"]}>{counter.label}</span>
+                    <span className={styles["dashboard-counters__value"]}>{counter.value}</span>
                 </Link>
             ))}
         </div>

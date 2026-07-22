@@ -20,7 +20,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import type { CreateProjectData, ProjectVersion, UpdateProjectData } from "../model/project";
-import "./ProjectForm.css";
+import styles from "./ProjectForm.module.css";
 
 interface ProjectFormProps {
     initial?: {
@@ -83,7 +83,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
     };
 
     return (
-        <form className="project-form" onSubmit={handleSubmit(onSubmitHandler)} noValidate>
+        <form className={styles["project-form"]} onSubmit={handleSubmit(onSubmitHandler)} noValidate>
             <Controller
                 name="name"
                 control={control}
@@ -125,9 +125,9 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                 )}
             />
 
-            <div className="project-form__field">
-                <label className="project-form__label">{t(`${PROJECTS}:form.versions.label`)}</label>
-                <div className="project-form__versions-input">
+            <div className={styles["project-form__field"]}>
+                <label className={styles["project-form__label"]}>{t(`${PROJECTS}:form.versions.label`)}</label>
+                <div className={styles["project-form__versions-input"]}>
                     <Input
                         placeholder={t(`${PROJECTS}:form.versions.placeholder`)}
                         value={versionInput}
@@ -144,13 +144,13 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                     </Button>
                 </div>
                 {versions.length > 0 && (
-                    <div className="project-form__tags">
+                    <div className={styles["project-form__tags"]}>
                         {versions.map(v => (
-                            <span key={v} className="project-form__tag">
+                            <span key={v} className={styles["project-form__tag"]}>
                                 {v}
                                 <Button
                                     type="button"
-                                    className="project-form__tag-remove"
+                                    className={styles["project-form__tag-remove"]}
                                     onClick={() => removeVersion(v)}
                                 >
                                     ×
@@ -161,7 +161,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                 )}
             </div>
 
-            <div className="project-form__actions">
+            <div className={styles["project-form__actions"]}>
                 <Button type="submit" disabled={!nameValue.trim() || isSubmitting}>
                     {initial ? t(`${COMMON}:save`) : t(`${COMMON}:create`)}
                 </Button>

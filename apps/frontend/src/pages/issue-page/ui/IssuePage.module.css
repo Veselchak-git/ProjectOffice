@@ -1,0 +1,92 @@
+.issue-page {
+    max-width: none;
+}
+
+.issue-page__back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-secondary);
+    padding: 0;
+    margin-bottom: 24px;
+    transition: color 0.15s;
+}
+
+.issue-page__back-btn:hover {
+    color: var(--semantic-text-primary);
+}
+
+.issue-page__title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.issue-page__title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--semantic-text-primary);
+}
+
+.issue-page__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.issue-page__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.issue-page__not-found {
+    text-align: center;
+    padding: 80px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.issue-page__not-found h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--semantic-text-primary);
+    margin: 0;
+}
+
+.issue-page__form-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 24px;
+    color: var(--semantic-text-primary);
+}
+
+.issue-page__loading {
+    text-align: center;
+    padding: 80px 0;
+    font-family: Geologica;
+    font-size: 16px;
+    color: var(--semantic-text-secondary);
+}
+
+.issue-page__link-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-btn-accent-fill-bg);
+    padding: 0;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+
+.issue-page__link-btn:hover {
+    color: var(--semantic-btn-accent-fill-hover-bg);
+}

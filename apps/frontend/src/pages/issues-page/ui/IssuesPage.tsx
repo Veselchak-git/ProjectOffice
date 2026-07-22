@@ -5,15 +5,11 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { ISSUES } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
-import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type ColumnDef, type SortingState, createColumnHelper } from "@tanstack/react-table";
-import { useRef, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -24,18 +20,12 @@ import type { FetchIssuesParams, Issue } from "@/entities/issue";
 import { deleteIssue, fetchIssues } from "@/entities/issue";
 
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
-import { useClickOutside } from "@/shared/lib/use-click-outside";
-import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
-import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 import { useTable } from "@/shared/lib/use-table";
+import { useTablePage } from "@/shared/lib/use-table-page";
 
-import {
-    DataTable,
-    SortableColumnItem,
-    createDateColumn,
-    createSelectColumn,
-    reorderColumn
-} from "@/shared/ui/data-table";
+import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
+import { DataTable, createDateColumn, createSelectColumn } from "@/shared/ui/data-table";
+import { PageHeader } from "@/shared/ui/page-header";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
@@ -47,7 +37,7 @@ import {
     setColumnVisibility,
     setRowSelection
 } from "../model/issues-page-slice";
-import "./IssuesPage.css";
+import styles from "./IssuesPage.module.css";
 
 rootReducer.inject(issuesPageSlice);
 
@@ -61,42 +51,6 @@ export const IssuesPage: FC = () => {
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
     const rowSelection = useAppSelector(selectRowSelection);
-    const [pageIndex, setPageIndex] = useState(0);
-    const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnsOpen, setColumnsOpen] = useState(false);
-    const columnsRef = useRef<HTMLDivElement>(null);
-
-    useClickOutside(columnsRef, () => setColumnsOpen(false));
-
-    const containerRef = useRef<HTMLDivElement>(null);
-    const { perPage, ready } = useDynamicPerPage(containerRef, {
-        rowHeight: 48,
-        theadHeight: 36,
-        paginationHeight: 34,
-        min: 5
-    });
-
-    const sortBy = sorting[0]?.id;
-    const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
-    const page = pageIndex + 1;
-
-    const issueParams = {
-        page,
-        perPage,
-        ...(sortBy ? { sortBy } : {}),
-        ...(sortOrder ? { sortOrder } : {})
-    } satisfies FetchIssuesParams;
-
-    const { data, isPending, isError, error } = useQuery({
-        queryKey: ["issues", issueParams],
-        queryFn: () => fetchIssues(issueParams),
-        enabled: ready,
-        placeholderData: keepPreviousData
-    });
-
-    const issues = data?.issues ?? [];
-    const total = data?.total ?? 0;
-
     const statusLabels: Record<string, string> = {
         NEW: t("status.new"),
         ACKNOWLEDGED: t("status.acknowledged"),
@@ -128,7 +82,7 @@ export const IssuesPage: FC = () => {
             enableSorting: true,
             cell: info => (
                 <span
-                    className={`issues-table__status-badge issues-table__status-badge--${info.getValue().toLowerCase()}`}
+                    className={`${styles["issues-table__status-badge"]} ${styles[`issues-table__status-badge--${info.getValue().toLowerCase()}`]}`}
                 >
                     {statusLabels[info.getValue()] ?? info.getValue()}
                 </span>
@@ -138,7 +92,9 @@ export const IssuesPage: FC = () => {
             header: t("table.priority"),
             enableSorting: true,
             cell: info => (
-                <span className={`issues-table__priority issues-table__priority--${info.getValue().toLowerCase()}`}>
+                <span
+                    className={`${styles["issues-table__priority"]} ${styles[`issues-table__priority--${info.getValue().toLowerCase()}`]}`}
+                >
                     {priorityLabels[info.getValue()] ?? info.getValue()}
                 </span>
             )
@@ -156,36 +112,19 @@ export const IssuesPage: FC = () => {
         createDateColumn(columnHelper, t)
     ];
 
-    const { table } = useTable({
-        data: issues,
-        columns: columns as ColumnDef<Issue>[],
-        getRowId: row => String(row.id),
-        total,
-        pageSize: perPage,
-        pageIndex,
-        onPageIndexChange: setPageIndex,
+    const {
+        containerRef,
+        columnsRef,
+        columnsOpen,
+        setColumnsOpen,
+        handleDragEnd,
         sorting,
-        onSortingChange: setSorting,
-        columnVisibility,
-        columnOrder,
-        rowSelection,
-        onColumnOrderChange: updater => {
-            const next = typeof updater === "function" ? updater(columnOrder) : updater;
-            dispatch(setColumnOrder(next));
-        },
-        onColumnVisibilityChange: updater => {
-            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
-            dispatch(setColumnVisibility(next));
-        },
-        onRowSelectionChange: updater => {
-            const next = typeof updater === "function" ? updater(rowSelection) : updater;
-            dispatch(setRowSelection(next));
-        },
-        resetKey: undefined,
-        enableRowSelection: true
-    });
-
-    usePersistColumnSettings({
+        perPage,
+        ready,
+        pageIndex,
+        setPageIndex,
+        setSorting
+    } = useTablePage({
         page: "issues",
         columnVisibility,
         columnOrder,
@@ -197,6 +136,55 @@ export const IssuesPage: FC = () => {
             const next = typeof updater === "function" ? updater(columnOrder) : updater;
             dispatch(setColumnOrder(next));
         }
+    });
+
+    const sortBy = sorting[0]?.id;
+    const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
+    const page = pageIndex + 1;
+
+    const issueParams = {
+        page,
+        perPage,
+        ...(sortBy ? { sortBy } : {}),
+        ...(sortOrder ? { sortOrder } : {})
+    } satisfies FetchIssuesParams;
+
+    const { data, isPending, isError, error } = useQuery({
+        queryKey: ["issues", issueParams],
+        queryFn: () => fetchIssues(issueParams),
+        enabled: ready,
+        placeholderData: keepPreviousData
+    });
+
+    const issues = data?.issues ?? [];
+    const total = data?.total ?? 0;
+
+    const { table } = useTable({
+        data: issues,
+        columns,
+        getRowId: row => String(row.id),
+        total,
+        pageSize: perPage,
+        pageIndex,
+        onPageIndexChange: setPageIndex,
+        sorting,
+        onSortingChange: setSorting,
+        columnVisibility,
+        columnOrder,
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        },
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
+        rowSelection,
+        onRowSelectionChange: updater => {
+            const next = typeof updater === "function" ? updater(rowSelection) : updater;
+            dispatch(setRowSelection(next));
+        },
+        enableRowSelection: true
     });
 
     const selectedIds = Object.keys(rowSelection).map(Number);
@@ -213,70 +201,49 @@ export const IssuesPage: FC = () => {
         dispatch(setRowSelection({}));
     };
 
-    function handleDragEnd(event: DragEndEvent) {
-        reorderColumn(event, columnOrder, next => dispatch(setColumnOrder(next)));
-    }
-
     return (
-        <div className="issues-page">
-            <div className="issues-page__title-area">
-                <div className="issues-page__title-text">
-                    <h1 className="issues-page__title-heading">{t("page.title")}</h1>
-                    <p className="issues-page__title-subtitle">{t("page.subtitle", { total })}</p>
-                </div>
-                <div className="issues-page__actions">
-                    {selectedCount > 0 && (
-                        <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
-                            {t("actions.deleteSelected", { count: selectedCount })}
-                        </Button>
-                    )}
-                    <Button className="issues-page__export-btn" type="button" startIcon={<ExportIcon />}>
-                        {t("actions.export")}
-                    </Button>
-                    <div className="issues-page__columns-wrapper" ref={columnsRef}>
-                        <Button
-                            className="issues-page__columns-btn"
-                            type="button"
-                            onClick={() => setColumnsOpen(v => !v)}
-                            startIcon={<GearIcon />}
-                        >
-                            {t("actions.columns")}
-                        </Button>
-
-                        {columnsOpen && (
-                            <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-                                <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
-                                    <div className="issues-page__columns-dropdown">
-                                        {columnOrder
-                                            .filter(id => id !== "select")
-                                            .map(id => {
-                                                const col = ALL_COLUMNS.find(c => c.id === id);
-                                                if (!col) return null;
-                                                return (
-                                                    <SortableColumnItem
-                                                        key={col.id}
-                                                        id={col.id}
-                                                        label={t(col.label)}
-                                                        isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
-                                                        onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
-                                                    />
-                                                );
-                                            })}
-                                    </div>
-                                </SortableContext>
-                            </DndContext>
+        <div className={styles["issues-page"]}>
+            <PageHeader
+                title={t("page.title")}
+                subtitle={t("page.subtitle", { total })}
+                actions={
+                    <>
+                        {selectedCount > 0 && (
+                            <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
+                                {t("actions.deleteSelected", { count: selectedCount })}
+                            </Button>
                         )}
-                    </div>
-                </div>
-            </div>
+                        <Button className={styles["issues-page__export-btn"]} type="button" startIcon={<ExportIcon />}>
+                            {t("actions.export")}
+                        </Button>
+                        <ColumnsDropdown
+                            columnsRef={columnsRef}
+                            columnsOpen={columnsOpen}
+                            setColumnsOpen={setColumnsOpen}
+                            columnOrder={columnOrder}
+                            allColumns={ALL_COLUMNS}
+                            table={table}
+                            handleDragEnd={handleDragEnd}
+                            exclude={["select"]}
+                        />
+                    </>
+                }
+            />
 
-            <div className="issues-page__table-area" ref={containerRef}>
+            <div className={styles["issues-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
-                    <p className="issues-page__empty">{t("loading")}</p>
+                    <p className={styles["issues-page__empty"]}>{t("loading")}</p>
                 ) : isError && !data ? (
-                    <p className="issues-page__empty">{error instanceof Error ? error.message : t("error.loading")}</p>
+                    <p className={styles["issues-page__empty"]}>
+                        {error instanceof Error ? error.message : t("error.loading")}
+                    </p>
                 ) : (
-                    <DataTable table={table} onRowDoubleClick={row => navigate(`/tasks/${row.id}`)} total={total} />
+                    <DataTable
+                        table={table}
+                        onRowDoubleClick={row => navigate(`/tasks/${row.id}`)}
+                        total={total}
+                        className={styles["issues-page__table"]}
+                    />
                 )}
             </div>
         </div>

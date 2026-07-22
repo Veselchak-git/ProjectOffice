@@ -13,3 +13,4 @@ export * from "./Radio";
 export * from "./Switch";
 export * from "./Chip";
 export * from "./ContextItem";
+export * from "./Modal";

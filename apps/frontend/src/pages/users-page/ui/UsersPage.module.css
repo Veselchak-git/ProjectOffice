@@ -1,0 +1,175 @@
+.users-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+}
+
+.users-page__actions-cell {
+    display: flex;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.users-page__actions-cell {
+    position: relative;
+}
+
+.users-page__actions-cell :global(.ui-kit-btn) {
+    background-color: var(--semantic-bg-surface);
+}
+
+.users-page__actions-cell :global(.ui-kit-btn-stroke):global(.ui-kit-btn-accent):hover:not(:disabled) {
+    background-color: var(--semantic-btn-accent-stroke-hover-bg);
+}
+
+.users-page__actions-cell :global(.ui-kit-btn-stroke):global(.ui-kit-btn-error):hover:not(:disabled) {
+    background-color: var(--semantic-btn-error-stroke-hover-bg);
+}
+
+.users-page__create-btn {
+    --btn-icon-size: 20px;
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--semantic-btn-accent-fill-hover-bg);
+    color: var(--semantic-btn-accent-fill-text);
+    font-family: Geologica;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.users-page__create-btn:hover {
+    background-color: var(--semantic-btn-accent-fill-bg);
+}
+
+.users-page__controls {
+    display: flex;
+    align-items: center;
+}
+
+.users-page__controls-search {
+    width: 320px;
+}
+
+.users-page__empty {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--semantic-text-secondary);
+    font-size: 14px;
+}
+
+.users-page__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.users-page__form-error {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background-color: var(--red-100);
+    color: var(--red-700);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+[data-color-mode="dark"] .users-page__form-error {
+    background-color: var(--red-950);
+    color: var(--red-400);
+}
+
+.users-page__old-data {
+    padding: 12px 14px;
+    border-radius: 8px;
+    background-color: var(--neutral-100);
+    border: 1px solid var(--semantic-border-default);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+[data-color-mode="dark"] .users-page__old-data {
+    background-color: var(--neutral-800);
+}
+
+.users-page__old-data-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--semantic-text-secondary);
+}
+
+.users-page__old-data-row {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.users-page__old-data-key {
+    color: var(--semantic-text-secondary);
+}
+
+.users-page__old-data-value {
+    color: var(--semantic-text-primary);
+    font-weight: 500;
+}
+
+.users-page__form-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.users-page__password-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.users-page__checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 4px;
+    cursor: pointer;
+}
+
+.users-page__export-btn {
+    --btn-icon-size: 20px;
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
+}
+
+.users-page__export-btn:hover {
+    background-color: var(--semantic-fill-primary-hover);
+    border-color: var(--semantic-btn-accent-fill-hover-bg);
+}
+
+.users-page__table-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.users-page__table-area td:last-child {
+    overflow: visible;
+}

@@ -7,7 +7,7 @@
  */
 import { PROJECTS } from "@helpdesk-portal/i18n";
 import ParticipantsIcon from "@helpdesk-portal/icons/Participants.svg?react";
-import { Button } from "@helpdesk-portal/ui-kit";
+import { Button, Modal } from "@helpdesk-portal/ui-kit";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { FC } from "react";
@@ -24,7 +24,11 @@ import { MembersListModal, ProjectForm } from "@/entities/project";
 import { useAuth } from "@/shared/lib/auth";
 import { formatDateTime } from "@/shared/lib/format-date";
 
-import "./ProjectPage.css";
+import { DetailCard } from "@/shared/ui/detail-card";
+import { DetailField } from "@/shared/ui/detail-field";
+import { StatusBadge } from "@/shared/ui/status-badge";
+
+import styles from "./ProjectPage.module.css";
 
 export const ProjectPage: FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -93,18 +97,22 @@ export const ProjectPage: FC = () => {
 
     if (isPending) {
         return (
-            <div className="project-page">
-                <p className="project-page__loading">{t("loading")}</p>
+            <div className={styles["project-page"]}>
+                <p className={styles["project-page__loading"]}>{t("loading")}</p>
             </div>
         );
     }
 
     if (isError || !project) {
         return (
-            <div className="project-page">
-                <div className="project-page__not-found">
+            <div className={styles["project-page"]}>
+                <div className={styles["project-page__not-found"]}>
                     <h1>{error instanceof Error ? error.message : t("detail.notFound")}</h1>
-                    <Button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
+                    <Button
+                        className={styles["project-page__back-btn"]}
+                        type="button"
+                        onClick={() => navigate("/projects")}
+                    >
                         {t("detail.backToList")}
                     </Button>
                 </div>
@@ -114,8 +122,8 @@ export const ProjectPage: FC = () => {
 
     if (editing) {
         return (
-            <div className="project-page">
-                <h1 className="project-form-title">{t("detail.editTitle")}</h1>
+            <div className={styles["project-page"]}>
+                <h1 className={styles["project-form-title"]}>{t("detail.editTitle")}</h1>
                 <ProjectForm
                     initial={{
                         name: project.name,
@@ -131,74 +139,58 @@ export const ProjectPage: FC = () => {
     }
 
     return (
-        <div className="project-page">
-            <Button className="project-page__back-btn" type="button" onClick={() => navigate("/projects")}>
+        <div className={styles["project-page"]}>
+            <Button className={styles["project-page__back-btn"]} type="button" onClick={() => navigate("/projects")}>
                 {t("detail.back")}
             </Button>
 
-            <div className="project-page__card">
-                <div className="project-page__header">
-                    <div className="project-page__title-area">
-                        <h1 className="project-page__title">{project.name}</h1>
-                        <span
-                            className={`project-page__status project-page__status--${project.status === "ACTIVE" ? "active" : "archived"}`}
-                        >
-                            {project.status === "ACTIVE" ? t("status.active") : t("status.archived")}
-                        </span>
-                    </div>
-                    <div className="project-page__actions">
-                        {(user?.role === "ADMIN" || (project.myRole && project.myRole !== "VIEWER")) && (
-                            <Button onClick={() => setCreatingIssue(true)}>{t("detail.issues.create")}</Button>
-                        )}
-                        {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
-                            <Button variant="stroke" onClick={() => setEditing(true)}>
-                                {t("detail.edit")}
-                            </Button>
-                        )}
-                        {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
-                            <Button variant="stroke" color="error" onClick={handleDelete} disabled={deleting}>
-                                {deleting ? t("detail.deleting") : t("detail.delete")}
-                            </Button>
-                        )}
-                        <Button startIcon={<ParticipantsIcon />} onClick={() => setMembersOpen(true)}>
-                            ({projectMembers?.length ?? 0})
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="project-page__fields">
-                    <div className="project-page__field">
-                        <span className="project-page__field-label">{t("detail.info.description")}</span>
-                        <span className="project-page__field-value">{project.description || "—"}</span>
-                    </div>
-                    <div className="project-page__field">
-                        <span className="project-page__field-label">{t("detail.info.versions")}</span>
-                        <div className="project-page__versions-list">
-                            {project.versions.length > 0 ? (
-                                project.versions.map(v => (
-                                    <span key={v.id} className="project-page__version-tag">
-                                        {v.version}
-                                    </span>
-                                ))
-                            ) : (
-                                <span className="project-page__field-value">—</span>
-                            )}
+            <DetailCard
+                header={
+                    <>
+                        <div className={styles["project-page__title-area"]}>
+                            <h1 className={styles["project-page__title"]}>{project.name}</h1>
+                            <StatusBadge
+                                status={project.status}
+                                labels={{ ACTIVE: t("status.active"), ARCHIVED: t("status.archived") }}
+                            />
                         </div>
+                        <div className={styles["project-page__actions"]}>
+                            {(user?.role === "ADMIN" || (project.myRole && project.myRole !== "VIEWER")) && (
+                                <Button onClick={() => setCreatingIssue(true)}>{t("detail.issues.create")}</Button>
+                            )}
+                            {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
+                                <Button variant="stroke" onClick={() => setEditing(true)}>
+                                    {t("detail.edit")}
+                                </Button>
+                            )}
+                            {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
+                                <Button variant="stroke" color="error" onClick={handleDelete} disabled={deleting}>
+                                    {deleting ? t("detail.deleting") : t("detail.delete")}
+                                </Button>
+                            )}
+                            <Button startIcon={<ParticipantsIcon />} onClick={() => setMembersOpen(true)}>
+                                ({projectMembers?.length ?? 0})
+                            </Button>
+                        </div>
+                    </>
+                }
+            >
+                <DetailField label={t("detail.info.description")}>{project.description || "\u2014"}</DetailField>
+                <DetailField label={t("detail.info.versions")}>
+                    <div className={styles["project-page__versions-list"]}>
+                        {project.versions.length > 0
+                            ? project.versions.map(v => (
+                                  <span key={v.id} className={styles["project-page__version-tag"]}>
+                                      {v.version}
+                                  </span>
+                              ))
+                            : "\u2014"}
                     </div>
-                    <div className="project-page__field">
-                        <span className="project-page__field-label">{t("detail.info.tasks")}</span>
-                        <span className="project-page__field-value">{project.taskCount}</span>
-                    </div>
-                    <div className="project-page__field">
-                        <span className="project-page__field-label">{t("detail.info.responsible")}</span>
-                        <span className="project-page__field-value">{project.responsible}</span>
-                    </div>
-                    <div className="project-page__field">
-                        <span className="project-page__field-label">{t("detail.info.created")}</span>
-                        <span className="project-page__field-value">{formatDateTime(project.createdAt)}</span>
-                    </div>
-                </div>
-            </div>
+                </DetailField>
+                <DetailField label={t("detail.info.tasks")}>{project.taskCount}</DetailField>
+                <DetailField label={t("detail.info.responsible")}>{project.responsible}</DetailField>
+                <DetailField label={t("detail.info.created")}>{formatDateTime(project.createdAt)}</DetailField>
+            </DetailCard>
 
             <MembersListModal
                 isOpen={membersOpen}
@@ -210,19 +202,18 @@ export const ProjectPage: FC = () => {
                 projectRole={project.myRole}
             />
 
-            {creatingIssue && (
-                <div className="project-page__overlay">
-                    <div className="project-page__modal">
-                        <h2 className="project-page__modal-title">{t("detail.issues.createTitle")}</h2>
-                        <IssueForm
-                            members={projectMembers ?? []}
-                            versions={project.versions}
-                            onSubmit={data => createIssueMutate(data as CreateIssueData).then(() => {})}
-                            onCancel={() => setCreatingIssue(false)}
-                        />
-                    </div>
-                </div>
-            )}
+            <Modal
+                isOpen={creatingIssue}
+                onClose={() => setCreatingIssue(false)}
+                title={t("detail.issues.createTitle")}
+            >
+                <IssueForm
+                    members={projectMembers ?? []}
+                    versions={project.versions}
+                    onSubmit={data => createIssueMutate(data as CreateIssueData).then(() => {})}
+                    onCancel={() => setCreatingIssue(false)}
+                />
+            </Modal>
         </div>
     );
 };

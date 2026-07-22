@@ -1,0 +1,120 @@
+.login-page__password-input :global(.ui-kit-input__icon):last-child {
+    width: auto;
+    height: auto;
+}
+
+.login-page__end-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.login-page__password-toggle,
+.login-page__reset-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--neutral-400);
+}
+
+.login-page__password-toggle svg,
+.login-page__reset-toggle svg {
+    width: 100%;
+    height: 100%;
+}
+
+.login-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--semantic-bg-base);
+    padding: 24px;
+}
+
+.login-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 480px;
+    padding: 40px 32px;
+    gap: 64px;
+    background-color: var(--semantic-bg-surface);
+    border-radius: 16px;
+}
+
+.login-page__logo {
+    width: 170px;
+    height: 40px;
+}
+
+.login-page__logo path {
+    fill: var(--semantic-text-primary);
+}
+
+.login-page__header {
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.login-page__heading {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--semantic-text-primary);
+    line-height: 1.2;
+}
+
+.login-page__subtitle {
+    font-family: Geologica;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 140%;
+    color: var(--semantic-text-secondary);
+    letter-spacing: 0;
+}
+
+.login-page__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.login-page__submit {
+    margin-top: 8px;
+    width: 100%;
+}
+
+.login-page__form :global(.ui-kit-input):global(.ui-kit-input-error) :global(.ui-kit-input__icon) {
+    color: var(--input-error-text, var(--red-500));
+}
+
+.login-page__form :global(.ui-kit-input):global(.ui-kit-input-error) .login-page__password-toggle,
+.login-page__form :global(.ui-kit-input):global(.ui-kit-input-error) .login-page__reset-toggle {
+    color: var(--input-error-text, var(--red-500));
+}
+
+.login-page__error-banner {
+    background-color: var(--red-100);
+    border: 2px solid var(--red-500);
+    border-radius: 7px;
+    padding: 10px 12px;
+    color: var(--red-700);
+    font-size: 13px;
+    line-height: 1.3;
+    width: 100%;
+}
+
+:global([data-color-mode="dark"]) .login-page__error-banner {
+    background-color: var(--red-950);
+    border-color: var(--red-400);
+    color: var(--red-400);
+}

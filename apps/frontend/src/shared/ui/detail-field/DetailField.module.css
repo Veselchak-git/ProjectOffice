@@ -1,0 +1,23 @@
+.detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-field__label {
+    font-family: Geologica;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--semantic-text-secondary);
+    text-transform: uppercase;
+}
+
+.detail-field__value {
+    font-family: Geologica;
+    font-size: 14px;
+    color: var(--semantic-text-primary);
+}
+
+.detail-field--multiline .detail-field__value {
+    white-space: pre-wrap;
+}

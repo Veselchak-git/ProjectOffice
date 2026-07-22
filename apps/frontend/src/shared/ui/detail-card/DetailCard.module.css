@@ -1,0 +1,20 @@
+.detail-card {
+    background-color: var(--semantic-bg-surface);
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 12px;
+    padding: 32px;
+}
+
+.detail-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+}
+
+.detail-card__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}

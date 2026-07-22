@@ -22,7 +22,7 @@ import { useAuth } from "@/shared/lib/auth";
 
 import type { LoginFormValues } from "../model/login-form";
 import { getLoginEmailRules, getLoginPasswordRules } from "../model/login-form";
-import "./LoginPage.css";
+import styles from "./LoginPage.module.css";
 
 export const LoginPage: FC = () => {
     const { t } = useTranslation();
@@ -71,21 +71,21 @@ export const LoginPage: FC = () => {
 
     return (
         <>
-            <TecomLogoIcon className="login-page__logo" />
+            <TecomLogoIcon className={styles["login-page__logo"]} />
 
-            <div className="login-page__header">
-                <h2 className="login-page__heading">{t(`${AUTH}:login.title`)}</h2>
-                <h3 className="login-page__subtitle">{t(`${AUTH}:login.subtitle`)}</h3>
+            <div className={styles["login-page__header"]}>
+                <h2 className={styles["login-page__heading"]}>{t(`${AUTH}:login.title`)}</h2>
+                <h3 className={styles["login-page__subtitle"]}>{t(`${AUTH}:login.subtitle`)}</h3>
             </div>
             <form
-                className="login-page__form"
+                className={styles["login-page__form"]}
                 onSubmit={handleSubmit(onSubmit)}
                 noValidate
                 onChange={() => {
                     if (serverError) setServerError(null);
                 }}
             >
-                {serverError ? <div className="login-page__error-banner">{serverError}</div> : null}
+                {serverError ? <div className={styles["login-page__error-banner"]}>{serverError}</div> : null}
 
                 <Controller
                     name="login"
@@ -104,7 +104,7 @@ export const LoginPage: FC = () => {
                             endIcon={
                                 loginValue?.length > 0 ? (
                                     <Button
-                                        className="login-page__reset-toggle"
+                                        className={styles["login-page__reset-toggle"]}
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
@@ -135,11 +135,11 @@ export const LoginPage: FC = () => {
                             startIcon={<PasswordIcon />}
                             endIcon={
                                 <div
-                                    className="login-page__end-icons"
+                                    className={styles["login-page__end-icons"]}
                                     style={{ paddingRight: passwordValue?.length > 0 ? "12px" : "0" }}
                                 >
                                     <Button
-                                        className="login-page__password-toggle"
+                                        className={styles["login-page__password-toggle"]}
                                         type="button"
                                         onClick={() => setShowPassword(v => !v)}
                                     >
@@ -147,7 +147,7 @@ export const LoginPage: FC = () => {
                                     </Button>
                                     {passwordValue?.length > 0 ? (
                                         <Button
-                                            className="login-page__reset-toggle"
+                                            className={styles["login-page__reset-toggle"]}
                                             type="button"
                                             onClick={() => field.onChange("")}
                                         >
@@ -164,7 +164,7 @@ export const LoginPage: FC = () => {
                 />
 
                 <Button
-                    className="login-page__submit"
+                    className={styles["login-page__submit"]}
                     variant="fill"
                     color="accent"
                     size="m"

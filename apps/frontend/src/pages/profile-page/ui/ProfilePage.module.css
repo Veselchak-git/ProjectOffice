@@ -32,7 +32,7 @@
     font-size: 14px;
 }
 
-[data-color-mode="dark"] .profile-page__error-banner {
+[data-color-mode="dark"] :global(.profile-page__error-banner) {
     background-color: var(--red-950);
     color: var(--red-400);
 }
@@ -45,7 +45,7 @@
     font-size: 14px;
 }
 
-[data-color-mode="dark"] .profile-page__success-banner {
+[data-color-mode="dark"] :global(.profile-page__success-banner) {
     background-color: var(--green-950);
     color: var(--green-400);
 }

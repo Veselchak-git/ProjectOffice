@@ -1,0 +1,162 @@
+.issues-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+}
+
+.issues-page__export-btn {
+    --btn-icon-size: 20px;
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
+}
+
+.issues-page__export-btn:hover {
+    background-color: var(--semantic-fill-primary-hover);
+    border-color: var(--semantic-btn-accent-fill-hover-bg);
+}
+
+.issues-page__table-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.issues-page__empty {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--semantic-text-secondary);
+    font-size: 14px;
+}
+
+.issues-page__table {
+    min-width: 1200px;
+}
+
+.issues-table__status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.issues-table__status-badge--new {
+    background-color: var(--orange-100);
+    color: var(--orange-800);
+}
+
+.issues-table__status-badge--acknowledged {
+    background-color: var(--neutral-300);
+    color: var(--neutral-800);
+}
+
+.issues-table__status-badge--confirmed {
+    background-color: var(--orange-200);
+    color: var(--orange-900);
+}
+
+.issues-table__status-badge--assigned {
+    background-color: var(--red-100);
+    color: var(--red-800);
+}
+
+.issues-table__status-badge--resolved {
+    background-color: var(--green-100);
+    color: var(--green-800);
+}
+
+.issues-table__status-badge--closed {
+    background-color: var(--neutral-400);
+    color: var(--neutral-900);
+}
+
+.issues-table__priority {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.issues-table__priority--critical {
+    background-color: var(--red-100);
+    color: var(--red-800);
+}
+
+.issues-table__priority--serious {
+    background-color: var(--orange-200);
+    color: var(--orange-900);
+}
+
+.issues-table__priority--minor {
+    background-color: var(--orange-100);
+    color: var(--orange-800);
+}
+
+.issues-table__priority--general {
+    background-color: var(--semantic-bg-surface-elevated);
+    color: var(--semantic-text-secondary);
+}
+
+[data-color-mode="dark"] .issues-table__priority--critical {
+    background-color: var(--red-900);
+    color: var(--red-300);
+}
+
+[data-color-mode="dark"] .issues-table__priority--serious {
+    background-color: var(--orange-800);
+    color: var(--orange-200);
+}
+
+[data-color-mode="dark"] .issues-table__priority--minor {
+    background-color: var(--orange-900);
+    color: var(--orange-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--new {
+    background-color: var(--orange-900);
+    color: var(--orange-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--confirmed {
+    background-color: var(--orange-800);
+    color: var(--orange-200);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--assigned {
+    background-color: var(--red-900);
+    color: var(--red-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--resolved {
+    background-color: var(--green-900);
+    color: var(--green-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--acknowledged {
+    background-color: var(--neutral-800);
+    color: var(--neutral-300);
+}
+
+[data-color-mode="dark"] .issues-table__status-badge--closed {
+    background-color: var(--neutral-700);
+    color: var(--neutral-200);
+}

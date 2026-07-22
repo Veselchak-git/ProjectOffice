@@ -19,7 +19,7 @@ import { getLoginPasswordRules } from "@/shared/lib/validation";
 
 import { changePasswordRequest } from "../api/changePassword";
 import type { ChangePasswordFormValues } from "../model/change-password-form";
-import "./ProfilePage.css";
+import styles from "./ProfilePage.module.css";
 
 export const ProfilePage: FC = () => {
     const { t } = useTranslation();
@@ -75,14 +75,14 @@ export const ProfilePage: FC = () => {
     const confirmError = errors.confirmPassword?.message;
 
     return (
-        <div className="profile-page">
-            <div className="profile-page__header">
+        <div className={styles["profile-page"]}>
+            <div className={styles["profile-page__header"]}>
                 <UserIcon />
-                <h2 className="profile-page__title">{t(`${AUTH}:profile.title`)}</h2>
+                <h2 className={styles["profile-page__title"]}>{t(`${AUTH}:profile.title`)}</h2>
             </div>
 
             <form
-                className="profile-page__form"
+                className={styles["profile-page__form"]}
                 onSubmit={handleSubmit(onSubmit)}
                 noValidate
                 onChange={() => {
@@ -90,8 +90,8 @@ export const ProfilePage: FC = () => {
                     if (successMessage) setSuccessMessage(null);
                 }}
             >
-                {serverError ? <div className="profile-page__error-banner">{serverError}</div> : null}
-                {successMessage ? <div className="profile-page__success-banner">{successMessage}</div> : null}
+                {serverError ? <div className={styles["profile-page__error-banner"]}>{serverError}</div> : null}
+                {successMessage ? <div className={styles["profile-page__success-banner"]}>{successMessage}</div> : null}
 
                 <Controller
                     name="currentPassword"
@@ -110,7 +110,7 @@ export const ProfilePage: FC = () => {
                             endIcon={
                                 currentValue?.length > 0 ? (
                                     <Button
-                                        className="profile-page__reset"
+                                        className={styles["profile-page__reset"]}
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
@@ -142,7 +142,7 @@ export const ProfilePage: FC = () => {
                             endIcon={
                                 newValue?.length > 0 ? (
                                     <Button
-                                        className="profile-page__reset"
+                                        className={styles["profile-page__reset"]}
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
@@ -177,7 +177,7 @@ export const ProfilePage: FC = () => {
                             endIcon={
                                 confirmValue?.length > 0 ? (
                                     <Button
-                                        className="profile-page__reset"
+                                        className={styles["profile-page__reset"]}
                                         type="button"
                                         onClick={() => field.onChange("")}
                                     >
@@ -192,13 +192,13 @@ export const ProfilePage: FC = () => {
                     )}
                 />
 
-                <label className="profile-page__show-all">
+                <label className={styles["profile-page__show-all"]}>
                     <Switch checked={showPasswords} onCheckedChange={setShowPasswords} />
                     <span>{t(`${AUTH}:profile.showPasswords`)}</span>
                 </label>
 
                 <Button
-                    className="profile-page__submit"
+                    className={styles["profile-page__submit"]}
                     variant="fill"
                     color="accent"
                     size="m"

@@ -21,7 +21,11 @@ import { fetchProjectMembers } from "@/entities/project";
 import { useAuth } from "@/shared/lib/auth";
 import { formatDateTime } from "@/shared/lib/format-date";
 
-import "./IssuePage.css";
+import { DetailCard } from "@/shared/ui/detail-card";
+import { DetailField } from "@/shared/ui/detail-field";
+import { StatusBadge } from "@/shared/ui/status-badge";
+
+import styles from "./IssuePage.module.css";
 
 export const IssuePage: FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -84,18 +88,18 @@ export const IssuePage: FC = () => {
 
     if (isPending) {
         return (
-            <div className="issue-page">
-                <p className="issue-page__loading">{t("loading")}</p>
+            <div className={styles["issue-page"]}>
+                <p className={styles["issue-page__loading"]}>{t("loading")}</p>
             </div>
         );
     }
 
     if (isError || !issue) {
         return (
-            <div className="issue-page">
-                <div className="issue-page__not-found">
+            <div className={styles["issue-page"]}>
+                <div className={styles["issue-page__not-found"]}>
                     <h1>{error instanceof Error ? error.message : t("error.notFound")}</h1>
-                    <Button className="issue-page__back-btn" type="button" onClick={() => navigate("/tasks")}>
+                    <Button className={styles["issue-page__back-btn"]} type="button" onClick={() => navigate("/tasks")}>
                         {t("detail.backToList")}
                     </Button>
                 </div>
@@ -111,9 +115,9 @@ export const IssuePage: FC = () => {
             })) ?? [];
 
         return (
-            <div className="issue-page">
-                <h1 className="issue-page__form-title">{t("detail.editTitle")}</h1>
-                <div className="issue-page__card">
+            <div className={styles["issue-page"]}>
+                <h1 className={styles["issue-page__form-title"]}>{t("detail.editTitle")}</h1>
+                <div className={styles["issue-page__card"]}>
                     <IssueForm
                         initial={
                             {
@@ -159,128 +163,84 @@ export const IssuePage: FC = () => {
     const canEdit = user?.role === "ADMIN" || (issue.myRole && !["VIEWER", "REPORTER"].includes(issue.myRole));
 
     return (
-        <div className="issue-page">
-            <Button className="issue-page__back-btn" type="button" onClick={() => navigate(-1)}>
+        <div className={styles["issue-page"]}>
+            <Button className={styles["issue-page__back-btn"]} type="button" onClick={() => navigate(-1)}>
                 {t("detail.back")}
             </Button>
 
-            <div className="issue-page__card">
-                <div className="issue-page__header">
-                    <div className="issue-page__title-area">
-                        <h1 className="issue-page__title">{issue.title}</h1>
-                        <span
-                            className={`issue-page__status-badge issue-page__status-badge--${issue.status.toLowerCase()}`}
-                        >
-                            {statusLabels[issue.status] ?? issue.status}
-                        </span>
-                    </div>
-                    {canEdit && (
-                        <div className="issue-page__actions">
-                            <Button variant="stroke" onClick={() => setEditing(true)}>
-                                {t("detail.edit")}
-                            </Button>
-                            {(user?.role === "ADMIN" || issue.myRole === "MANAGER") && (
-                                <Button variant="stroke" color="error" onClick={handleDelete}>
-                                    {t("detail.delete")}
+            <DetailCard
+                header={
+                    <>
+                        <div className={styles["issue-page__title-area"]}>
+                            <h1 className={styles["issue-page__title"]}>{issue.title}</h1>
+                            <StatusBadge status={issue.status} labels={statusLabels} />
+                        </div>
+                        {canEdit && (
+                            <div className={styles["issue-page__actions"]}>
+                                <Button variant="stroke" onClick={() => setEditing(true)}>
+                                    {t("detail.edit")}
                                 </Button>
-                            )}
-                        </div>
-                    )}
+                                {(user?.role === "ADMIN" || issue.myRole === "MANAGER") && (
+                                    <Button variant="stroke" color="error" onClick={handleDelete}>
+                                        {t("detail.delete")}
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </>
+                }
+            >
+                <DetailField label={t("detail.info.project")}>
+                    <Button
+                        variant="link"
+                        className={styles["issue-page__link-btn"]}
+                        type="button"
+                        onClick={() => navigate(`/projects/${issue.projectId}`)}
+                    >
+                        {issue.projectName}
+                    </Button>
+                </DetailField>
+
+                <div className={styles["issue-page__row"]}>
+                    <DetailField label={t("detail.info.category")}>
+                        {t(`category.${issue.category.toLowerCase()}`)}
+                    </DetailField>
+                    <DetailField label={t("detail.info.priority")}>
+                        <StatusBadge status={issue.priority} labels={priorityLabels} variant="priority" />
+                    </DetailField>
                 </div>
 
-                <div className="issue-page__fields">
-                    <div className="issue-page__field">
-                        <span className="issue-page__field-label">{t("detail.info.project")}</span>
-                        <span className="issue-page__field-value">
-                            <Button
-                                variant="link"
-                                className="issue-page__link-btn"
-                                type="button"
-                                onClick={() => navigate(`/projects/${issue.projectId}`)}
-                            >
-                                {issue.projectName}
-                            </Button>
-                        </span>
-                    </div>
-
-                    <div className="issue-page__row">
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.category")}</span>
-                            <span className="issue-page__field-value">
-                                {t(`category.${issue.category.toLowerCase()}`)}
-                            </span>
-                        </div>
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.priority")}</span>
-                            <span
-                                className={`issue-page__priority-value issue-page__priority-value--${issue.priority.toLowerCase()}`}
-                            >
-                                {priorityLabels[issue.priority] ?? issue.priority}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="issue-page__row">
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.reproducibility")}</span>
-                            <span className="issue-page__field-value">
-                                {issue.reproducibility
-                                    ? t(`reproducibility.${issue.reproducibility.toLowerCase()}`)
-                                    : "—"}
-                            </span>
-                        </div>
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.version")}</span>
-                            <span className="issue-page__field-value">{issue.productVersion ?? "—"}</span>
-                        </div>
-                    </div>
-
-                    <div className="issue-page__field">
-                        <span className="issue-page__field-label">{t("detail.info.description")}</span>
-                        <span className="issue-page__field-value issue-page__field-value--multiline">
-                            {issue.description || "—"}
-                        </span>
-                    </div>
-
-                    <div className="issue-page__field">
-                        <span className="issue-page__field-label">{t("detail.info.additionalInfo")}</span>
-                        <span className="issue-page__field-value issue-page__field-value--multiline">
-                            {issue.additionalInfo || "—"}
-                        </span>
-                    </div>
-
-                    <div className="issue-page__row">
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.reporter")}</span>
-                            <span className="issue-page__field-value">{issue.reporterLogin}</span>
-                        </div>
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.assignee")}</span>
-                            <span className="issue-page__field-value">{issue.assigneeLogin ?? "—"}</span>
-                        </div>
-                    </div>
-
-                    <div className="issue-page__row">
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.created")}</span>
-                            <span className="issue-page__field-value">{formatDateTime(issue.createdAt)}</span>
-                        </div>
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.updated")}</span>
-                            <span className="issue-page__field-value">{formatDateTime(issue.updatedAt)}</span>
-                        </div>
-                    </div>
-
-                    {issue.solution && (
-                        <div className="issue-page__field">
-                            <span className="issue-page__field-label">{t("detail.info.solution")}</span>
-                            <span className="issue-page__field-value issue-page__field-value--multiline">
-                                {issue.solution}
-                            </span>
-                        </div>
-                    )}
+                <div className={styles["issue-page__row"]}>
+                    <DetailField label={t("detail.info.reproducibility")}>
+                        {issue.reproducibility ? t(`reproducibility.${issue.reproducibility.toLowerCase()}`) : "—"}
+                    </DetailField>
+                    <DetailField label={t("detail.info.version")}>{issue.productVersion ?? "—"}</DetailField>
                 </div>
-            </div>
+
+                <DetailField label={t("detail.info.description")} multiline>
+                    {issue.description || "—"}
+                </DetailField>
+
+                <DetailField label={t("detail.info.additionalInfo")} multiline>
+                    {issue.additionalInfo || "—"}
+                </DetailField>
+
+                <div className={styles["issue-page__row"]}>
+                    <DetailField label={t("detail.info.reporter")}>{issue.reporterLogin}</DetailField>
+                    <DetailField label={t("detail.info.assignee")}>{issue.assigneeLogin ?? "—"}</DetailField>
+                </div>
+
+                <div className={styles["issue-page__row"]}>
+                    <DetailField label={t("detail.info.created")}>{formatDateTime(issue.createdAt)}</DetailField>
+                    <DetailField label={t("detail.info.updated")}>{formatDateTime(issue.updatedAt)}</DetailField>
+                </div>
+
+                {issue.solution && (
+                    <DetailField label={t("detail.info.solution")} multiline>
+                        {issue.solution}
+                    </DetailField>
+                )}
+            </DetailCard>
         </div>
     );
 };

@@ -1,0 +1,41 @@
+.columns-dropdown-wrapper {
+    position: relative;
+}
+
+.columns-dropdown__btn {
+    --btn-icon-size: 20px;
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
+}
+
+.columns-dropdown__btn:hover {
+    background-color: var(--semantic-fill-primary-hover);
+    border-color: var(--semantic-btn-accent-fill-hover-bg);
+}
+
+.columns-dropdown__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    min-width: 240px;
+    background-color: var(--semantic-bg-surface-elevated);
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}

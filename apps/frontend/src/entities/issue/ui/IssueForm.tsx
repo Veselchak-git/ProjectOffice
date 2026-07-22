@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import type { Member } from "@/entities/project";
 
 import type { CreateIssueData, IssueCategory, IssuePriority, IssueStatus, Reproducibility } from "../model/issue";
-import "./IssueForm.css";
+import styles from "./IssueForm.module.css";
 
 interface IssueFormProps {
     initial?: Partial<CreateIssueData & { status?: IssueStatus; solution?: string }>;
@@ -109,8 +109,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
     };
 
     return (
-        <form className="issue-form" onSubmit={handleSubmit(handleFormSubmit)} noValidate>
-            {errors.root?.message && <div className="issue-form__error">{errors.root.message}</div>}
+        <form className={styles["issue-form"]} onSubmit={handleSubmit(handleFormSubmit)} noValidate>
+            {errors.root?.message && <div className={styles["issue-form__error"]}>{errors.root.message}</div>}
 
             <Controller
                 name="title"
@@ -126,9 +126,9 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                 )}
             />
 
-            <div className="issue-form__row">
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.category.label")}</label>
+            <div className={styles["issue-form__row"]}>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.category.label")}</label>
                     <Controller
                         name="category"
                         control={control}
@@ -149,8 +149,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                     />
                 </div>
 
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.priority.label")}</label>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.priority.label")}</label>
                     <Controller
                         name="priority"
                         control={control}
@@ -173,9 +173,9 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                 </div>
             </div>
 
-            <div className="issue-form__row">
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.reproducibility.label")}</label>
+            <div className={styles["issue-form__row"]}>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.reproducibility.label")}</label>
                     <Controller
                         name="reproducibility"
                         control={control}
@@ -197,8 +197,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                     />
                 </div>
 
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.version.label")}</label>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.version.label")}</label>
                     <Controller
                         name="productVersionId"
                         control={control}
@@ -221,8 +221,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
             </div>
 
             {members && members.length > 0 && (
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.assignee.label")}</label>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.assignee.label")}</label>
                     <Controller
                         name="assigneeId"
                         control={control}
@@ -249,8 +249,8 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
             )}
 
             {initial?.status && (
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.status.label")}</label>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.status.label")}</label>
                     <Controller
                         name="status"
                         control={control}
@@ -278,14 +278,14 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                 </div>
             )}
 
-            <div className="issue-form__field">
-                <label className="issue-form__label">{t("form.description.label")}</label>
+            <div className={styles["issue-form__field"]}>
+                <label className={styles["issue-form__label"]}>{t("form.description.label")}</label>
                 <Controller
                     name="description"
                     control={control}
                     render={({ field }) => (
                         <textarea
-                            className="issue-form__textarea"
+                            className={styles["issue-form__textarea"]}
                             {...field}
                             placeholder={t("form.description.placeholder")}
                             rows={3}
@@ -294,14 +294,14 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                 />
             </div>
 
-            <div className="issue-form__field">
-                <label className="issue-form__label">{t("form.additionalInfo.label")}</label>
+            <div className={styles["issue-form__field"]}>
+                <label className={styles["issue-form__label"]}>{t("form.additionalInfo.label")}</label>
                 <Controller
                     name="additionalInfo"
                     control={control}
                     render={({ field }) => (
                         <textarea
-                            className="issue-form__textarea"
+                            className={styles["issue-form__textarea"]}
                             {...field}
                             placeholder={t("form.additionalInfo.placeholder")}
                             rows={2}
@@ -311,14 +311,14 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
             </div>
 
             {initial?.status && (
-                <div className="issue-form__field">
-                    <label className="issue-form__label">{t("form.solution.label")}</label>
+                <div className={styles["issue-form__field"]}>
+                    <label className={styles["issue-form__label"]}>{t("form.solution.label")}</label>
                     <Controller
                         name="solution"
                         control={control}
                         render={({ field }) => (
                             <textarea
-                                className="issue-form__textarea"
+                                className={styles["issue-form__textarea"]}
                                 {...field}
                                 placeholder={t("form.solution.placeholder")}
                                 rows={2}
@@ -328,7 +328,7 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                 </div>
             )}
 
-            <div className="issue-form__actions">
+            <div className={styles["issue-form__actions"]}>
                 <Button type="submit" disabled={isSubmitting || !title?.trim()}>
                     {isSubmitting ? t(`${COMMON}:saving`) : (submitLabel ?? t("form.submit"))}
                 </Button>

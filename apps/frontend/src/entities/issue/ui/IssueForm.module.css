@@ -41,7 +41,7 @@
     border-color: var(--semantic-btn-accent-fill-hover-bg);
 }
 
-.issue-form__actions .ui-kit-btn-accent.ui-kit-btn-fill {
+.issue-form__actions :global(.ui-kit-btn-accent.ui-kit-btn-fill) {
     --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
     --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
 }
@@ -56,7 +56,7 @@
     font-size: 13px;
 }
 
-[data-color-mode="dark"] .issue-form__error {
+[data-color-mode="dark"] :global(.issue-form__error) {
     border-color: var(--red-400);
     background-color: var(--red-950);
     color: var(--red-400);

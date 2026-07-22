@@ -16,7 +16,7 @@ import { fetchAllUsers } from "@/entities/user";
 
 import { addProjectMember, fetchProjectMembers, removeProjectMember, updateProjectMember } from "../api/projects";
 import type { ProjectMemberRole } from "../model/project";
-import "./MembersBlock.css";
+import styles from "./MembersBlock.module.css";
 
 const ROLE_HIERARCHY: Record<ProjectMemberRole, number> = {
     VIEWER: 0,
@@ -169,24 +169,24 @@ export const MembersListModal: FC<MembersListModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="members-block-modal__overlay" onClick={onClose}>
-            <div className="members-block-modal__content" onClick={e => e.stopPropagation()}>
-                <div className="members-block-modal__header">
-                    <h2 className="members-block-modal__title">{t(`${PROJECTS}:members.title`)}</h2>
-                    <Button className="members-block-modal__close" type="button" onClick={onClose}>
+        <div className={styles["members-block-modal__overlay"]} onClick={onClose}>
+            <div className={styles["members-block-modal__content"]} onClick={e => e.stopPropagation()}>
+                <div className={styles["members-block-modal__header"]}>
+                    <h2 className={styles["members-block-modal__title"]}>{t(`${PROJECTS}:members.title`)}</h2>
+                    <Button className={styles["members-block-modal__close"]} type="button" onClick={onClose}>
                         ✕
                     </Button>
                 </div>
 
-                {error && <p className="members-block__error">{error}</p>}
+                {error && <p className={styles["members-block__error"]}>{error}</p>}
 
                 {loading ? (
-                    <p className="members-block__loading">{t(`${PROJECTS}:members.loading`)}</p>
+                    <p className={styles["members-block__loading"]}>{t(`${PROJECTS}:members.loading`)}</p>
                 ) : (
                     <>
                         {canManage && availableUsers.length > 0 && (
-                            <div className="members-block__add">
-                                <div className="members-block__add-user">
+                            <div className={styles["members-block__add"]}>
+                                <div className={styles["members-block__add-user"]}>
                                     <Select
                                         options={[
                                             { value: "", label: t(`${PROJECTS}:members.placeholder`) },
@@ -198,7 +198,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                         usePortal={false}
                                     />
                                 </div>
-                                <div className="members-block__add-role">
+                                <div className={styles["members-block__add-role"]}>
                                     <Select
                                         options={assignableRoles.map(r => ({ value: r, label: roleLabels[r] ?? r }))}
                                         value={selectedRole}
@@ -208,7 +208,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                     />
                                 </div>
                                 <Button
-                                    className="members-block__add-btn"
+                                    className={styles["members-block__add-btn"]}
                                     type="button"
                                     onClick={handleAdd}
                                     disabled={selectedUserId === null}
@@ -217,15 +217,15 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                 </Button>
                             </div>
                         )}
-                        <div className="members-block__list">
+                        <div className={styles["members-block__list"]}>
                             {members.length === 0 && (
-                                <p className="members-block__empty">{t(`${PROJECTS}:members.empty`)}</p>
+                                <p className={styles["members-block__empty"]}>{t(`${PROJECTS}:members.empty`)}</p>
                             )}
                             {members.map(m => (
-                                <div key={m.userId} className="members-block__item">
-                                    <span className="members-block__item-login">{m.login}</span>
+                                <div key={m.userId} className={styles["members-block__item"]}>
+                                    <span className={styles["members-block__item-login"]}>{m.login}</span>
                                     {canManage && m.login !== currentLogin ? (
-                                        <div className="members-block__item-role">
+                                        <div className={styles["members-block__item-role"]}>
                                             <Select
                                                 options={assignableRoles.map(r => ({
                                                     value: r,
@@ -238,13 +238,13 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                             />
                                         </div>
                                     ) : (
-                                        <span className="members-block__item-role-text">
+                                        <span className={styles["members-block__item-role-text"]}>
                                             {roleLabels[m.role] ?? m.role}
                                         </span>
                                     )}
                                     {canManage && m.login !== currentLogin && (
                                         <Button
-                                            className="members-block__item-remove"
+                                            className={styles["members-block__item-remove"]}
                                             type="button"
                                             onClick={() => handleRemove(m.userId)}
                                             title={t(`${PROJECTS}:members.deleteTooltip`)}
@@ -254,7 +254,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                     )}
                                     {m.userId === currentUserId && (
                                         <Button
-                                            className="members-block__item-remove"
+                                            className={styles["members-block__item-remove"]}
                                             type="button"
                                             onClick={handleLeave}
                                         >

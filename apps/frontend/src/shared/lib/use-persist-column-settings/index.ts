@@ -28,6 +28,8 @@ export function usePersistColumnSettings({
     const loaded = useRef(false);
     const visibilityRef = useRef(onColumnVisibilityChange);
     const orderRef = useRef(onColumnOrderChange);
+    const savedVisibility = useRef<VisibilityState | null>(null);
+    const savedOrder = useRef<string[] | null>(null);
 
     useEffect(() => {
         visibilityRef.current = onColumnVisibilityChange;
@@ -49,13 +51,22 @@ export function usePersistColumnSettings({
             if (persisted.columnOrder && persisted.columnOrder.length > 0) {
                 orderRef.current(persisted.columnOrder);
             }
+
+            savedVisibility.current = persisted.columnVisibility ?? null;
+            savedOrder.current = persisted.columnOrder ?? null;
         });
     }, [page]);
 
     useEffect(() => {
         if (!loaded.current) return;
 
+        if (savedVisibility.current === columnVisibility && savedOrder.current === columnOrder) {
+            return;
+        }
+
         const timer = setTimeout(() => {
+            savedVisibility.current = columnVisibility;
+            savedOrder.current = columnOrder;
             saveUserPreference(page, { columnVisibility, columnOrder });
         }, 1000);
 

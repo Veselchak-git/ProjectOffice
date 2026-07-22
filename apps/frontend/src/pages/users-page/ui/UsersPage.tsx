@@ -5,16 +5,12 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import { DndContext, type DragEndEvent, closestCenter } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { COMMON, USERS } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
-import GearIcon from "@helpdesk-portal/icons/GearIcon.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
 import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
-import { Button, Input, Select, Switch } from "@helpdesk-portal/ui-kit";
+import { Button, Input, Modal, Select, Switch } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type SortingState } from "@tanstack/react-table";
 import { useRef, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -27,13 +23,13 @@ import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/e
 
 import { i18n } from "@/shared/lib/i18n";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
-import { useClickOutside } from "@/shared/lib/use-click-outside";
-import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
-import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 import { useTable } from "@/shared/lib/use-table";
+import { useTablePage } from "@/shared/lib/use-table-page";
 import { getLoginEmailRules, getLoginPasswordRules } from "@/shared/lib/validation";
 
-import { DataTable, SortableColumnItem, reorderColumn } from "@/shared/ui/data-table";
+import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
+import { DataTable } from "@/shared/ui/data-table";
+import { PageHeader } from "@/shared/ui/page-header";
 
 import { ALL_COLUMNS, getRoleOptions, getUsersColumns } from "../model/columns";
 import {
@@ -45,38 +41,23 @@ import {
     setRowSelection,
     usersPageSlice
 } from "../model/users-page-slice";
-import "./UsersPage.css";
+import styles from "./UsersPage.module.css";
 
 rootReducer.inject(usersPageSlice);
 
 export const UsersPage: FC = () => {
     const { t } = useTranslation(USERS);
     const queryClient = useQueryClient();
-    const [pageIndex, setPageIndex] = useState(0);
-    const [sorting, setSorting] = useState<SortingState>([]);
     const [searchInput, setSearchInput] = useState("");
     const [debouncedQ, setDebouncedQ] = useState("");
     const [pageError, setPageError] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [bulkRoleChange, setBulkRoleChange] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
     const rowSelection = useAppSelector(selectRowSelection);
-    const [columnsOpen, setColumnsOpen] = useState(false);
-    const columnsRef = useRef<HTMLDivElement>(null);
-
-    const { perPage, ready } = useDynamicPerPage(containerRef, {
-        rowHeight: 48,
-        theadHeight: 36,
-        paginationHeight: 34,
-        min: 5
-    });
-
-    useClickOutside(columnsRef, () => setColumnsOpen(false));
 
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -86,9 +67,36 @@ export const UsersPage: FC = () => {
         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = setTimeout(() => {
             setDebouncedQ(value);
-            setPageIndex(0);
         }, 400);
     };
+
+    const columns = getUsersColumns({ t });
+
+    const {
+        containerRef,
+        columnsRef,
+        columnsOpen,
+        setColumnsOpen,
+        handleDragEnd,
+        sorting,
+        perPage,
+        ready,
+        pageIndex,
+        setPageIndex,
+        setSorting
+    } = useTablePage({
+        page: "users",
+        columnVisibility,
+        columnOrder,
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        }
+    });
 
     const sortBy = sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
@@ -111,6 +119,35 @@ export const UsersPage: FC = () => {
 
     const users = data?.users ?? [];
     const total = data?.total ?? 0;
+
+    const { table } = useTable({
+        data: users,
+        columns,
+        getRowId: row => String(row.id),
+        total,
+        pageSize: perPage,
+        pageIndex,
+        onPageIndexChange: setPageIndex,
+        sorting,
+        onSortingChange: setSorting,
+        columnVisibility,
+        columnOrder,
+        onColumnOrderChange: updater => {
+            const next = typeof updater === "function" ? updater(columnOrder) : updater;
+            dispatch(setColumnOrder(next));
+        },
+        onColumnVisibilityChange: updater => {
+            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
+            dispatch(setColumnVisibility(next));
+        },
+        rowSelection,
+        onRowSelectionChange: updater => {
+            const next = typeof updater === "function" ? updater(rowSelection) : updater;
+            dispatch(setRowSelection(next));
+        },
+        resetKey: debouncedQ,
+        enableRowSelection: true
+    });
 
     const { mutateAsync: createUserMutate } = useMutation({
         mutationFn: (dto: CreateUserData) => createUser(dto),
@@ -143,139 +180,67 @@ export const UsersPage: FC = () => {
         }
     };
 
-    const columns = getUsersColumns({ t });
-
-    function handleDragEnd(event: DragEndEvent) {
-        reorderColumn(event, columnOrder, next => dispatch(setColumnOrder(next)));
-    }
-
-    const { table } = useTable({
-        data: users,
-        columns,
-        getRowId: row => String(row.id),
-        total,
-        pageSize: perPage,
-        pageIndex,
-        onPageIndexChange: setPageIndex,
-        sorting,
-        onSortingChange: setSorting,
-        columnVisibility,
-        columnOrder,
-        onColumnOrderChange: updater => {
-            const next = typeof updater === "function" ? updater(columnOrder) : updater;
-            dispatch(setColumnOrder(next));
-        },
-        onColumnVisibilityChange: updater => {
-            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
-            dispatch(setColumnVisibility(next));
-        },
-        rowSelection,
-        onRowSelectionChange: updater => {
-            const next = typeof updater === "function" ? updater(rowSelection) : updater;
-            dispatch(setRowSelection(next));
-        },
-        resetKey: debouncedQ,
-        enableRowSelection: true
-    });
-
-    usePersistColumnSettings({
-        page: "users",
-        columnVisibility,
-        columnOrder,
-        onColumnVisibilityChange: updater => {
-            const next = typeof updater === "function" ? updater(columnVisibility) : updater;
-            dispatch(setColumnVisibility(next));
-        },
-        onColumnOrderChange: updater => {
-            const next = typeof updater === "function" ? updater(columnOrder) : updater;
-            dispatch(setColumnOrder(next));
-        }
-    });
-
     return (
-        <div className="users-page">
-            <div className="users-page__title-area">
-                <div className="users-page__title-text">
-                    <h1 className="users-page__title-heading">{t("page.title")}</h1>
-                    <p className="users-page__title-subtitle">{t("page.subtitle", { count: total })}</p>
-                </div>
-                <div className="users-page__actions">
-                    <Button
-                        className="users-page__create-btn"
-                        type="button"
-                        onClick={() => {
-                            setPageError(null);
-                            setCreating(true);
-                        }}
-                        startIcon={<PlusIcon />}
-                    >
-                        {t("actions.create")}
-                    </Button>
-                    {selectedCount > 0 && (
-                        <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
-                            {t("actions.deleteSelected", { count: selectedCount })}
-                        </Button>
-                    )}
-                    {selectedCount > 0 && (
+        <div className={styles["users-page"]}>
+            <PageHeader
+                title={t("page.title")}
+                subtitle={t("page.subtitle", { count: total })}
+                actions={
+                    <>
                         <Button
-                            variant="stroke"
-                            size="m"
+                            className={styles["users-page__create-btn"]}
+                            type="button"
                             onClick={() => {
                                 setPageError(null);
-                                if (selectedCount === 1) {
-                                    const userId = selectedIds[0];
-                                    const user = users.find(u => u.id === userId);
-                                    if (user) setEditingUser(user);
-                                } else {
-                                    setBulkRoleChange(true);
-                                }
+                                setCreating(true);
                             }}
+                            startIcon={<PlusIcon />}
                         >
-                            {t("table.edit")}
+                            {t("actions.create")}
                         </Button>
-                    )}
-                    <Button className="users-page__export-btn" type="button" startIcon={<ExportIcon />}>
-                        {t("actions.export")}
-                    </Button>
-                    <div className="users-page__columns-wrapper" ref={columnsRef}>
-                        <Button
-                            className="users-page__columns-btn"
-                            type="button"
-                            onClick={() => setColumnsOpen(v => !v)}
-                            startIcon={<GearIcon />}
-                        >
-                            {t("actions.columns")}
-                        </Button>
-                        {columnsOpen && (
-                            <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-                                <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
-                                    <div className="users-page__columns-dropdown">
-                                        {columnOrder
-                                            .filter(id => id !== "select" && id !== "actions")
-                                            .map(id => {
-                                                const col = ALL_COLUMNS.find(c => c.id === id);
-                                                if (!col) return null;
-                                                return (
-                                                    <SortableColumnItem
-                                                        key={col.id}
-                                                        id={col.id}
-                                                        label={t(col.label)}
-                                                        isVisible={table.getColumn(col.id)?.getIsVisible() ?? true}
-                                                        onToggle={() => table.getColumn(col.id)?.toggleVisibility()}
-                                                    />
-                                                );
-                                            })}
-                                    </div>
-                                </SortableContext>
-                            </DndContext>
+                        {selectedCount > 0 && (
+                            <Button variant="stroke" color="error" size="m" onClick={handleDeleteSelected}>
+                                {t("actions.deleteSelected", { count: selectedCount })}
+                            </Button>
                         )}
-                    </div>
-                </div>
-            </div>
+                        {selectedCount > 0 && (
+                            <Button
+                                variant="stroke"
+                                size="m"
+                                onClick={() => {
+                                    setPageError(null);
+                                    if (selectedCount === 1) {
+                                        const userId = selectedIds[0];
+                                        const user = users.find(u => u.id === userId);
+                                        if (user) setEditingUser(user);
+                                    } else {
+                                        setBulkRoleChange(true);
+                                    }
+                                }}
+                            >
+                                {t("table.edit")}
+                            </Button>
+                        )}
+                        <Button className={styles["users-page__export-btn"]} type="button" startIcon={<ExportIcon />}>
+                            {t("actions.export")}
+                        </Button>
+                        <ColumnsDropdown
+                            columnsRef={columnsRef}
+                            columnsOpen={columnsOpen}
+                            setColumnsOpen={setColumnsOpen}
+                            columnOrder={columnOrder}
+                            allColumns={ALL_COLUMNS}
+                            table={table}
+                            handleDragEnd={handleDragEnd}
+                            exclude={["select", "actions"]}
+                        />
+                    </>
+                }
+            />
 
-            <div className="users-page__controls">
+            <div className={styles["users-page__controls"]}>
                 <Input
-                    className="users-page__controls-search"
+                    className={styles["users-page__controls-search"]}
                     placeholder={t("search.placeholder")}
                     startIcon={<SearchIcon />}
                     value={searchInput}
@@ -284,45 +249,39 @@ export const UsersPage: FC = () => {
             </div>
 
             {pageError && (
-                <div className="users-page__form-error" style={{ marginBottom: 16 }}>
+                <div className={styles["users-page__form-error"]} style={{ marginBottom: 16 }}>
                     {pageError}
                 </div>
             )}
 
-            <div className="users-page__table-area" ref={containerRef}>
+            <div className={styles["users-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
-                    <p className="users-page__empty">{t("loading")}</p>
+                    <p className={styles["users-page__empty"]}>{t("loading")}</p>
                 ) : isError && !data ? (
-                    <p className="users-page__empty">{error instanceof Error ? error.message : t("error.loading")}</p>
+                    <p className={styles["users-page__empty"]}>
+                        {error instanceof Error ? error.message : t("error.loading")}
+                    </p>
                 ) : (
                     <DataTable table={table} total={total} />
                 )}
             </div>
 
-            {creating && (
-                <div className="users-page__overlay">
-                    <div className="users-page__modal">
-                        <h2 className="users-page__modal-title">{t("create.title")}</h2>
-                        <CreateUserForm
-                            onSubmit={data => createUserMutate(data).then(() => {})}
-                            onCancel={() => setCreating(false)}
-                        />
-                    </div>
-                </div>
-            )}
+            <Modal isOpen={creating} onClose={() => setCreating(false)} title={t("create.title")}>
+                <CreateUserForm
+                    onSubmit={data => createUserMutate(data).then(() => {})}
+                    onCancel={() => setCreating(false)}
+                />
+            </Modal>
 
-            {editingUser && (
-                <div className="users-page__overlay">
-                    <div className="users-page__modal">
-                        <h2 className="users-page__modal-title">{t("edit.title")}</h2>
-                        <EditUserForm
-                            user={editingUser}
-                            onSubmit={data => editUserMutate({ id: editingUser.id, data }).then(() => {})}
-                            onCancel={() => setEditingUser(null)}
-                        />
-                    </div>
-                </div>
-            )}
+            <Modal isOpen={!!editingUser} onClose={() => setEditingUser(null)} title={t("edit.title")}>
+                {editingUser && (
+                    <EditUserForm
+                        user={editingUser}
+                        onSubmit={data => editUserMutate({ id: editingUser.id, data }).then(() => {})}
+                        onCancel={() => setEditingUser(null)}
+                    />
+                )}
+            </Modal>
 
             {bulkRoleChange && (
                 <BulkRoleChangeModal
@@ -392,14 +351,16 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
 
     return (
         <form
-            className="users-page__form"
+            className={styles["users-page__form"]}
             onSubmit={rhfHandleSubmit(handleFormSubmit)}
             noValidate
             onChange={() => {
                 if (errors.root) setError("root", { message: "" });
             }}
         >
-            {errors.root?.message ? <div className="users-page__form-error">{errors.root.message}</div> : null}
+            {errors.root?.message ? (
+                <div className={styles["users-page__form-error"]}>{errors.root.message}</div>
+            ) : null}
             <Controller
                 name="login"
                 control={control}
@@ -416,7 +377,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     />
                 )}
             />
-            <div className="users-page__password-field">
+            <div className={styles["users-page__password-field"]}>
                 <Controller
                     name="password"
                     control={control}
@@ -433,7 +394,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                         />
                     )}
                 />
-                <label className="users-page__checkbox-row">
+                <label className={styles["users-page__checkbox-row"]}>
                     <Switch checked={showPassword} onCheckedChange={setShowPassword} />
                     <span>{tu("form.showPassword")}</span>
                 </label>
@@ -451,7 +412,7 @@ const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
                     />
                 )}
             />
-            <div className="users-page__form-actions">
+            <div className={styles["users-page__form-actions"]}>
                 <Button type="submit" disabled={!canSubmit}>
                     {isSubmitting ? tu("create.submitting") : tu("create.submit")}
                 </Button>
@@ -517,24 +478,26 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
 
     return (
         <form
-            className="users-page__form"
+            className={styles["users-page__form"]}
             onSubmit={rhfHandleSubmit(handleFormSubmit)}
             noValidate
             onChange={() => {
                 if (errors.root) setError("root", { message: "" });
             }}
         >
-            {errors.root?.message ? <div className="users-page__form-error">{errors.root.message}</div> : null}
+            {errors.root?.message ? (
+                <div className={styles["users-page__form-error"]}>{errors.root.message}</div>
+            ) : null}
 
-            <div className="users-page__old-data">
-                <span className="users-page__old-data-label">{tu("edit.currentData")}</span>
-                <div className="users-page__old-data-row">
-                    <span className="users-page__old-data-key">{tu("edit.loginLabel")}</span>
-                    <span className="users-page__old-data-value">{user.login}</span>
+            <div className={styles["users-page__old-data"]}>
+                <span className={styles["users-page__old-data-label"]}>{tu("edit.currentData")}</span>
+                <div className={styles["users-page__old-data-row"]}>
+                    <span className={styles["users-page__old-data-key"]}>{tu("edit.loginLabel")}</span>
+                    <span className={styles["users-page__old-data-value"]}>{user.login}</span>
                 </div>
-                <div className="users-page__old-data-row">
-                    <span className="users-page__old-data-key">{tu("edit.roleLabel")}</span>
-                    <span className="users-page__old-data-value">
+                <div className={styles["users-page__old-data-row"]}>
+                    <span className={styles["users-page__old-data-key"]}>{tu("edit.roleLabel")}</span>
+                    <span className={styles["users-page__old-data-value"]}>
                         {getRoleOptions(tu).find(o => o.value === user.role)?.label ?? user.role}
                     </span>
                 </div>
@@ -555,7 +518,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                     />
                 )}
             />
-            <div className="users-page__password-field">
+            <div className={styles["users-page__password-field"]}>
                 <Controller
                     name="password"
                     control={control}
@@ -571,7 +534,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                         />
                     )}
                 />
-                <label className="users-page__checkbox-row">
+                <label className={styles["users-page__checkbox-row"]}>
                     <Switch checked={showPassword} onCheckedChange={setShowPassword} />
                     <span>{tu("edit.showPassword")}</span>
                 </label>
@@ -589,7 +552,7 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
                     />
                 )}
             />
-            <div className="users-page__form-actions">
+            <div className={styles["users-page__form-actions"]}>
                 <Button type="submit" disabled={!canSubmit}>
                     {isSubmitting ? tu("edit.saving") : tu("edit.save")}
                 </Button>
@@ -625,27 +588,24 @@ const BulkRoleChangeModal: FC<BulkRoleChangeModalProps> = ({ count, onConfirm, o
     };
 
     return (
-        <div className="users-page__overlay">
-            <div className="users-page__modal">
-                <h2 className="users-page__modal-title">{tu("bulkRoleChange.title", { count })}</h2>
-                <form className="users-page__form" onSubmit={handleSubmit}>
-                    <Select
-                        label={tu("form.role")}
-                        options={getRoleOptions(tu)}
-                        value={role}
-                        usePortal={false}
-                        onValueChange={value => setRole(value as User["role"])}
-                    />
-                    <div className="users-page__form-actions">
-                        <Button type="submit" disabled={isSubmitting || !hasChanges}>
-                            {isSubmitting ? tu("bulkRoleChange.submitting") : tu("bulkRoleChange.submit")}
-                        </Button>
-                        <Button type="button" variant="stroke" onClick={onCancel} disabled={isSubmitting}>
-                            {tu(`${COMMON}:cancel`)}
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <Modal isOpen={true} onClose={onCancel} title={tu("bulkRoleChange.title", { count })}>
+            <form className={styles["users-page__form"]} onSubmit={handleSubmit}>
+                <Select
+                    label={tu("form.role")}
+                    options={getRoleOptions(tu)}
+                    value={role}
+                    usePortal={false}
+                    onValueChange={value => setRole(value as User["role"])}
+                />
+                <div className={styles["users-page__form-actions"]}>
+                    <Button type="submit" disabled={isSubmitting || !hasChanges}>
+                        {isSubmitting ? tu("bulkRoleChange.submitting") : tu("bulkRoleChange.submit")}
+                    </Button>
+                    <Button type="button" variant="stroke" onClick={onCancel} disabled={isSubmitting}>
+                        {tu(`${COMMON}:cancel`)}
+                    </Button>
+                </div>
+            </form>
+        </Modal>
     );
 };
