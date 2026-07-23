@@ -90,3 +90,12 @@
 .issue-page__link-btn:hover {
     color: var(--semantic-btn-accent-fill-hover-bg);
 }
+
+.issue-page__actions :global(.ui-kit-btn-stroke) {
+    --btn-bg: var(--semantic-bg-surface);
+    --btn-hover-bg: var(--semantic-fill-primary-hover);
+}
+
+.issue-page__actions :global(.ui-kit-btn-stroke):global(.ui-kit-btn-error) {
+    --btn-hover-bg: var(--semantic-btn-error-stroke-hover-bg);
+}

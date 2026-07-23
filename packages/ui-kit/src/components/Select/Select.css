@@ -62,7 +62,7 @@
         border: var(--select-border-width) solid var(--select-border-color);
         border-radius: var(--select-border-radius);
         background-color: var(--select-bg);
-        color: var(--select-text);
+        color: var(--semantic-text-primary);
         font-size: var(--select-font-size);
         font-weight: var(--select-font-weight);
         line-height: 1.2;

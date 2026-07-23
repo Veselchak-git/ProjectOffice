@@ -43,7 +43,7 @@
 }
 
 .data-table td {
-    height: 48px;
+    height: 46px;
     padding: 0 12px;
     font-family: Geologica;
     font-size: 13px;
@@ -160,7 +160,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 10px;
+    padding: 8px 8px;
     min-width: 32px;
     min-height: 28px;
     border: 1px solid var(--semantic-border-default);

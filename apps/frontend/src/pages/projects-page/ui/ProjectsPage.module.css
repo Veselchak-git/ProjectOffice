@@ -8,42 +8,23 @@
 
 .projects-page__create-btn {
     --btn-icon-size: 20px;
-    height: 40px;
-    padding: 0 20px;
+    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
+    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
     border: none;
-    border-radius: 8px;
-    background-color: var(--semantic-btn-accent-fill-hover-bg);
-    color: var(--semantic-btn-accent-fill-text);
     font-family: Geologica;
-    font-size: 14px;
     font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.projects-page__create-btn:hover {
-    background-color: var(--semantic-btn-accent-fill-bg);
 }
 
 .projects-page__export-btn {
     --btn-icon-size: 20px;
-    height: 40px;
-    padding: 0 20px;
+    --btn-bg: var(--semantic-bg-surface);
     border: 1px solid var(--semantic-border-default);
-    border-radius: 8px;
-    background-color: transparent;
     color: var(--semantic-text-primary);
     font-family: Geologica;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: pointer;
-    transition:
-        background-color 0.15s,
-        border-color 0.15s;
 }
 
 .projects-page__export-btn:hover {
-    background-color: var(--semantic-fill-primary-hover);
+    --btn-hover-bg: var(--semantic-fill-primary-hover);
     border-color: var(--semantic-btn-accent-fill-hover-bg);
 }
 
@@ -69,3 +50,12 @@
 .projects-page__table {
     min-width: 1200px;
 }
+
+.projects-page :global(.ui-kit-btn-stroke):global(.ui-kit-btn-error) {
+    --btn-hover-bg: var(--semantic-btn-error-stroke-hover-bg);
+}
+.projects-page :global(.ui-kit-btn-stroke) {
+    --btn-bg: var(--semantic-bg-surface);
+    --btn-hover-bg: var(--semantic-fill-primary-hover);
+}
+

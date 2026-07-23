@@ -11,6 +11,7 @@
     padding: 16px;
     border: 1px solid var(--semantic-border-default);
     border-radius: 8px;
+    background-color: var(--semantic-bg-surface);
     text-decoration: none;
     color: inherit;
     transition: background-color 0.15s ease;

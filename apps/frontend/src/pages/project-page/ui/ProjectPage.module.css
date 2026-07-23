@@ -38,9 +38,13 @@
     flex-shrink: 0;
 }
 
-.project-page__actions :global(.ui-kit-btn-accent.ui-kit-btn-fill) {
-    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
-    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
+.project-page__actions :global(.ui-kit-btn-stroke) {
+    --btn-bg: var(--semantic-bg-surface);
+    --btn-hover-bg: var(--semantic-fill-primary-hover);
+}
+
+.project-page__actions :global(.ui-kit-btn-stroke):global(.ui-kit-btn-error) {
+    --btn-hover-bg: var(--semantic-btn-error-stroke-hover-bg);
 }
 
 .project-page__not-found {

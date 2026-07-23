@@ -16,31 +16,22 @@
     position: relative;
 }
 
-.users-page__actions-cell :global(.ui-kit-btn) {
-    background-color: var(--semantic-bg-surface);
+.users-page :global(.ui-kit-btn-stroke) {
+    --btn-bg: var(--semantic-bg-surface);
+    --btn-hover-bg: var(--semantic-fill-primary-hover);
 }
 
-.users-page__actions-cell :global(.ui-kit-btn-stroke):global(.ui-kit-btn-accent):hover:not(:disabled) {
-    background-color: var(--semantic-btn-accent-stroke-hover-bg);
-}
-
-.users-page__actions-cell :global(.ui-kit-btn-stroke):global(.ui-kit-btn-error):hover:not(:disabled) {
-    background-color: var(--semantic-btn-error-stroke-hover-bg);
+.users-page :global(.ui-kit-btn-stroke):global(.ui-kit-btn-error) {
+    --btn-hover-bg: var(--semantic-btn-error-stroke-hover-bg);
 }
 
 .users-page__create-btn {
     --btn-icon-size: 20px;
-    height: 40px;
-    padding: 0 20px;
     border: none;
-    border-radius: 8px;
     background-color: var(--semantic-btn-accent-fill-hover-bg);
     color: var(--semantic-btn-accent-fill-text);
     font-family: Geologica;
-    font-size: 14px;
     font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s;
 }
 
 .users-page__create-btn:hover {
@@ -142,23 +133,14 @@
 
 .users-page__export-btn {
     --btn-icon-size: 20px;
-    height: 40px;
-    padding: 0 20px;
+    --btn-bg: var(--semantic-bg-surface);
     border: 1px solid var(--semantic-border-default);
-    border-radius: 8px;
-    background-color: transparent;
     color: var(--semantic-text-primary);
     font-family: Geologica;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: pointer;
-    transition:
-        background-color 0.15s,
-        border-color 0.15s;
 }
 
 .users-page__export-btn:hover {
-    background-color: var(--semantic-fill-primary-hover);
+    --btn-hover-bg: var(--semantic-fill-primary-hover);
     border-color: var(--semantic-btn-accent-fill-hover-bg);
 }
 
