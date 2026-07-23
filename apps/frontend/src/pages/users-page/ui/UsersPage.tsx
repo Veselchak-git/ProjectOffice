@@ -114,7 +114,8 @@ export const UsersPage: FC = () => {
         queryKey: ["users", userParams],
         queryFn: () => fetchUsers(userParams),
         enabled: ready,
-        placeholderData: keepPreviousData
+        placeholderData: keepPreviousData,
+        refetchInterval: 30000
     });
 
     const users = data?.users ?? [];
@@ -173,7 +174,7 @@ export const UsersPage: FC = () => {
         if (!window.confirm(t("confirm.deleteSelected", { count: selectedCount }))) return;
         try {
             await Promise.all(selectedIds.map(id => deleteUser(id)));
-            await queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
             dispatch(setRowSelection({}));
         } catch (err) {
             setPageError(err instanceof Error ? err.message : "Error");
@@ -290,7 +291,7 @@ export const UsersPage: FC = () => {
                         setPageError(null);
                         try {
                             await Promise.all(selectedIds.map(id => updateUser(id, { role })));
-                            await queryClient.invalidateQueries({ queryKey: ["users"] });
+                            queryClient.invalidateQueries({ queryKey: ["users"] });
                             dispatch(setRowSelection({}));
                             setBulkRoleChange(false);
                         } catch (err) {

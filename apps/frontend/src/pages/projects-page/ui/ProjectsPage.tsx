@@ -149,7 +149,8 @@ export const ProjectsPage: FC = () => {
         queryKey: ["projects", projectParams],
         queryFn: () => fetchProjects(projectParams),
         enabled: ready,
-        placeholderData: keepPreviousData
+        placeholderData: keepPreviousData,
+        refetchInterval: 30000
     });
 
     const projects = data?.projects ?? [];
@@ -188,13 +189,13 @@ export const ProjectsPage: FC = () => {
     const selectedCount = selectedIds.length;
 
     const { mutateAsync: deleteProjectMutate } = useMutation({
-        mutationFn: (id: number) => deleteProject(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+        mutationFn: (id: number) => deleteProject(id)
     });
 
     const handleDeleteSelected = async () => {
         if (!window.confirm(t("confirm.deleteSelected", { count: selectedCount }))) return;
         await Promise.all(selectedIds.map(id => deleteProjectMutate(id)));
+        queryClient.invalidateQueries({ queryKey: ["projects"] });
         dispatch(setRowSelection({}));
     };
 

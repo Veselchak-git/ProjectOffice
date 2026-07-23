@@ -153,7 +153,8 @@ export const IssuesPage: FC = () => {
         queryKey: ["issues", issueParams],
         queryFn: () => fetchIssues(issueParams),
         enabled: ready,
-        placeholderData: keepPreviousData
+        placeholderData: keepPreviousData,
+        refetchInterval: 30000
     });
 
     const issues = data?.issues ?? [];
@@ -191,13 +192,13 @@ export const IssuesPage: FC = () => {
     const selectedCount = selectedIds.length;
 
     const { mutateAsync: deleteIssueMutate } = useMutation({
-        mutationFn: (id: number) => deleteIssue(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["issues"] })
+        mutationFn: (id: number) => deleteIssue(id)
     });
 
     const handleDeleteSelected = async () => {
         if (!window.confirm(t("confirm.deleteSelected", { count: selectedCount }))) return;
         await Promise.all(selectedIds.map(id => deleteIssueMutate(id)));
+        queryClient.invalidateQueries({ queryKey: ["issues"] });
         dispatch(setRowSelection({}));
     };
 
