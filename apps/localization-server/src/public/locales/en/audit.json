@@ -24,17 +24,12 @@
     "modal": {
         "title": "Log Details",
         "eventType": "Event Type",
-        "oldValue": "Old Data",
-        "newValue": "New Data",
-        "noChanges": "No changes",
-        "memberAdded": "{{login}} added to project «{{projectName}}» as «{{role}}»",
-        "memberRemoved": "{{login}} removed from project",
-        "memberUpdated": "Role of member {{login}} updated in project «{{projectName}}»",
-        "projectCreated": "Project «{{name}}» created",
-        "projectDeleted": "Project «{{name}}» deleted",
-        "issueCreated": "Task «{{title}}» created in project «{{projectName}}»",
-        "issueDeleted": "Task «{{title}}» deleted from project «{{projectName}}»",
-        "issueUpdated": "Changes in task «{{title}}»:"
+        "project": "Project",
+        "issue": "Task",
+        "login": "Login",
+        "role": "Role",
+        "changes": "Changes",
+        "noChanges": "No changes"
     },
     "event": {
         "create": "Create",

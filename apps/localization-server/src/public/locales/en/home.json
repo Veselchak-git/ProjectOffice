@@ -9,7 +9,13 @@
     "activity": {
         "title": "Recent Activity",
         "loading": "Loading...",
-        "empty": "No recent activity"
+        "empty": "No recent activity",
+        "issue_created": "Created issue «{{issueTitle}}»",
+        "issue_updated": "Updated issue «{{issueTitle}}»",
+        "issue_deleted": "Deleted issue «{{issueTitle}}»",
+        "project_created": "Created project «{{projectName}}»",
+        "project_updated": "Updated project «{{projectName}}»",
+        "project_deleted": "Deleted project «{{projectName}}»"
     },
     "error": {
         "loading": "Loading error"

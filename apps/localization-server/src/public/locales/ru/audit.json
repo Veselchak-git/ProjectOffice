@@ -24,17 +24,12 @@
     "modal": {
         "title": "Детали лога",
         "eventType": "Тип события",
-        "oldValue": "Старые данные",
-        "newValue": "Новые данные",
-        "noChanges": "Изменений нет",
-        "memberAdded": "{{login}} добавлен в проект «{{projectName}}» на роль «{{role}}»",
-        "memberRemoved": "{{login}} удалён из проекта",
-        "memberUpdated": "В проекте «{{projectName}}» изменена роль участника {{login}}",
-        "projectCreated": "Создан проект «{{name}}»",
-        "projectDeleted": "Удалён проект «{{name}}»",
-        "issueCreated": "В проекте «{{projectName}}» создана задача «{{title}}»",
-        "issueDeleted": "В проекте «{{projectName}}» удалена задача «{{title}}»",
-        "issueUpdated": "Изменения в задаче «{{title}}»:"
+        "project": "Проект",
+        "issue": "Задача",
+        "login": "Логин",
+        "role": "Роль",
+        "changes": "Изменения",
+        "noChanges": "Изменений нет"
     },
     "event": {
         "create": "Создание",

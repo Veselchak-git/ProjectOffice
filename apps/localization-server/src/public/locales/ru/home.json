@@ -9,7 +9,13 @@
     "activity": {
         "title": "Последняя активность",
         "loading": "Загрузка...",
-        "empty": "Нет последней активности"
+        "empty": "Нет последней активности",
+        "issue_created": "Создана задача «{{issueTitle}}»",
+        "issue_updated": "Обновлена задача «{{issueTitle}}»",
+        "issue_deleted": "Удалена задача «{{issueTitle}}»",
+        "project_created": "Создан проект «{{projectName}}»",
+        "project_updated": "Обновлён проект «{{projectName}}»",
+        "project_deleted": "Удалён проект «{{projectName}}»"
     },
     "error": {
         "loading": "Ошибка загрузки"
