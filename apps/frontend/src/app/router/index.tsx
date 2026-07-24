@@ -103,7 +103,7 @@ export const routes = createBrowserRouter([
                     const { AuditLogPage } = await import("@/pages/audit-log-page");
                     return { Component: AuditLogPage };
                 },
-                loader: () => requireRole(["ADMIN", "MANAGER"]),
+                loader: requireAuth,
                 errorElement: <ErrorElement />
             },
             {

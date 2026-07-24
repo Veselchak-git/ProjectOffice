@@ -8,6 +8,15 @@ import { mapIssue } from "@/modules/issues/service.js";
 import type { ActivityItem, DashboardResponse, ProjectListItem } from "./schema.js";
 import { getDashboardSchema } from "./schema.js";
 
+interface IssueAuditData {
+    projectName?: string;
+    title?: string;
+}
+
+interface ProjectAuditData {
+    name?: string;
+}
+
 const include = {
     project: { select: { name: true } },
     productVersion: { select: { version: true } },
@@ -18,26 +27,14 @@ const include = {
 const CLOSED_STATUSES: IssueStatus[] = [IssueStatus.RESOLVED, IssueStatus.CLOSED];
 
 const mapAuditEventType = (eventType: string): ActivityItem["type"] | null => {
-    const lower = eventType.toLowerCase();
-    if (lower.includes("creat")) return "issue_created";
-    if (lower.includes("status")) return "status_changed";
-    if (lower.includes("assign")) return "assigned";
-    return null;
-};
-
-const buildActivityMessage = (
-    login: string,
-    type: ActivityItem["type"],
-    issueId: number,
-    newValue?: string | null,
-): string => {
-    switch (type) {
-        case "issue_created":
-            return `${login} создал задачу Issue #${issueId}`;
-        case "status_changed":
-            return `${login} изменил статус Issue #${issueId} на ${newValue ?? "UNKNOWN"}`;
-        case "assigned":
-            return `${login} назначил задачу Issue #${issueId}`;
+    switch (eventType) {
+        case "ISSUE_CREATED": return "issue_created";
+        case "ISSUE_UPDATED": return "issue_updated";
+        case "ISSUE_DELETED": return "issue_deleted";
+        case "PROJECT_CREATED": return "project_created";
+        case "PROJECT_UPDATED": return "project_updated";
+        case "PROJECT_DELETED": return "project_deleted";
+        default: return null;
     }
 };
 
@@ -63,11 +60,14 @@ export const getDashboardService = async (
 
         const issues = await prisma.issue.findMany({
             where: { projectId: { in: projectIds } },
-            select: { id: true, projectId: true, status: true },
+            select: { id: true, projectId: true, status: true, title: true },
         });
 
         const issueIdToProjectName = new Map(
             issues.map(i => [i.id, projectIdToName.get(i.projectId) ?? null]),
+        );
+        const issueIdToTitle = new Map(
+            issues.map(i => [i.id, i.title]),
         );
 
         const projectsList: ProjectListItem[] = projects.map(project => {
@@ -86,24 +86,55 @@ export const getDashboardService = async (
 
         const auditLogs = await prisma.auditLog.findMany({
             where: {
-                objectType: "Issue",
-                objectId: { in: issueIdToProjectName.size > 0 ? [...issueIdToProjectName.keys()] : [] },
+                subjectId: userId,
+                OR: [
+                    { objectType: "ISSUE" },
+                    { objectType: "PROJECT" },
+                ],
             },
             include: { subject: { select: { login: true } } },
             orderBy: { createdAt: "desc" },
-            take: 10,
+            take: 15,
         });
 
         const activity: ActivityItem[] = auditLogs.reduce<ActivityItem[]>((acc, log) => {
             const type = mapAuditEventType(log.eventType);
             if (!type) return acc;
+
+            let projectName: string | null = null;
+            let issueTitle: string | null = null;
+
+            try {
+                const parsed: unknown = type.endsWith("_deleted")
+                    ? JSON.parse(log.oldValue ?? "{}")
+                    : JSON.parse(log.newValue ?? "{}");
+
+                if (log.objectType === "ISSUE") {
+                    const data = parsed as IssueAuditData;
+                    projectName = data.projectName ?? null;
+                    issueTitle = data.title ?? null;
+                } else if (log.objectType === "PROJECT") {
+                    const data = parsed as ProjectAuditData;
+                    projectName = data.name ?? null;
+                }
+            } catch {
+                // fallback to live data
+                if (log.objectType === "ISSUE") {
+                    projectName = issueIdToProjectName.get(log.objectId) ?? null;
+                    issueTitle = issueIdToTitle.get(log.objectId) ?? null;
+                } else if (log.objectType === "PROJECT") {
+                    projectName = projectIdToName.get(log.objectId) ?? null;
+                }
+            }
+
             acc.push({
                 id: log.id,
                 type,
-                message: buildActivityMessage(log.subject.login, type, log.objectId, log.newValue),
                 timestamp: log.createdAt.toISOString(),
-                projectName: issueIdToProjectName.get(log.objectId) ?? null,
-                issueId: log.objectType === "Issue" ? log.objectId : null,
+                projectName,
+                projectId: log.objectType === "PROJECT" ? log.objectId : null,
+                issueId: log.objectType === "ISSUE" ? log.objectId : null,
+                issueTitle,
             });
             return acc;
         }, []);

@@ -8,7 +8,7 @@
 import { COMMON, ISSUES } from "@helpdesk-portal/i18n";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import type { Member } from "@/entities/project";
@@ -44,7 +44,6 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
     const {
         control,
         handleSubmit,
-        watch,
         clearErrors,
         formState: { isSubmitting, errors },
         setError
@@ -64,7 +63,7 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
         }
     });
 
-    const title = watch("title");
+    const title = useWatch({ control, name: "title" });
 
     const fieldMap: Record<string, string> = {
         AUTH_FORBIDDEN_PRIORITY: "priority",

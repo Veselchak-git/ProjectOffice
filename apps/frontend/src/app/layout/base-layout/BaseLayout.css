@@ -74,9 +74,14 @@
     background-color: var(--semantic-fill-primary-hover);
 }
 
+[data-color-mode="light"] .sidebar__logo-icon:hover {
+    background-color: var(--semantic-btn-accent-fill-bg);
+    color: var(--semantic-btn-accent-fill-text);
+}
+
 .sidebar__logo-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
 }
 
 .sidebar__nav {
@@ -111,6 +116,11 @@
 .sidebar__item:hover {
     background-color: var(--semantic-fill-primary-hover);
     color: var(--semantic-text-primary);
+}
+
+[data-color-mode="light"] .sidebar__item:hover {
+    background-color: var(--semantic-btn-accent-fill-bg);
+    color: var(--semantic-btn-accent-fill-text);
 }
 
 .sidebar__item--active {
@@ -185,12 +195,13 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: var(--semantic-fill-primary-hover);
+    background-color: var(--semantic-btn-accent-fill-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: var(--semantic-text-secondary);
+    color: var(--semantic-btn-accent-fill-text);
+    margin-right: 5px;
 }
 
 .header__avatar svg {
@@ -261,7 +272,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    gap: 5px;
 }
 
 .header__user-name {
@@ -290,6 +301,7 @@
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .header__theme-switch .ui-kit-switch {
@@ -320,7 +332,9 @@
 }
 
 .header__theme-switch .ui-kit-switch[data-checked] .ui-kit-switch__thumb {
-    transform: translateX(calc(var(--switch-track-width, 36px) - var(--switch-thumb-size, 16px) - var(--switch-thumb-offset, 2px) * 2));
+    transform: translateX(
+        calc(var(--switch-track-width, 36px) - var(--switch-thumb-size, 16px) - var(--switch-thumb-offset, 2px) * 2)
+    );
 }
 
 .header__theme-switch svg {
@@ -331,6 +345,14 @@
 
 .header__locale-switch {
     flex-shrink: 0;
+}
+
+[data-color-mode="dark"] .header__locale-switch .ui-kit-select__list {
+    color: var(--semantic-text-primary);
+}
+
+[data-color-mode="dark"] .header__locale-switch .ui-kit-select__item[data-selected] {
+    color: var(--semantic-text-primary);
 }
 
 .content {

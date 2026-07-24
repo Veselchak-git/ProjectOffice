@@ -3,7 +3,7 @@ import fp from "fastify-plugin";
 
 import { JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import { Role } from "@/generated/prisma/enums.js";
-import { createCheckProjectAccess } from "@/shared/lib/project-access/index.js";
+import { createProjectAccessGuard } from "@/shared/lib/project-access/index.js";
 
 import {
     PROJECTS_LIST_PATH,
@@ -35,7 +35,7 @@ import {
     deleteProjectService,
 } from "./service.js";
 
-const checkProjectAccess = createCheckProjectAccess;
+import { ProjectMemberRole } from "@/generated/prisma/enums.js";
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.get(
@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: getProjectByIdSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({ allowGlobalAdmin: true }),
+                createProjectAccessGuard({ allowGlobalAdmin: true }),
             ],
         },
         getProjectByIdService,
@@ -74,8 +74,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: updateProjectSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({
-                    requireProjectRoles: ["MANAGER"],
+                createProjectAccessGuard({
+                    requiredRoles: [ProjectMemberRole.MANAGER],
                     allowGlobalAdmin: true,
                 }),
             ],
@@ -89,7 +89,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: getProjectMembersSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({ allowGlobalAdmin: true }),
+                createProjectAccessGuard({ allowGlobalAdmin: true }),
             ],
         },
         getProjectMembersService,
@@ -101,8 +101,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: addProjectMemberSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({
-                    requireProjectRoles: ["MANAGER"],
+                createProjectAccessGuard({
+                    requiredRoles: [ProjectMemberRole.MANAGER],
                     allowGlobalAdmin: true,
                     checkRoleHierarchy: true,
                 }),
@@ -117,8 +117,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: updateProjectMemberSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({
-                    requireProjectRoles: ["MANAGER"],
+                createProjectAccessGuard({
+                    requiredRoles: [ProjectMemberRole.MANAGER],
                     allowGlobalAdmin: true,
                     checkSelfModification: true,
                     checkRoleHierarchy: true,
@@ -134,8 +134,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: deleteProjectMemberSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({
-                    requireProjectRoles: ["MANAGER"],
+                createProjectAccessGuard({
+                    requiredRoles: [ProjectMemberRole.MANAGER],
                     allowGlobalAdmin: true,
                 }),
             ],
@@ -149,8 +149,8 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: deleteProjectSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                checkProjectAccess({
-                    requireProjectRoles: ["MANAGER"],
+                createProjectAccessGuard({
+                    requiredRoles: [ProjectMemberRole.MANAGER],
                     allowGlobalAdmin: true,
                 }),
             ],

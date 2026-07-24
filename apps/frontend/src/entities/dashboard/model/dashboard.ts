@@ -1,6 +1,12 @@
 import type { Issue } from "@/entities/issue";
 
-export type ActivityType = "issue_created" | "status_changed" | "assigned";
+export type ActivityType =
+    | "issue_created"
+    | "issue_updated"
+    | "issue_deleted"
+    | "project_created"
+    | "project_updated"
+    | "project_deleted";
 
 export interface ProjectListItem {
     id: number;
@@ -15,10 +21,11 @@ export interface ProjectListItem {
 export interface ActivityItem {
     id: number;
     type: ActivityType;
-    message: string;
     timestamp: string;
     projectName?: string | null;
+    projectId?: number | null;
     issueId?: number | null;
+    issueTitle?: string | null;
 }
 
 export interface DashboardSummary {

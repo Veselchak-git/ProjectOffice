@@ -177,11 +177,11 @@ export const IssuePage: FC = () => {
                         </div>
                         {canEdit && (
                             <div className={styles["issue-page__actions"]}>
-                                <Button variant="stroke" onClick={() => setEditing(true)}>
+                                <Button size="m" variant="stroke" onClick={() => setEditing(true)}>
                                     {t("detail.edit")}
                                 </Button>
                                 {(user?.role === "ADMIN" || issue.myRole === "MANAGER") && (
-                                    <Button variant="stroke" color="error" onClick={handleDelete}>
+                                    <Button size="m" variant="stroke" color="error" onClick={handleDelete}>
                                         {t("detail.delete")}
                                     </Button>
                                 )}

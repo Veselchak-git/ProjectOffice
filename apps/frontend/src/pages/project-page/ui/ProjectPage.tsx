@@ -156,19 +156,27 @@ export const ProjectPage: FC = () => {
                         </div>
                         <div className={styles["project-page__actions"]}>
                             {(user?.role === "ADMIN" || (project.myRole && project.myRole !== "VIEWER")) && (
-                                <Button onClick={() => setCreatingIssue(true)}>{t("detail.issues.create")}</Button>
+                                <Button size="m" onClick={() => setCreatingIssue(true)}>
+                                    {t("detail.issues.create")}
+                                </Button>
                             )}
                             {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
-                                <Button variant="stroke" onClick={() => setEditing(true)}>
+                                <Button size="m" variant="stroke" onClick={() => setEditing(true)}>
                                     {t("detail.edit")}
                                 </Button>
                             )}
                             {(user?.role === "ADMIN" || project.myRole === "MANAGER") && (
-                                <Button variant="stroke" color="error" onClick={handleDelete} disabled={deleting}>
+                                <Button
+                                    size="m"
+                                    variant="stroke"
+                                    color="error"
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                >
                                     {deleting ? t("detail.deleting") : t("detail.delete")}
                                 </Button>
                             )}
-                            <Button startIcon={<ParticipantsIcon />} onClick={() => setMembersOpen(true)}>
+                            <Button size="m" startIcon={<ParticipantsIcon />} onClick={() => setMembersOpen(true)}>
                                 ({projectMembers?.length ?? 0})
                             </Button>
                         </div>

@@ -14,8 +14,11 @@ export type ProjectSummary = Static<typeof projectSummarySchema>;
 
 export const activityTypeEnum = Type.Union([
     Type.Literal("issue_created"),
-    Type.Literal("status_changed"),
-    Type.Literal("assigned"),
+    Type.Literal("issue_updated"),
+    Type.Literal("issue_deleted"),
+    Type.Literal("project_created"),
+    Type.Literal("project_updated"),
+    Type.Literal("project_deleted"),
 ]);
 
 export type ActivityType = Static<typeof activityTypeEnum>;
@@ -35,10 +38,11 @@ export type ProjectListItem = Static<typeof projectListItemSchema>;
 export const activityItemSchema = Type.Object({
     id: Type.Number(),
     type: activityTypeEnum,
-    message: Type.String(),
     timestamp: Type.String(),
     projectName: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+    projectId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     issueId: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+    issueTitle: Type.Optional(Type.Union([Type.String(), Type.Null()])),
 });
 
 export type ActivityItem = Static<typeof activityItemSchema>;

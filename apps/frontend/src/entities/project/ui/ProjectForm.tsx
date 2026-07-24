@@ -16,7 +16,7 @@ import { COMMON, PROJECTS } from "@helpdesk-portal/i18n";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import type { CreateProjectData, ProjectVersion, UpdateProjectData } from "../model/project";
@@ -47,7 +47,6 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
     const {
         control,
         handleSubmit,
-        watch,
         formState: { isSubmitting }
     } = useForm<FormValues>({
         mode: "onChange",
@@ -58,7 +57,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
         }
     });
 
-    const nameValue = watch("name");
+    const nameValue = useWatch({ control, name: "name" });
 
     const addVersion = () => {
         const v = versionInput.trim();

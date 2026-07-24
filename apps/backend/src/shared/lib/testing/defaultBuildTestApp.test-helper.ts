@@ -16,6 +16,7 @@ import type { FastifyTypeBox } from "@/shared/lib/typebox/types.js";
 type TestAppConfig = Static<typeof envSchema>;
 
 const defaultTestConfig = {
+    NODE_ENV: "test",
     PORT: 8442,
     HOST: "0.0.0.0",
     DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/office_registry",

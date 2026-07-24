@@ -11,7 +11,7 @@ import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
 import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
-import { checkProjectMember } from "@/shared/lib/project-access/index.js";
+import { resolveProjectAccess } from "@/shared/lib/project-access/index.js";
 import { assertValidAssignee } from "@/shared/lib/validate-assignee/index.js";
 import {
     IssueCategory,
@@ -60,7 +60,7 @@ export type IssueRow = {
     reporter: { login: string };
 };
 
-export const mapIssue = (i: IssueRow, myRole?: string): IssueResponse => ({
+export const mapIssue = (i: IssueRow, myRole?: string | null): IssueResponse => ({
     id: i.id,
     title: i.title,
     projectId: i.projectId,
@@ -78,7 +78,7 @@ export const mapIssue = (i: IssueRow, myRole?: string): IssueResponse => ({
     reporterId: i.reporterId,
     reporterLogin: i.reporter.login,
     solution: i.solution,
-    ...(myRole !== undefined ? { myRole } : {}),
+    ...(myRole != null ? { myRole } : {}),
     createdAt: i.createdAt.toISOString(),
     updatedAt: i.updatedAt.toISOString(),
 });
@@ -169,8 +169,8 @@ export const getProjectIssuesService = async (
         const { id } = request.params;
         const { q, page = 1, perPage = 20, sortBy, sortOrder = "desc", status, priority, category } = request.query;
 
-        const userId = Number(request.user.sub);
-        const member = await checkProjectMember(prisma, id, userId);
+        await resolveProjectAccess(request, id);
+        const localRole = request.projectAccess.localRole ?? undefined;
 
         const where: Record<string, unknown> = { projectId: id };
 
@@ -188,7 +188,7 @@ export const getProjectIssuesService = async (
         ]);
 
         return {
-            issues: issues.map(i => mapIssue(i, member?.role)),
+            issues: issues.map(i => mapIssue(i, localRole)),
             total,
             page,
             perPage,
@@ -207,10 +207,10 @@ export const getIssueByIdService = async (
 
         const issue = await getIssueOrThrow(prisma, id);
 
-        const userId = Number(request.user.sub);
-        const member = await checkProjectMember(prisma, issue.projectId, userId);
+        await resolveProjectAccess(request, issue.projectId);
+        const localRole = request.projectAccess.localRole ?? undefined;
 
-        return mapIssue(issue, member?.role);
+        return mapIssue(issue, localRole);
     } catch (error) {
         throw handlePrismaError(error);
     }
@@ -226,9 +226,10 @@ export const createIssueService = async (
 
         const userId = Number(request.user.sub);
 
-        const member = await checkProjectMember(prisma, projectId, userId);
+        await resolveProjectAccess(request, projectId);
+        const localRole = request.projectAccess.localRole ?? undefined;
 
-        if (member && member.role === ProjectMemberRole.VIEWER) {
+        if (localRole === ProjectMemberRole.VIEWER) {
             throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
         }
 
@@ -262,9 +263,10 @@ export const createIssueService = async (
             newValue: JSON.stringify({ title: body.title, projectId, category: body.category, priority: body.priority, projectName: issue.project.name }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId,
         });
 
-        return mapIssue(issue as unknown as IssueRow, member?.role);
+        return mapIssue(issue as unknown as IssueRow, localRole);
     } catch (error) {
         throw handlePrismaError(error);
     }
@@ -281,21 +283,22 @@ export const updateIssueService = async (
         const userId = Number(request.user.sub);
 
         const issue = await getIssueOrThrow(prisma, id);
-        const member = await checkProjectMember(prisma, issue.projectId, userId);
+        await resolveProjectAccess(request, issue.projectId);
 
-        if (member && member.role === ProjectMemberRole.VIEWER) {
+        const localRole = request.projectAccess.localRole;
+
+        if (localRole === ProjectMemberRole.VIEWER) {
             throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
         }
 
-        if (member && member.role === ProjectMemberRole.REPORTER) {
+        if (localRole === ProjectMemberRole.REPORTER) {
             throw new AppError(HTTP_STATUS.FORBIDDEN, "Access denied", "AUTH_FORBIDDEN");
         }
 
         if (
             body.priority !== undefined &&
             body.priority !== issue.priority &&
-            member !== undefined &&
-            member.role === ProjectMemberRole.DEVELOPER
+            localRole === ProjectMemberRole.DEVELOPER
         ) {
             throw new AppError(HTTP_STATUS.FORBIDDEN, "Insufficient permissions for this priority", "AUTH_FORBIDDEN_PRIORITY");
         }
@@ -303,8 +306,7 @@ export const updateIssueService = async (
         if (
             body.status === "NEW" &&
             issue.status !== "NEW" &&
-            member !== undefined &&
-            member.role !== ProjectMemberRole.MANAGER
+            localRole !== ProjectMemberRole.MANAGER
         ) {
             throw new AppError(HTTP_STATUS.FORBIDDEN, "Insufficient permissions for new status", "AUTH_FORBIDDEN_STATUS_NEW");
         }
@@ -326,7 +328,7 @@ export const updateIssueService = async (
         }
 
         if (Object.keys(updateData).length === 0) {
-            return mapIssue(issue, member?.role);
+            return mapIssue(issue, localRole);
         }
 
         const updated = await prisma.issue.update({
@@ -345,9 +347,10 @@ export const updateIssueService = async (
             newValue: JSON.stringify({ title: updated.title, status: updated.status, priority: updated.priority, assigneeLogin: updated.assignee?.login ?? null }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: issue.projectId,
         });
 
-        return mapIssue(updated as unknown as IssueRow, member?.role);
+        return mapIssue(updated as unknown as IssueRow, localRole);
     } catch (error) {
         throw handlePrismaError(error);
     }
@@ -363,7 +366,7 @@ export const deleteIssueService = async (
         const userId = Number(request.user.sub);
 
         const issue = await getIssueOrThrow(prisma, id);
-        await checkProjectMember(prisma, issue.projectId, userId, ["MANAGER"], true);
+        await resolveProjectAccess(request, issue.projectId, { requiredRoles: [ProjectMemberRole.MANAGER] });
 
         await prisma.issue.delete({ where: { id } });
 
@@ -376,6 +379,7 @@ export const deleteIssueService = async (
             oldValue: JSON.stringify({ title: issue.title, projectName: issue.project.name }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: issue.projectId,
         });
 
         return null;

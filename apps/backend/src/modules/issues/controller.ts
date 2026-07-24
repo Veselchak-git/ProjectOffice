@@ -3,6 +3,7 @@ import fp from "fastify-plugin";
 
 import { JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import { Role } from "@/generated/prisma/enums.js";
+import { createProjectAccessGuard } from "@/shared/lib/project-access/index.js";
 
 import {
     ISSUES_PATH,
@@ -50,7 +51,10 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         PROJECT_ISSUES_PATH,
         {
             schema: getProjectIssuesSchema,
-            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+            preHandler: [
+                fastify.authorize(Role.USER, Role.ADMIN),
+                createProjectAccessGuard(),
+            ],
         },
         getProjectIssuesService,
     );
@@ -59,7 +63,10 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         PROJECT_ISSUES_PATH,
         {
             schema: createIssueSchema,
-            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+            preHandler: [
+                fastify.authorize(Role.USER, Role.ADMIN),
+                createProjectAccessGuard(),
+            ],
         },
         createIssueService,
     );

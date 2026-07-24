@@ -178,6 +178,7 @@ export const createProjectService = async (
             newValue: JSON.stringify({ name: project.name, description }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: project.id,
         });
 
         return { id: project.id, name: project.name };
@@ -236,6 +237,7 @@ export const updateProjectService = async (
             newValue: JSON.stringify({ name: project.name, ...(body.name !== undefined ? { name: body.name } : {}), ...(body.status !== undefined ? { status: body.status } : {}) }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: id,
         });
 
         return { id: project.id, name: project.name };
@@ -297,6 +299,7 @@ export const addProjectMemberService = async (
             newValue: JSON.stringify({ userId, role, login: member.user.login, projectName: project?.name }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: id,
         });
 
         return { userId: member.userId, login: member.user.login, role: member.role };
@@ -350,6 +353,7 @@ export const updateProjectMemberService = async (
             newValue: JSON.stringify({ userId, role: member.role, login: member.user.login, projectName: project?.name }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: id,
         });
 
         return { userId: member.userId, login: member.user.login, role: member.role };
@@ -386,6 +390,7 @@ export const deleteProjectService = async (
             oldValue: JSON.stringify({ name: existing.name }),
             subjectLogin: request.user.login,
             createdAt: new Date().toISOString(),
+            projectId: id,
         });
 
         return null;
@@ -437,6 +442,7 @@ export const removeProjectMemberService = async (
                 oldValue: JSON.stringify({ userId, role: existingMember.role, login: existingMember.user.login }),
                 subjectLogin: request.user.login,
                 createdAt: new Date().toISOString(),
+                projectId: id,
             });
         }
 

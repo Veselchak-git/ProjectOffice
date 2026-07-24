@@ -45,11 +45,12 @@ const REFRESH_COOKIE = "refreshToken";
 function setRefreshCookie(
     reply: FastifyReplyTypeBox<typeof postLoginSchema | typeof refreshSchema | typeof logoutSchema>,
     token: string,
-    ttlMs: number
+    ttlMs: number,
+    isProduction: boolean
 ): void {
     reply.setCookie(REFRESH_COOKIE, token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: isProduction,
         sameSite: "strict",
         path: "/api/auth",
         maxAge: Math.floor(ttlMs / 1000)
@@ -57,11 +58,12 @@ function setRefreshCookie(
 }
 
 function clearRefreshCookie(
-    reply: FastifyReplyTypeBox<typeof postLoginSchema | typeof refreshSchema | typeof logoutSchema>
+    reply: FastifyReplyTypeBox<typeof postLoginSchema | typeof refreshSchema | typeof logoutSchema>,
+    isProduction: boolean
 ): void {
     reply.setCookie(REFRESH_COOKIE, "", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: isProduction,
         sameSite: "strict",
         path: "/api/auth",
         maxAge: 0
@@ -101,7 +103,7 @@ export const loginService = async (
     await request.server.userRepository.deleteAllUserRefreshTokens(userRecord.id);
     await request.server.userRepository.createRefreshToken(userRecord.id, tokenHash, new Date(Date.now() + ttlMs));
 
-    setRefreshCookie(reply, rawRefreshToken, ttlMs);
+    setRefreshCookie(reply, rawRefreshToken, ttlMs, request.server.config.NODE_ENV === "production");
 
     return {
         accessToken,
@@ -153,7 +155,7 @@ export const refreshService = async (
         new Date(Date.now() + ttlMs)
     );
 
-    setRefreshCookie(reply, newRawRefreshToken, ttlMs);
+    setRefreshCookie(reply, newRawRefreshToken, ttlMs, request.server.config.NODE_ENV === "production");
 
     const userRecord = await request.server.userRepository.findUserById(storedToken.userId);
     if (!userRecord) {
@@ -184,7 +186,7 @@ export const logoutService = async (
         }
     }
 
-    clearRefreshCookie(reply);
+    clearRefreshCookie(reply, request.server.config.NODE_ENV === "production");
 
     return { message: "Logged out successfully" };
 };
