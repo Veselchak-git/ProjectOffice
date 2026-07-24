@@ -11,6 +11,7 @@ import { cookiePlugin } from "./cookie-plugin/index.js";
 import { envPlugin } from "./env-plugin/index.js";
 import { jwtPlugin } from "./jwt-plugin/index.js";
 import { prismaPlugin } from "./prisma-plugin/index.js";
+import { projectAccessPlugin } from "./project-access-plugin/index.js";
 
 //подключаем тут только глобальные плагины
 export const appPlugins = fp(
@@ -20,6 +21,7 @@ export const appPlugins = fp(
         await fastify.register(cookiePlugin);
         await fastify.register(jwtPlugin);
         await fastify.register(prismaPlugin);
+        await fastify.register(projectAccessPlugin);
     },
     {
         name: "app-plugins"

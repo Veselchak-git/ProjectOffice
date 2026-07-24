@@ -8,6 +8,7 @@
 import { Type } from "@fastify/type-provider-typebox";
 
 export const envSchema = Type.Object({
+    NODE_ENV: Type.String({ default: "development" }),
     PORT: Type.Number({ default: 8442 }),
     HOST: Type.String({ default: "0.0.0.0" }),
     DATABASE_URL: Type.String({ default: "postgresql://postgres:postgres@localhost:5432/helpdesk_portal" }),
