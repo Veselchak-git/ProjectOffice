@@ -12,19 +12,19 @@ import fp from "fastify-plugin";
 
 import { envSchema } from "./schema.js";
 
-export const ENV_PLUGIN_NAME = "env";
-export const ENV_DECORATOR_NAME = "config";
+export const ENV_PLUGIN = "env";
+export const ENV_DECORATOR = "config";
 const plugin: FastifyPluginAsync = async fastify => {
     await fastify.register(fastifyEnv, {
-        confKey: ENV_DECORATOR_NAME,
+        confKey: ENV_DECORATOR,
         schema: envSchema,
         dotenv: true
     });
 };
 
-export const envPlugin = fp(plugin, { name: ENV_PLUGIN_NAME });
+export const envPlugin = fp(plugin, { name: ENV_PLUGIN });
 declare module "fastify" {
     interface FastifyInstance {
-        [ENV_DECORATOR_NAME]: Static<typeof envSchema>;
+        [ENV_DECORATOR]: Static<typeof envSchema>;
     }
 }

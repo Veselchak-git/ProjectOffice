@@ -9,10 +9,10 @@ import type { PrismaClient, RefreshToken, User } from "@/generated/prisma/client
 import type { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
 
-import { PRISMA_DECORATOR_NAME, PRISMA_PLUGIN_NAME } from "@/plugins/prisma-plugin/index.js";
+import { PRISMA_DECORATOR, PRISMA_PLUGIN } from "@/plugins/prisma-plugin/index.js";
 
-export const USER_REPOSITORY_PLUGIN_NAME = "userRepositoryPlugin";
-export const USER_REPOSITORY_DECORATOR_NAME = "userRepository";
+export const USER_REPOSITORY_PLUGIN = "userRepositoryPlugin";
+export const USER_REPOSITORY_DECORATOR = "userRepository";
 
 // объявляем интерфейс для репозитория пользователей - нужно для переиспользования в других модулях и тестах
 export interface IUserRepository {
@@ -70,15 +70,15 @@ export class UserRepository implements IUserRepository {
 // репозиторий это фактически плагин с декоратором, который инкапсулирует логику работы с пользователями
 // вместо прямого общения с призмой
 const plugin: FastifyPluginAsync = async fastify => {
-    fastify.decorate(USER_REPOSITORY_DECORATOR_NAME, new UserRepository(fastify.prisma));
+    fastify.decorate(USER_REPOSITORY_DECORATOR, new UserRepository(fastify.prisma));
 };
 
 export const userRepositoryPlugin = fp(plugin, {
-    name: USER_REPOSITORY_PLUGIN_NAME,
+    name: USER_REPOSITORY_PLUGIN,
     decorators: {
-        fastify: [PRISMA_DECORATOR_NAME]
+        fastify: [PRISMA_DECORATOR]
     },
-    dependencies: [PRISMA_PLUGIN_NAME]
+    dependencies: [PRISMA_PLUGIN]
 });
 
 //декларируем тоже в глобальном модуле fastify чтобы типы были доступны везде,
@@ -87,6 +87,6 @@ export const userRepositoryPlugin = fp(plugin, {
 // чтобы избежать ошибок нужно использовать dependencies и decorators в fastify-plugin
 declare module "fastify" {
     interface FastifyInstance {
-        [USER_REPOSITORY_DECORATOR_NAME]: IUserRepository;
+        [USER_REPOSITORY_DECORATOR]: IUserRepository;
     }
 }

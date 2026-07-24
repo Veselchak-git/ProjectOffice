@@ -9,10 +9,10 @@ import fastifyCookie from "@fastify/cookie";
 import type { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
 
-const COOKIE_PLUGIN_NAME = "cookiePlugin";
+const COOKIE_PLUGIN = "cookiePlugin";
 
 const plugin: FastifyPluginAsync = async fastify => {
     await fastify.register(fastifyCookie);
 };
 
-export const cookiePlugin = fp(plugin, { name: COOKIE_PLUGIN_NAME });
+export const cookiePlugin = fp(plugin, { name: COOKIE_PLUGIN });

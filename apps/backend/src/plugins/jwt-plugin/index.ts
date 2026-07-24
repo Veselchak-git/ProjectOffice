@@ -12,10 +12,10 @@ import fp from "fastify-plugin";
 
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 
-import { ENV_DECORATOR_NAME } from "../env-plugin/index.js";
+import { ENV_DECORATOR } from "../env-plugin/index.js";
 import type { JwtPayload } from "./model.js";
 
-const JWT_PLUGIN_NAME = "jwtPlugin";
+const JWT_PLUGIN = "jwtPlugin";
 export const JWT_DECORATOR_AUTHENTICATE = "authenticate";
 export const JWT_DECORATOR_AUTHORIZE = "authorize";
 
@@ -44,7 +44,7 @@ const plugin: FastifyPluginAsync = async fastify => {
 };
 // вот тут плагин зависит от envPlugin, т.к. он использует secret из envPlugin
 // и если envPlugin не будет зарегистрирован, то будет ошибка при попытке использовать jwtPlugin
-export const jwtPlugin = fp(plugin, { name: JWT_PLUGIN_NAME, decorators: { fastify: [ENV_DECORATOR_NAME] } });
+export const jwtPlugin = fp(plugin, { name: JWT_PLUGIN, decorators: { fastify: [ENV_DECORATOR] } });
 
 type FastifyAuthorize = (...roles: Role[]) => preHandlerHookHandler;
 
