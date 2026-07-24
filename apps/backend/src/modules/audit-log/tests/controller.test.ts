@@ -242,4 +242,27 @@ describe("auditLogController", () => {
         expect(response.statusCode).toBe(200);
         expect(capturedOrderBy).toEqual({ eventType: "asc" });
     });
+
+    describe("GET /api/audit-log/stream", () => {
+        it("returns 401 without Authorization header", async () => {
+            const response = await app.inject({
+                method: "GET",
+                url: "/api/audit-log/stream",
+            });
+
+            expect(response.statusCode).toBe(401);
+        });
+
+        it("returns 401 with invalid JWT token", async () => {
+            const response = await app.inject({
+                method: "GET",
+                url: "/api/audit-log/stream",
+                headers: {
+                    authorization: "Bearer invalid-token",
+                },
+            });
+
+            expect(response.statusCode).toBe(401);
+        });
+    });
 });

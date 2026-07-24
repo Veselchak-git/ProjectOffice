@@ -5,7 +5,7 @@
  * Исключительное право (c) 2016-2026 принадлежит ООО Теком
  * Все права защищены
  */
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { getToken } from "@/shared/lib/auth/token-store";
 
@@ -21,73 +21,154 @@ export interface AuditLogSseEvent {
     newValue?: string | null;
     subjectLogin?: string;
     createdAt?: string;
-    message?: string;
 }
 
 type EventCallback = (event: AuditLogSseEvent) => void;
 
 /**
  * Hook for connecting to the audit-log SSE stream.
- * Uses browser's EventSource API which handles reconnection automatically.
+ * Uses fetch API with ReadableStream to support Authorization header.
  *
- * EventSource doesn't support custom headers (like Authorization).
- * JWT is passed as a query parameter (?token=...) and verified server-side.
+ * JWT is passed in the Authorization header as Bearer token.
  */
+const MAX_RECONNECT_DELAY = 30_000;
+const INITIAL_RECONNECT_DELAY = 1_000;
+
 export function useAuditLogStream(onEvent: EventCallback, enabled = true) {
-    const eventSourceRef = useRef<EventSource | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
     const onEventRef = useRef(onEvent);
+    const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY);
 
     useEffect(() => {
         onEventRef.current = onEvent;
     }, [onEvent]);
 
-    const connect = useCallback(() => {
+    const connectRef = useRef<() => void>(() => {});
+
+    const connect = useCallback(async () => {
         if (!enabled) return;
 
         // Close existing connection if any
-        if (eventSourceRef.current) {
-            eventSourceRef.current.close();
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+
+        // Clear any pending reconnect
+        if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
         }
 
         const token = getToken();
-        const url = token
-            ? `/api/audit-log/stream?token=${encodeURIComponent(token)}`
-            : "/api/audit-log/stream";
-        const eventSource = new EventSource(url);
+        if (!token) {
+            // No token available, retry after delay
+            reconnectTimeoutRef.current = setTimeout(connectRef.current, reconnectDelayRef.current);
+            reconnectDelayRef.current = Math.min(reconnectDelayRef.current * 2, MAX_RECONNECT_DELAY);
+            return;
+        }
 
-        eventSource.onmessage = (event: MessageEvent) => {
-            try {
-                const data: AuditLogSseEvent = JSON.parse(event.data);
-                onEventRef.current(data);
-            } catch {
-                // Ignore malformed events
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
+
+        try {
+            const response = await fetch("/api/audit-log/stream", {
+                method: "GET",
+                headers: {
+                    Accept: "text/event-stream",
+                    "Cache-Control": "no-cache",
+                    Authorization: `Bearer ${token}`
+                },
+                signal: abortController.signal
+            });
+
+            if (!response.ok) {
+                // Server returned error, retry after delay
+                reconnectTimeoutRef.current = setTimeout(connectRef.current, reconnectDelayRef.current);
+                reconnectDelayRef.current = Math.min(reconnectDelayRef.current * 2, MAX_RECONNECT_DELAY);
+                return;
             }
-        };
 
-        eventSource.onerror = () => {
-            // EventSource automatically reconnects
-            // The browser will retry with exponential backoff
-        };
+            const reader = response.body?.getReader();
+            if (!reader) {
+                reconnectTimeoutRef.current = setTimeout(connectRef.current, reconnectDelayRef.current);
+                reconnectDelayRef.current = Math.min(reconnectDelayRef.current * 2, MAX_RECONNECT_DELAY);
+                return;
+            }
 
-        eventSourceRef.current = eventSource;
+            // Connected successfully — reset backoff
+            reconnectDelayRef.current = INITIAL_RECONNECT_DELAY;
+
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    const trimmed = line.trimEnd();
+
+                    // Skip empty lines and comments (heartbeats)
+                    if (trimmed === "" || trimmed.startsWith(":")) {
+                        continue;
+                    }
+
+                    // Parse data lines
+                    if (trimmed.startsWith("data: ")) {
+                        const jsonStr = trimmed.slice(6);
+                        try {
+                            const data: AuditLogSseEvent = JSON.parse(jsonStr);
+                            onEventRef.current(data);
+                        } catch {
+                            // Ignore malformed events
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                // Connection was intentionally aborted
+                return;
+            }
+            // Other errors, retry after delay
+        }
+
+        // Auto-reconnect after disconnect with exponential backoff
+        if (!abortController.signal.aborted) {
+            reconnectTimeoutRef.current = setTimeout(connectRef.current, reconnectDelayRef.current);
+            reconnectDelayRef.current = Math.min(reconnectDelayRef.current * 2, MAX_RECONNECT_DELAY);
+        }
     }, [enabled]);
+
+    useEffect(() => {
+        connectRef.current = connect;
+    }, [connect]);
 
     useEffect(() => {
         connect();
 
         return () => {
-            if (eventSourceRef.current) {
-                eventSourceRef.current.close();
-                eventSourceRef.current = null;
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+                abortControllerRef.current = null;
+            }
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+                reconnectTimeoutRef.current = null;
             }
         };
     }, [connect]);
 
     return {
         disconnect: () => {
-            if (eventSourceRef.current) {
-                eventSourceRef.current.close();
-                eventSourceRef.current = null;
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+                abortControllerRef.current = null;
             }
         }
     };

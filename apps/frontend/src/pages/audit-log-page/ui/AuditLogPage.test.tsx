@@ -7,8 +7,8 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ALL_COLUMNS, DEFAULT_COLUMN_ORDER, DEFAULT_COLUMN_VISIBILITY } from "../model/columns";
 import { auditLogPageSlice } from "../model/audit-log-page-slice";
+import { ALL_COLUMNS, DEFAULT_COLUMN_ORDER, DEFAULT_COLUMN_VISIBILITY } from "../model/columns";
 
 // ── Тесты колонок ─────────────────────────────────────────────────────────
 
@@ -66,10 +66,7 @@ describe("auditLogPageSlice", () => {
 
     it("setRowSelection action updates row selection", () => {
         const state = auditLogPageSlice.reducer(undefined, { type: "@@INIT" });
-        const updated = auditLogPageSlice.reducer(
-            state,
-            auditLogPageSlice.actions.setRowSelection({ "1": true })
-        );
+        const updated = auditLogPageSlice.reducer(state, auditLogPageSlice.actions.setRowSelection({ "1": true }));
 
         expect(updated.rowSelection).toEqual({ "1": true });
     });

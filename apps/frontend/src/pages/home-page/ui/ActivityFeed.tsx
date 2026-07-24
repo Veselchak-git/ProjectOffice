@@ -9,6 +9,7 @@ import { HOME } from "@helpdesk-portal/i18n";
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
 import { ru } from "date-fns/locale/ru";
+import type { TFunction } from "i18next";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -29,14 +30,20 @@ function timeAgo(dateStr: string): string {
     return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale });
 }
 
-function getTypeIcon(type: ActivityItemType["type"]): string {
-    switch (type) {
+function getActivityMessage(t: TFunction<"home", undefined>, item: ActivityItemType): string {
+    switch (item.type) {
         case "issue_created":
-            return "🆕";
-        case "status_changed":
-            return "🔄";
-        case "assigned":
-            return "👤";
+            return t("activity.issue_created", { issueTitle: item.issueTitle });
+        case "issue_updated":
+            return t("activity.issue_updated", { issueTitle: item.issueTitle });
+        case "issue_deleted":
+            return t("activity.issue_deleted", { issueTitle: item.issueTitle });
+        case "project_created":
+            return t("activity.project_created", { projectName: item.projectName });
+        case "project_updated":
+            return t("activity.project_updated", { projectName: item.projectName });
+        case "project_deleted":
+            return t("activity.project_deleted", { projectName: item.projectName });
     }
 }
 
@@ -65,14 +72,17 @@ export const ActivityFeed: FC<Props> = ({ activity, isLoading }) => {
                 {activity.map(item => (
                     <li key={item.id} className={styles["activity-feed__item"]}>
                         <div className={styles["activity-feed__line"]}>
-                            <span className={styles["activity-feed__icon"]}>{getTypeIcon(item.type)}</span>
                             <span className={styles["activity-feed__message"]}>
                                 {item.issueId ? (
                                     <Link to={`/tasks/${item.issueId}`} className={styles["activity-feed__link"]}>
-                                        {item.message}
+                                        {getActivityMessage(t, item)}
+                                    </Link>
+                                ) : item.projectId ? (
+                                    <Link to={`/projects/${item.projectId}`} className={styles["activity-feed__link"]}>
+                                        {getActivityMessage(t, item)}
                                     </Link>
                                 ) : (
-                                    item.message
+                                    getActivityMessage(t, item)
                                 )}
                             </span>
                         </div>

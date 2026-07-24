@@ -74,10 +74,8 @@ export const auditLogSseEventSchema = Type.Object({
 
 export type AuditLogSseEvent = Static<typeof auditLogSseEventSchema>;
 
-// SSE stream query (token via query param for EventSource)
-export const auditLogStreamQuerySchema = Type.Object({
-    token: Type.String(),
-});
+// SSE stream query (empty - authentication via Authorization header)
+export const auditLogStreamQuerySchema = Type.Object({});
 
 // SSE stream endpoint schema
 export const getAuditLogStreamSchema = {

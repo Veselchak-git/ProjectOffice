@@ -1,6 +1,12 @@
 .activity-feed {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    max-height: 650px;
+    background: var(--semantic-bg-surface);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .activity-feed__empty {
@@ -18,12 +24,16 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .activity-feed__item {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
     padding: 12px 16px;
     border: 1px solid var(--semantic-border-default);
     border-radius: 8px;
@@ -33,11 +43,7 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-}
-
-.activity-feed__icon {
-    font-size: 14px;
-    line-height: 1.4;
+    min-width: 0;
 }
 
 .activity-feed__message {
@@ -58,5 +64,6 @@
 .activity-feed__time {
     font-size: 12px;
     color: var(--semantic-text-secondary);
-    margin-left: 22px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }

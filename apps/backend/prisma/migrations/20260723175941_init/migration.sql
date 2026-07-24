@@ -1,6 +1,3 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
@@ -30,7 +27,7 @@ CREATE TABLE "User" (
     "role" "Role" NOT NULL DEFAULT 'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3) DEFAULT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -99,6 +96,16 @@ CREATE TABLE "RefreshToken" (
 );
 
 -- CreateTable
+CREATE TABLE "UserTableSetting" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "page" TEXT NOT NULL,
+    "settings" JSONB NOT NULL,
+
+    CONSTRAINT "UserTableSetting_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "AuditLog" (
     "id" SERIAL NOT NULL,
     "eventType" TEXT NOT NULL,
@@ -111,16 +118,6 @@ CREATE TABLE "AuditLog" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "UserTableSetting" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "page" TEXT NOT NULL,
-    "settings" JSONB NOT NULL,
-
-    CONSTRAINT "UserTableSetting_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -160,7 +157,7 @@ ALTER TABLE "Issue" ADD CONSTRAINT "Issue_reporterId_fkey" FOREIGN KEY ("reporte
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserTableSetting" ADD CONSTRAINT "UserTableSetting_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserTableSetting" ADD CONSTRAINT "UserTableSetting_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

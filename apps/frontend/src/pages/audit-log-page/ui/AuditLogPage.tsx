@@ -8,9 +8,9 @@
 import { AUDIT } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,7 +20,7 @@ import type { AuditLog, FetchAuditLogsParams } from "@/entities/audit-log";
 import { fetchAuditLogs } from "@/entities/audit-log";
 
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
-import { type AuditLogSseEvent, useAuditLogStream } from "@/shared/lib/sse";
+import { useRealtimeEvents } from "@/shared/lib/sse";
 import { useTable } from "@/shared/lib/use-table";
 import { useTablePage } from "@/shared/lib/use-table-page";
 
@@ -115,17 +115,7 @@ export const AuditLogPage: FC = () => {
         [page, perPage, sortBy, sortOrder]
     );
 
-    const queryClient = useQueryClient();
-
-    const handleSseEvent = useCallback(
-        (event: AuditLogSseEvent) => {
-            if (event.type !== "audit-log") return;
-            queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
-        },
-        [queryClient]
-    );
-
-    useAuditLogStream(handleSseEvent);
+    useRealtimeEvents({ "audit-log": ["audit-logs"] });
 
     const { data, isPending, isError, error } = useQuery({
         queryKey: ["audit-logs", auditLogParams],

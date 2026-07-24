@@ -4,9 +4,11 @@ import fp from "fastify-plugin";
 import { JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import type { JwtPayload } from "@/plugins/jwt-plugin/model.js";
 import { Role } from "@/generated/prisma/enums.js";
+import { getManagerProjectIds } from "@/shared/lib/project-access/index.js";
 import { AUDIT_LOG_AVAILABLE_PATH, AUDIT_LOG_PATH, AUDIT_LOG_STREAM_PATH } from "@/shared/routes.js";
 
 import { auditLogEmitter } from "./emitter.js";
+import type { EntityChangeEvent } from "./emitter.js";
 import {
     getAuditLogAvailableSchema,
     getAuditLogListSchema,
@@ -18,6 +20,23 @@ function writeJsonError(raw: import("http").ServerResponse, statusCode: number, 
     raw.writeHead(statusCode, { "Content-Type": "application/json" });
     raw.write(JSON.stringify({ error: message }));
     raw.end();
+}
+
+function createEntityHandler(
+    allowedProjectIds: number[] | null,
+    eventType: string,
+    writeEvent: (data: Record<string, unknown>) => void,
+) {
+    return (data: Record<string, unknown>) => {
+        if (allowedProjectIds === null) {
+            writeEvent({ type: eventType, ...data });
+            return;
+        }
+        const event = data as unknown as EntityChangeEvent;
+        if (event.projectId && allowedProjectIds.includes(event.projectId)) {
+            writeEvent({ type: eventType, ...data });
+        }
+    };
 }
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
@@ -59,29 +78,27 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: getAuditLogStreamSchema,
         },
         async (request, reply) => {
-            // Manual JWT verification from query param (EventSource can't send headers)
-            const token = (request.query as Record<string, string>)?.token;
-            if (!token) {
-                writeJsonError(reply.raw, 401, "Missing token");
+            // Authenticate via Authorization: Bearer <JWT> header
+            const authHeader = request.headers.authorization;
+            if (!authHeader || !authHeader.startsWith("Bearer ")) {
+                writeJsonError(reply.raw, 401, "Missing or invalid Authorization header");
                 return;
             }
+
+            const token = authHeader.slice(7);
             let user: JwtPayload;
             try {
-                user = fastify.jwt.verify<JwtPayload>(token);
+                user = await request.server.jwt.verify<JwtPayload>(token);
             } catch {
-                writeJsonError(reply.raw, 401, "Invalid token");
+                writeJsonError(reply.raw, 401, "Invalid or expired JWT token");
                 return;
             }
+
+            // Determine allowed projects based on role
+            let allowedProjectIds: number[] | null = null; // null = all (ADMIN)
             if (user.role !== Role.ADMIN) {
-                // Non-admin users must be MANAGER in at least one project
                 const userId = Number(user.sub);
-                const managerCount = await fastify.prisma.projectMember.count({
-                    where: { userId, role: "MANAGER" },
-                });
-                if (managerCount === 0) {
-                    writeJsonError(reply.raw, 403, "Forbidden");
-                    return;
-                }
+                allowedProjectIds = await getManagerProjectIds(fastify.prisma, userId);
             }
 
             // Set SSE headers
@@ -104,15 +121,26 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
                 reply.raw.write(": heartbeat\n\n");
             }, 30_000);
 
-            // Subscribe to audit log events from the emitter
-            const eventHandler = (data: Record<string, unknown>) => {
+            // Subscribe to events with role-based filtering
+            const auditLogHandler = (data: Record<string, unknown>) => {
                 writeEvent({ type: "audit-log", ...data });
             };
-            auditLogEmitter.on("audit-log", eventHandler);
+
+            const usersChangeHandler = createEntityHandler(allowedProjectIds, "users:change", writeEvent);
+            const projectsChangeHandler = createEntityHandler(allowedProjectIds, "projects:change", writeEvent);
+            const issuesChangeHandler = createEntityHandler(allowedProjectIds, "issues:change", writeEvent);
+
+            auditLogEmitter.on("audit-log", auditLogHandler);
+            auditLogEmitter.on("users:change", usersChangeHandler);
+            auditLogEmitter.on("projects:change", projectsChangeHandler);
+            auditLogEmitter.on("issues:change", issuesChangeHandler);
 
             // Handle client disconnect
             request.raw.on("close", () => {
-                auditLogEmitter.off("audit-log", eventHandler);
+                auditLogEmitter.off("audit-log", auditLogHandler);
+                auditLogEmitter.off("users:change", usersChangeHandler);
+                auditLogEmitter.off("projects:change", projectsChangeHandler);
+                auditLogEmitter.off("issues:change", issuesChangeHandler);
                 clearInterval(heartbeatInterval);
             });
         },

@@ -19,6 +19,14 @@ export interface AuditLogEventData {
     newValue?: string | null;
     subjectLogin: string;
     createdAt: string;
+    projectId?: number;
+}
+
+export interface EntityChangeEvent {
+    entityType: string;
+    action: string;
+    objectId: number;
+    projectId?: number;
 }
 
 class AuditLogEmitter extends EventEmitter {
@@ -26,6 +34,8 @@ class AuditLogEmitter extends EventEmitter {
 
     private constructor() {
         super();
+        // Увеличиваем лимит: до 500 SSE-соединений × 4 события = 2000 listener'ов
+        this.setMaxListeners(500);
     }
 
     static getInstance(): AuditLogEmitter {
@@ -57,6 +67,25 @@ class AuditLogEmitter extends EventEmitter {
             id: record.id,
             ...data,
         });
+
+        const entityEventMap: Record<string, string> = {
+            USER: "users:change",
+            PROJECT: "projects:change",
+            ISSUE: "issues:change",
+        };
+
+        const entityEvent = entityEventMap[data.objectType];
+        if (entityEvent) {
+            const eventPayload: EntityChangeEvent = {
+                entityType: data.objectType,
+                action: data.eventType,
+                objectId: data.objectId,
+            };
+            if (data.projectId !== undefined) {
+                eventPayload.projectId = data.projectId;
+            }
+            this.emit(entityEvent, eventPayload);
+        }
     }
 }
 
