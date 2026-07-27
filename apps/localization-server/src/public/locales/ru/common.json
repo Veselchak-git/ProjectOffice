@@ -24,5 +24,31 @@
         "loading": "Ошибка загрузки",
         "connection": "Ошибка соединения с сервером",
         "default": "Ошибка"
+    },
+    "filter": {
+        "title": "Фильтр",
+        "apply": "Применить",
+        "reset": "Сбросить",
+        "clearAll": "Сбросить всё",
+        "placeholder": {
+            "select": "Выберите...",
+            "value": "Введите значение..."
+        },
+        "removeAria": "Удалить фильтр: {{label}}",
+        "logic": {
+            "AND": "И",
+            "OR": "ИЛИ"
+        },
+        "selectedCount": "Выбрано: {{count}}",
+        "operator": {
+            "contains": "Содержит",
+            "not_contains": "Не содержит",
+            "starts_with": "Начинается с",
+            "eq": "Точное совпадение",
+            "in": "В списке",
+            "not_in": "Не в списке",
+            "after": "После",
+            "before": "До"
+        }
     }
 }

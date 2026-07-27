@@ -93,5 +93,14 @@
         "title": "Change role ({{count}} users)",
         "submit": "Apply",
         "submitting": "Applying…"
+    },
+    "filter": {
+        "login": "Login",
+        "role": "Role",
+        "createdAt": "Created",
+        "roleOptions": {
+            "ADMIN": "Admin",
+            "USER": "User"
+        }
     }
 }

@@ -35,5 +35,26 @@
         "create": "Create",
         "update": "Update",
         "delete": "Delete"
+    },
+    "filter": {
+        "eventType": "Event Type",
+        "subjectType": "Subject Type",
+        "objectType": "Object Type",
+        "createdAt": "Date",
+        "events": {
+            "ADDED": "Added",
+            "CREATED": "Created",
+            "UPDATED": "Updated",
+            "DELETED": "Deleted"
+        },
+        "subjects": {
+            "USER": "User"
+        },
+        "objects": {
+            "ISSUE": "Issue",
+            "PROJECT": "Project",
+            "USER": "User",
+            "AUDIT_LOG": "Audit"
+        }
     }
 }

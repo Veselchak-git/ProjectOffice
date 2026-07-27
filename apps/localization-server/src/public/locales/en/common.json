@@ -24,5 +24,31 @@
         "loading": "Loading error",
         "connection": "Connection error",
         "default": "Error"
+    },
+    "filter": {
+        "title": "Filter",
+        "apply": "Apply",
+        "reset": "Reset",
+        "clearAll": "Clear all",
+        "placeholder": {
+            "select": "Select...",
+            "value": "Enter value..."
+        },
+        "removeAria": "Remove filter: {{label}}",
+        "logic": {
+            "AND": "AND",
+            "OR": "OR"
+        },
+        "selectedCount": "Selected: {{count}}",
+        "operator": {
+            "contains": "Contains",
+            "not_contains": "Does not contain",
+            "starts_with": "Starts with",
+            "eq": "Exact match",
+            "in": "In list",
+            "not_in": "Not in list",
+            "after": "After",
+            "before": "Before"
+        }
     }
 }

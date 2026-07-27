@@ -129,5 +129,34 @@
         "AUTH_FORBIDDEN_STATUS_NEW": "Нет прав на изменение статуса на «Новый»",
         "INVALID_ASSIGNEE": "Пользователь не является участником проекта",
         "INVALID_ASSIGNEE_ROLE": "Пользователь не может быть назначен исполнителем"
+    },
+    "filter": {
+        "status": "Статус",
+        "priority": "Приоритет",
+        "category": "Категория",
+        "title": "Название",
+        "assigneeLogin": "Исполнитель",
+        "createdAt": "Дата создания",
+        "statusOptions": {
+            "NEW": "Новая",
+            "ACKNOWLEDGED": "Подтверждена",
+            "CONFIRMED": "Подтверждена",
+            "ASSIGNED": "Назначена",
+            "RESOLVED": "Решена",
+            "CLOSED": "Закрыта"
+        },
+        "priorityOptions": {
+            "CRITICAL": "Критический",
+            "SERIOUS": "Серьёзный",
+            "MINOR": "Незначительный",
+            "GENERAL": "Общий"
+        },
+        "categoryOptions": {
+            "BUG": "Ошибка",
+            "FEATURE": "Функция",
+            "TASK": "Задача",
+            "IMPROVEMENT": "Улучшение",
+            "QUESTION": "Вопрос"
+        }
     }
 }

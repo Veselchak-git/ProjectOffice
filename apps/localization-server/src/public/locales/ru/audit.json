@@ -35,5 +35,26 @@
         "create": "Создание",
         "update": "Обновление",
         "delete": "Удаление"
+    },
+    "filter": {
+        "eventType": "Тип события",
+        "subjectType": "Тип субъекта",
+        "objectType": "Тип объекта",
+        "createdAt": "Дата",
+        "events": {
+            "ADDED": "Добавление",
+            "CREATED": "Создание",
+            "UPDATED": "Обновление",
+            "DELETED": "Удаление"
+        },
+        "subjects": {
+            "USER": "Пользователь"
+        },
+        "objects": {
+            "ISSUE": "Задача",
+            "PROJECT": "Проект",
+            "USER": "Пользователь",
+            "AUDIT_LOG": "Аудит"
+        }
     }
 }

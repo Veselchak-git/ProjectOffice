@@ -111,5 +111,14 @@
             "delete": "Error deleting member",
             "load": "Error loading members"
         }
+    },
+    "filter": {
+        "name": "Name",
+        "status": "Status",
+        "createdAt": "Created",
+        "statusOptions": {
+            "ACTIVE": "Active",
+            "ARCHIVED": "Archived"
+        }
     }
 }
