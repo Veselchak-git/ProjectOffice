@@ -31,6 +31,32 @@
         "changes": "Changes",
         "noChanges": "No changes"
     },
+    "eventType": {
+        "USER_CREATED": "User Created",
+        "USER_UPDATED": "User Updated",
+        "USER_DELETED": "User Deleted",
+        "ISSUE_CREATED": "Issue Created",
+        "ISSUE_UPDATED": "Issue Updated",
+        "ISSUE_DELETED": "Issue Deleted",
+        "PROJECT_CREATED": "Project Created",
+        "PROJECT_UPDATED": "Project Updated",
+        "PROJECT_DELETED": "Project Deleted",
+        "MEMBER_ADDED": "Member Added",
+        "MEMBER_UPDATED": "Member Updated",
+        "MEMBER_REMOVED": "Member Removed",
+        "CREATE": "Create",
+        "UPDATE": "Update",
+        "DELETE": "Delete"
+    },
+    "subjectType": {
+        "USER": "User"
+    },
+    "objectType": {
+        "ISSUE": "Issue",
+        "PROJECT": "Project",
+        "USER": "User",
+        "AUDIT_LOG": "Audit"
+    },
     "event": {
         "create": "Create",
         "update": "Update",

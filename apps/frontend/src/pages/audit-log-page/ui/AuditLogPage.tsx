@@ -7,7 +7,7 @@
  */
 import { AUDIT } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
-import { Button } from "@helpdesk-portal/ui-kit";
+import { Button, Chip } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";
@@ -168,6 +168,44 @@ export const AuditLogPage: FC = () => {
 
     const columnHelper = useMemo(() => createColumnHelper<AuditLog>(), []);
 
+    const eventTypeLabels = useMemo<Record<string, string>>(
+        () => ({
+            USER_CREATED: t("eventType.USER_CREATED"),
+            USER_UPDATED: t("eventType.USER_UPDATED"),
+            USER_DELETED: t("eventType.USER_DELETED"),
+            ISSUE_CREATED: t("eventType.ISSUE_CREATED"),
+            ISSUE_UPDATED: t("eventType.ISSUE_UPDATED"),
+            ISSUE_DELETED: t("eventType.ISSUE_DELETED"),
+            PROJECT_CREATED: t("eventType.PROJECT_CREATED"),
+            PROJECT_UPDATED: t("eventType.PROJECT_UPDATED"),
+            PROJECT_DELETED: t("eventType.PROJECT_DELETED"),
+            MEMBER_ADDED: t("eventType.MEMBER_ADDED"),
+            MEMBER_UPDATED: t("eventType.MEMBER_UPDATED"),
+            MEMBER_REMOVED: t("eventType.MEMBER_REMOVED"),
+            CREATE: t("eventType.CREATE"),
+            UPDATE: t("eventType.UPDATE"),
+            DELETE: t("eventType.DELETE")
+        }),
+        [t]
+    );
+
+    const subjectTypeLabels = useMemo<Record<string, string>>(
+        () => ({
+            USER: t("subjectType.USER")
+        }),
+        [t]
+    );
+
+    const objectTypeLabels = useMemo<Record<string, string>>(
+        () => ({
+            ISSUE: t("objectType.ISSUE"),
+            PROJECT: t("objectType.PROJECT"),
+            USER: t("objectType.USER"),
+            AUDIT_LOG: t("objectType.AUDIT_LOG")
+        }),
+        [t]
+    );
+
     const columns = useMemo(
         () =>
             [
@@ -200,7 +238,17 @@ export const AuditLogPage: FC = () => {
                             </ColumnHeader>
                         );
                     },
-                    enableSorting: true
+                    enableSorting: true,
+                    cell: info => {
+                        const v = info.getValue();
+                        const chipColor =
+                            v.includes("CREATED") || v.includes("ADDED")
+                                ? "green"
+                                : v.includes("DELETED") || v.includes("REMOVED")
+                                  ? "red"
+                                  : "orange";
+                        return <Chip color={chipColor}>{eventTypeLabels[v] ?? v}</Chip>;
+                    }
                 }),
                 columnHelper.accessor("subjectType", {
                     header: ({ column }) => {
@@ -231,7 +279,8 @@ export const AuditLogPage: FC = () => {
                             </ColumnHeader>
                         );
                     },
-                    enableSorting: true
+                    enableSorting: true,
+                    cell: info => subjectTypeLabels[info.getValue()] ?? info.getValue()
                 }),
                 columnHelper.accessor("objectType", {
                     header: ({ column }) => {
@@ -262,7 +311,8 @@ export const AuditLogPage: FC = () => {
                             </ColumnHeader>
                         );
                     },
-                    enableSorting: true
+                    enableSorting: true,
+                    cell: info => objectTypeLabels[info.getValue()] ?? info.getValue()
                 }),
                 columnHelper.accessor("subjectId", {
                     header: ({ column }) => {
@@ -373,7 +423,10 @@ export const AuditLogPage: FC = () => {
             openFilter,
             setOpenFilter,
             bumpKey,
-            popoverKeys
+            popoverKeys,
+            eventTypeLabels,
+            subjectTypeLabels,
+            objectTypeLabels
         ]
     );
 

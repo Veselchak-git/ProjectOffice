@@ -31,6 +31,32 @@
         "changes": "Изменения",
         "noChanges": "Изменений нет"
     },
+    "eventType": {
+        "USER_CREATED": "Создание пользователя",
+        "USER_UPDATED": "Обновление пользователя",
+        "USER_DELETED": "Удаление пользователя",
+        "ISSUE_CREATED": "Создание задачи",
+        "ISSUE_UPDATED": "Обновление задачи",
+        "ISSUE_DELETED": "Удаление задачи",
+        "PROJECT_CREATED": "Создание проекта",
+        "PROJECT_UPDATED": "Обновление проекта",
+        "PROJECT_DELETED": "Удаление проекта",
+        "MEMBER_ADDED": "Добавление участника",
+        "MEMBER_UPDATED": "Обновление участника",
+        "MEMBER_REMOVED": "Удаление участника",
+        "CREATE": "Создание",
+        "UPDATE": "Обновление",
+        "DELETE": "Удаление"
+    },
+    "subjectType": {
+        "USER": "Пользователь"
+    },
+    "objectType": {
+        "ISSUE": "Задача",
+        "PROJECT": "Проект",
+        "USER": "Пользователь",
+        "AUDIT_LOG": "Аудит"
+    },
     "event": {
         "create": "Создание",
         "update": "Обновление",

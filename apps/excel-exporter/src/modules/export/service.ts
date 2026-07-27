@@ -139,6 +139,79 @@ function translateCategory(category: string, locale: string): string {
     }
 }
 
+function translateEventType(eventType: string, locale: string): string {
+    if (locale === "ru") {
+        switch (eventType) {
+            case "USER_CREATED": return "Создание пользователя";
+            case "USER_UPDATED": return "Обновление пользователя";
+            case "USER_DELETED": return "Удаление пользователя";
+            case "ISSUE_CREATED": return "Создание задачи";
+            case "ISSUE_UPDATED": return "Обновление задачи";
+            case "ISSUE_DELETED": return "Удаление задачи";
+            case "PROJECT_CREATED": return "Создание проекта";
+            case "PROJECT_UPDATED": return "Обновление проекта";
+            case "PROJECT_DELETED": return "Удаление проекта";
+            case "MEMBER_ADDED": return "Добавление участника";
+            case "MEMBER_UPDATED": return "Обновление участника";
+            case "MEMBER_REMOVED": return "Удаление участника";
+            case "CREATE": return "Создание";
+            case "UPDATE": return "Обновление";
+            case "DELETE": return "Удаление";
+            default: return eventType;
+        }
+    }
+    switch (eventType) {
+        case "USER_CREATED": return "User Created";
+        case "USER_UPDATED": return "User Updated";
+        case "USER_DELETED": return "User Deleted";
+        case "ISSUE_CREATED": return "Issue Created";
+        case "ISSUE_UPDATED": return "Issue Updated";
+        case "ISSUE_DELETED": return "Issue Deleted";
+        case "PROJECT_CREATED": return "Project Created";
+        case "PROJECT_UPDATED": return "Project Updated";
+        case "PROJECT_DELETED": return "Project Deleted";
+        case "MEMBER_ADDED": return "Member Added";
+        case "MEMBER_UPDATED": return "Member Updated";
+        case "MEMBER_REMOVED": return "Member Removed";
+        case "CREATE": return "Create";
+        case "UPDATE": return "Update";
+        case "DELETE": return "Delete";
+        default: return eventType;
+    }
+}
+
+function translateSubjectType(subjectType: string, locale: string): string {
+    if (locale === "ru") {
+        switch (subjectType) {
+            case "USER": return "Пользователь";
+            default: return subjectType;
+        }
+    }
+    switch (subjectType) {
+        case "USER": return "User";
+        default: return subjectType;
+    }
+}
+
+function translateObjectType(objectType: string, locale: string): string {
+    if (locale === "ru") {
+        switch (objectType) {
+            case "ISSUE": return "Задача";
+            case "PROJECT": return "Проект";
+            case "USER": return "Пользователь";
+            case "AUDIT_LOG": return "Аудит";
+            default: return objectType;
+        }
+    }
+    switch (objectType) {
+        case "ISSUE": return "Issue";
+        case "PROJECT": return "Project";
+        case "USER": return "User";
+        case "AUDIT_LOG": return "Audit";
+        default: return objectType;
+    }
+}
+
 // ---- public API ----
 
 export function createExportWorkbook(
@@ -643,10 +716,10 @@ export function createAuditLogExportWorkbook(
     function getCellValue(log: BackendAuditLog, field: string): ExcelJS.CellValue {
         switch (field) {
             case "id": return log.id;
-            case "eventType": return log.eventType;
-            case "subjectType": return log.subjectType;
+            case "eventType": return translateEventType(log.eventType, locale);
+            case "subjectType": return translateSubjectType(log.subjectType, locale);
             case "subjectId": return log.subjectId;
-            case "objectType": return log.objectType;
+            case "objectType": return translateObjectType(log.objectType, locale);
             case "objectId": return log.objectId;
             case "oldValue": return log.oldValue;
             case "newValue": return log.newValue;
