@@ -1,5 +1,12 @@
+export { ColumnHeader } from "./ColumnHeader";
+export type { ColumnHeaderProps } from "./ColumnHeader";
 export { DataTable } from "./DataTable";
+export { FilterChips } from "./FilterChips";
+export { FilterPopover } from "./FilterPopover";
+export type { FilterPopoverProps } from "./FilterPopover";
 export { SortableColumnItem } from "./SortableColumnItem";
+export { TagPicker } from "./TagPicker";
+export type { TagPickerOption } from "./TagPicker";
 export { reorderColumn } from "./reorderColumn";
-export { createColumnMeta, createDateColumn, createSelectColumn } from "./column-meta";
+export { createColumnMeta } from "./column-meta";
 export type { ColumnDefMeta, ColumnMetaResult } from "./column-meta";

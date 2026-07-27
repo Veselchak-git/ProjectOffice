@@ -8,30 +8,35 @@
 import { COMMON, USERS } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import PlusIcon from "@helpdesk-portal/icons/Plus.svg?react";
-import SearchIcon from "@helpdesk-portal/icons/Search.svg?react";
 import { Button, Input, Modal, Select, Switch } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
 import type { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { rootReducer } from "@/app/store";
 
-import { createUser, deleteUser, fetchUsers, updateUser } from "@/entities/user";
+import { UserForm, createUser, deleteUser, fetchUsers, updateUser } from "@/entities/user";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/entities/user";
 
+import { formatDate } from "@/shared/lib/format-date";
 import { i18n } from "@/shared/lib/i18n";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useTable } from "@/shared/lib/use-table";
+import { useFilterState, usePopoverKeys } from "@/shared/lib/use-table-filter";
+import type { FieldOption } from "@/shared/lib/use-table-filter/types";
 import { useTablePage } from "@/shared/lib/use-table-page";
 import { getLoginEmailRules, getLoginPasswordRules } from "@/shared/lib/validation";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
-import { DataTable } from "@/shared/ui/data-table";
+import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
+import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
 import { PageHeader } from "@/shared/ui/page-header";
 
-import { ALL_COLUMNS, getRoleOptions, getUsersColumns } from "../model/columns";
+import { ALL_COLUMNS, getRoleOptions } from "../model/columns";
 import {
     selectColumnOrder,
     selectColumnVisibility,
@@ -47,10 +52,28 @@ rootReducer.inject(usersPageSlice);
 
 export const UsersPage: FC = () => {
     const { t } = useTranslation(USERS);
+    const filterConfig = useMemo<{ fields: FieldOption[] }>(
+        () => ({
+            fields: [
+                { field: "login", label: t("filter.login"), type: "text" },
+                {
+                    field: "role",
+                    label: t("filter.role"),
+                    type: "enum",
+                    enumValues: [
+                        { value: "ADMIN", label: t("filter.roleOptions.ADMIN") },
+                        { value: "USER", label: t("filter.roleOptions.USER") }
+                    ]
+                },
+                { field: "createdAt", label: t("filter.createdAt"), type: "date" }
+            ]
+        }),
+        [t]
+    );
     const queryClient = useQueryClient();
-    const [searchInput, setSearchInput] = useState("");
-    const [debouncedQ, setDebouncedQ] = useState("");
     const [pageError, setPageError] = useState<string | null>(null);
+    const [openFilter, setOpenFilter] = useState<string | null>(null);
+    const { popoverKeys, bumpKey } = usePopoverKeys();
     const [creating, setCreating] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [bulkRoleChange, setBulkRoleChange] = useState(false);
@@ -59,18 +82,19 @@ export const UsersPage: FC = () => {
     const columnOrder = useAppSelector(selectColumnOrder);
     const rowSelection = useAppSelector(selectRowSelection);
 
-    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const handleSearchChange = (value: string) => {
-        setSearchInput(value);
-        setPageError(null);
-        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = setTimeout(() => {
-            setDebouncedQ(value);
-        }, 400);
-    };
-
-    const columns = getUsersColumns({ t });
+    const filterState = useFilterState("users", filterConfig);
+    const {
+        filters,
+        setFilters,
+        applyFilters,
+        resetFilters,
+        hasActiveFilters,
+        filterQueryString,
+        allConditions,
+        currentLogic,
+        applyConditions,
+        removeFieldConditions
+    } = filterState;
 
     const {
         containerRef,
@@ -102,12 +126,152 @@ export const UsersPage: FC = () => {
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
     const page = pageIndex + 1;
 
+    const columnHelper = useMemo(() => createColumnHelper<User>(), []);
+
+    const handleSort = useCallback(
+        (columnId: string) => {
+            setSorting(prev => {
+                const current = prev.find(s => s.id === columnId);
+                if (!current) return [{ id: columnId, desc: false }];
+                if (!current.desc) return [{ id: columnId, desc: true }];
+                return [];
+            });
+        },
+        [setSorting]
+    );
+
+    const columns = useMemo(
+        () =>
+            [
+                createSelectColumn(columnHelper),
+                columnHelper.accessor("login", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.login")}
+                                field="login"
+                                sortState={sortState}
+                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "login") ?? false}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`login-popover-${popoverKeys["login"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="login"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("login")}
+                                    isOpen={openFilter === "login"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
+                }),
+                columnHelper.accessor("role", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        const roleOptions = getRoleOptions(t);
+                        return (
+                            <ColumnHeader
+                                title={t("table.role")}
+                                field="role"
+                                sortState={sortState}
+                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "role") ?? false}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`role-popover-${popoverKeys["role"] ?? 0}`}
+                                    fields={filterConfig.fields.map(f =>
+                                        f.field === "role" ? { ...f, enumValues: roleOptions } : f
+                                    )}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="role"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("role")}
+                                    isOpen={openFilter === "role"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => {
+                        const role = info.getValue();
+                        return getRoleOptions(t).find(o => o.value === role)?.label ?? role;
+                    }
+                }),
+                columnHelper.accessor(row => row.createdAt, {
+                    id: "createdAt",
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.created")}
+                                field="createdAt"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "createdAt") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`createdAt-popover-${popoverKeys["createdAt"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="createdAt"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("createdAt")}
+                                    isOpen={openFilter === "createdAt"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => formatDate(info.getValue())
+                })
+            ] as ColumnDef<User>[],
+        [
+            columnHelper,
+            t,
+            filterConfig,
+            allConditions,
+            currentLogic,
+            applyConditions,
+            removeFieldConditions,
+            filters,
+            setOpenFilter,
+            openFilter,
+            bumpKey,
+            popoverKeys,
+            sorting
+        ]
+    );
+
     const userParams = {
-        ...(debouncedQ ? { q: debouncedQ } : {}),
         page,
         perPage,
         ...(sortBy ? { sortBy } : {}),
-        ...(sortOrder ? { sortOrder } : {})
+        ...(sortOrder ? { sortOrder } : {}),
+        ...(filterQueryString ? { filter: filterQueryString } : {})
     } satisfies FetchUsersParams;
 
     const { data, isPending, isError, error } = useQuery({
@@ -146,7 +310,7 @@ export const UsersPage: FC = () => {
             const next = typeof updater === "function" ? updater(rowSelection) : updater;
             dispatch(setRowSelection(next));
         },
-        resetKey: debouncedQ,
+        resetKey: filterQueryString ?? "",
         enableRowSelection: true
     });
 
@@ -239,21 +403,25 @@ export const UsersPage: FC = () => {
                 }
             />
 
-            <div className={styles["users-page__controls"]}>
-                <Input
-                    className={styles["users-page__controls-search"]}
-                    placeholder={t("search.placeholder")}
-                    startIcon={<SearchIcon />}
-                    value={searchInput}
-                    onChange={e => handleSearchChange(e.target.value)}
+            {hasActiveFilters && (
+                <FilterChips
+                    conditions={allConditions}
+                    fieldConfigs={filterConfig.fields}
+                    onRemove={conditionId => {
+                        const allConditions = filters.groups.flatMap(g => g.conditions);
+                        const otherConditions = allConditions.filter(c => c.id !== conditionId);
+                        const nextState = {
+                            groups: [{ logic: filters.groups[0]?.logic ?? "AND", conditions: otherConditions }],
+                            fieldConfigs: filterConfig.fields
+                        };
+                        setFilters(nextState);
+                        applyFilters(nextState);
+                    }}
+                    onClearAll={() => resetFilters()}
                 />
-            </div>
-
-            {pageError && (
-                <div className={styles["users-page__form-error"]} style={{ marginBottom: 16 }}>
-                    {pageError}
-                </div>
             )}
+
+            {pageError && <div className={styles["users-page__form-error--spaced"]}>{pageError}</div>}
 
             <div className={styles["users-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
@@ -263,12 +431,12 @@ export const UsersPage: FC = () => {
                         {error instanceof Error ? error.message : t("error.loading")}
                     </p>
                 ) : (
-                    <DataTable table={table} total={total} />
+                    <DataTable table={table} total={total} sorting={sorting} onSort={handleSort} />
                 )}
             </div>
 
             <Modal isOpen={creating} onClose={() => setCreating(false)} title={t("create.title")}>
-                <CreateUserForm
+                <UserForm
                     onSubmit={data => createUserMutate(data).then(() => {})}
                     onCancel={() => setCreating(false)}
                 />
@@ -305,126 +473,6 @@ export const UsersPage: FC = () => {
     );
 };
 
-interface CreateUserFormProps {
-    onSubmit(data: CreateUserData): Promise<void>;
-    onCancel(): void;
-}
-
-const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-interface CreateFormValues {
-    login: string;
-    password: string;
-    role: string;
-}
-
-const CreateUserForm: FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
-    const { t: tu } = useTranslation(USERS);
-    const [showPassword, setShowPassword] = useState(false);
-
-    const {
-        control,
-        handleSubmit: rhfHandleSubmit,
-        formState: { errors, isSubmitting },
-        setError
-    } = useForm<CreateFormValues>({
-        mode: "onChange",
-        defaultValues: { login: "", password: "", role: "USER" }
-    });
-
-    const loginRules = getLoginEmailRules(i18n.t);
-    const passwordRules = getLoginPasswordRules(i18n.t);
-
-    const hasErrors = Object.keys(errors).length > 0;
-    const canSubmit = !hasErrors && !isSubmitting;
-
-    const handleFormSubmit = async (data: CreateFormValues) => {
-        try {
-            await onSubmit({
-                login: data.login.trim(),
-                password: data.password,
-                role: data.role as CreateUserData["role"]
-            });
-        } catch (err) {
-            setError("root", { message: err instanceof Error ? err.message : i18n.t(`${USERS}:create.error`) });
-        }
-    };
-
-    return (
-        <form
-            className={styles["users-page__form"]}
-            onSubmit={rhfHandleSubmit(handleFormSubmit)}
-            noValidate
-            onChange={() => {
-                if (errors.root) setError("root", { message: "" });
-            }}
-        >
-            {errors.root?.message ? (
-                <div className={styles["users-page__form-error"]}>{errors.root.message}</div>
-            ) : null}
-            <Controller
-                name="login"
-                control={control}
-                rules={loginRules}
-                render={({ field, fieldState }) => (
-                    <Input
-                        {...field}
-                        label={tu("form.login.label")}
-                        type="email"
-                        placeholder={tu("form.login.placeholder")}
-                        color={fieldState.error ? "error" : "default"}
-                        errorMessage={fieldState.error?.message}
-                        required
-                    />
-                )}
-            />
-            <div className={styles["users-page__password-field"]}>
-                <Controller
-                    name="password"
-                    control={control}
-                    rules={passwordRules}
-                    render={({ field, fieldState }) => (
-                        <Input
-                            {...field}
-                            label={tu("form.password.label")}
-                            type={showPassword ? "text" : "password"}
-                            placeholder={tu("form.password.placeholder")}
-                            color={fieldState.error ? "error" : "default"}
-                            errorMessage={fieldState.error?.message}
-                            required
-                        />
-                    )}
-                />
-                <label className={styles["users-page__checkbox-row"]}>
-                    <Switch checked={showPassword} onCheckedChange={setShowPassword} />
-                    <span>{tu("form.showPassword")}</span>
-                </label>
-            </div>
-            <Controller
-                name="role"
-                control={control}
-                render={({ field }) => (
-                    <Select
-                        label={tu("form.role")}
-                        options={getRoleOptions(tu)}
-                        value={field.value}
-                        usePortal={false}
-                        onValueChange={field.onChange}
-                    />
-                )}
-            />
-            <div className={styles["users-page__form-actions"]}>
-                <Button type="submit" disabled={!canSubmit}>
-                    {isSubmitting ? tu("create.submitting") : tu("create.submit")}
-                </Button>
-                <Button type="button" variant="stroke" onClick={onCancel}>
-                    {tu(`${COMMON}:cancel`)}
-                </Button>
-            </div>
-        </form>
-    );
-};
-
 interface EditUserFormProps {
     user: User;
     onSubmit(data: UpdateUserData): Promise<void>;
@@ -451,12 +499,8 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
         defaultValues: { login: "", password: "", role: user.role }
     });
 
-    const loginRules = {
-        pattern: { value: LOGIN_EMAIL_PATTERN, message: i18n.t(`${USERS}:validation.invalid.email`) }
-    };
-    const passwordRules = {
-        validate: (value: string) => !value || value.length >= 6 || i18n.t(`${USERS}:validation.minLength.password`)
-    };
+    const loginRules = getLoginEmailRules(i18n.t);
+    const passwordRules = getLoginPasswordRules(i18n.t);
 
     const hasErrors = Object.keys(errors).length > 0;
     const canSubmit = isDirty && !hasErrors && !isSubmitting;

@@ -1,0 +1,149 @@
+.popover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 200;
+    width: 550px;
+    margin-top: 12px;
+    padding: 16px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background-color: var(--semantic-bg-surface);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    font-family: Geologica, sans-serif;
+    animation: fadeSlideIn 0.15s ease-out;
+}
+
+.popover::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 20px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--semantic-border-default);
+    border-right: none;
+    border-bottom: none;
+    background-color: var(--semantic-bg-surface);
+    transform: rotate(45deg);
+}
+
+.popover--right {
+    left: auto;
+    right: 0;
+}
+
+.popover--right::before {
+    left: auto;
+    right: 20px;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--semantic-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.title svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 0.9fr 0.7fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.fieldSelect {
+    min-width: 0;
+    --select-border-color: var(--semantic-border-default);
+    --multi-select-border-color: var(--semantic-border-default);
+}
+
+.fieldSelect:hover {
+    --select-border-color: var(--semantic-btn-accent-stroke-hover-border);
+    --multi-select-border-color: var(--semantic-btn-accent-stroke-hover-border);
+}
+
+.fieldLabel {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--semantic-text-primary);
+    padding: 6px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.valueInput {
+    min-width: 0;
+}
+
+
+.connectorBtn {
+    display: block;
+    margin: 4px auto;
+    padding: 2px 12px;
+    min-width: 60px;
+    width: fit-content;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 4px;
+    background-color: var(--semantic-bg-surface);
+    color: var(--semantic-text-secondary);
+    cursor: pointer;
+    font-family: Geologica, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.connectorBtn:hover {
+    border-color: var(--semantic-btn-accent-stroke-hover-border);
+    color: var(--semantic-text-primary);
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--semantic-border-default);
+}
+
+.resetBtn {
+    --btn-hover-bg: var(--accent-400);
+}
+
+.applyBtn {
+    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
+    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
+    border: none;
+    font-family: Geologica;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

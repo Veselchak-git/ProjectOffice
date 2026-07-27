@@ -10,7 +10,7 @@ import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,13 +19,16 @@ import { rootReducer } from "@/app/store";
 import type { AuditLog, FetchAuditLogsParams } from "@/entities/audit-log";
 import { fetchAuditLogs } from "@/entities/audit-log";
 
+import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useRealtimeEvents } from "@/shared/lib/sse";
 import { useTable } from "@/shared/lib/use-table";
+import { useFilterState, usePopoverKeys } from "@/shared/lib/use-table-filter";
+import type { FieldOption } from "@/shared/lib/use-table-filter/types";
 import { useTablePage } from "@/shared/lib/use-table-page";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
-import { DataTable, createDateColumn } from "@/shared/ui/data-table";
+import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
 import { PageHeader } from "@/shared/ui/page-header";
 
 import {
@@ -41,38 +44,65 @@ import styles from "./AuditLogPage.module.css";
 
 rootReducer.inject(auditLogPageSlice);
 
-const columnHelper = createColumnHelper<AuditLog>();
-
 export const AuditLogPage: FC = () => {
     const { t } = useTranslation(AUDIT);
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+    const [openFilter, setOpenFilter] = useState<string | null>(null);
+    const { popoverKeys, bumpKey } = usePopoverKeys();
 
-    const columns = [
-        columnHelper.accessor("eventType", {
-            header: t("table.eventType"),
-            enableSorting: true
+    const filterConfig = useMemo<{ fields: FieldOption[] }>(
+        () => ({
+            fields: [
+                {
+                    field: "eventType",
+                    label: t("filter.eventType"),
+                    type: "enum",
+                    enumValues: [
+                        { value: "ADDED", label: t("filter.events.ADDED") },
+                        { value: "CREATED", label: t("filter.events.CREATED") },
+                        { value: "UPDATED", label: t("filter.events.UPDATED") },
+                        { value: "DELETED", label: t("filter.events.DELETED") }
+                    ]
+                },
+                {
+                    field: "subjectType",
+                    label: t("filter.subjectType"),
+                    type: "enum",
+                    enumValues: [{ value: "USER", label: t("filter.subjects.USER") }]
+                },
+                {
+                    field: "objectType",
+                    label: t("filter.objectType"),
+                    type: "enum",
+                    enumValues: [
+                        { value: "ISSUE", label: t("filter.objects.ISSUE") },
+                        { value: "PROJECT", label: t("filter.objects.PROJECT") },
+                        { value: "USER", label: t("filter.objects.USER") },
+                        { value: "AUDIT_LOG", label: t("filter.objects.AUDIT_LOG") }
+                    ]
+                },
+                { field: "createdAt", label: t("filter.createdAt"), type: "date" }
+            ]
         }),
-        columnHelper.accessor("subjectType", {
-            header: t("table.subjectType"),
-            enableSorting: true
-        }),
-        columnHelper.accessor("objectType", {
-            header: t("table.objectType"),
-            enableSorting: true
-        }),
-        columnHelper.accessor("subjectId", {
-            header: t("table.subjectId"),
-            enableSorting: false
-        }),
-        columnHelper.accessor("objectId", {
-            header: t("table.objectId"),
-            enableSorting: false
-        }),
-        createDateColumn(columnHelper, t)
-    ];
+        [t]
+    );
+
+    const filterState = useFilterState("audit-log", filterConfig);
+    const {
+        filters,
+        setFilters,
+        applyFilters,
+        resetFilters,
+        hasActiveFilters,
+        filterQueryString,
+        allConditions,
+        currentLogic,
+        applyConditions,
+        removeFieldConditions
+    } = filterState;
 
     const {
         containerRef,
@@ -100,6 +130,197 @@ export const AuditLogPage: FC = () => {
         }
     });
 
+    const isFieldFiltered = useCallback(
+        (field: string) => filters.groups.some(g => g.conditions.some(c => c.field === field)),
+        [filters]
+    );
+
+    const handleSort = useCallback(
+        (columnId: string) => {
+            setSorting(prev => {
+                const current = prev.find(s => s.id === columnId);
+                if (!current) return [{ id: columnId, desc: false }];
+                if (!current.desc) return [{ id: columnId, desc: true }];
+                return [];
+            });
+        },
+        [setSorting]
+    );
+
+    const handleRemoveFilterCondition = useCallback(
+        (conditionId: string) => {
+            const groupIdx = filters.groups.findIndex(g => g.conditions.some(c => c.id === conditionId));
+            if (groupIdx === -1) return;
+            const condIdx = filters.groups[groupIdx]!.conditions.findIndex(c => c.id === conditionId);
+            const group = filters.groups[groupIdx];
+            if (!group) return;
+            const newConditions = group.conditions.filter((_, i) => i !== condIdx);
+            const newGroups = [...filters.groups];
+            newGroups[groupIdx] = { ...group, conditions: newConditions };
+            const nextState = { ...filters, groups: newGroups };
+            setFilters(nextState);
+            applyFilters(nextState);
+        },
+        [filters, setFilters, applyFilters]
+    );
+
+    const columnHelper = useMemo(() => createColumnHelper<AuditLog>(), []);
+
+    const columns = useMemo(
+        () =>
+            [
+                columnHelper.accessor("eventType", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.eventType")}
+                                field="eventType"
+                                sortState={sortState}
+                                isActiveFilter={isFieldFiltered("eventType")}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`eventType-popover-${popoverKeys["eventType"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="eventType"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("eventType")}
+                                    isOpen={openFilter === "eventType"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
+                }),
+                columnHelper.accessor("subjectType", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.subjectType")}
+                                field="subjectType"
+                                sortState={sortState}
+                                isActiveFilter={isFieldFiltered("subjectType")}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`subjectType-popover-${popoverKeys["subjectType"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="subjectType"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("subjectType")}
+                                    isOpen={openFilter === "subjectType"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
+                }),
+                columnHelper.accessor("objectType", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.objectType")}
+                                field="objectType"
+                                sortState={sortState}
+                                isActiveFilter={isFieldFiltered("objectType")}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`objectType-popover-${popoverKeys["objectType"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="objectType"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("objectType")}
+                                    isOpen={openFilter === "objectType"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
+                }),
+                columnHelper.accessor("subjectId", {
+                    header: t("table.subjectId"),
+                    enableSorting: false
+                }),
+                columnHelper.accessor("objectId", {
+                    header: t("table.objectId"),
+                    enableSorting: false
+                }),
+                columnHelper.accessor((row: AuditLog) => row.createdAt, {
+                    id: "createdAt",
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.created")}
+                                field="createdAt"
+                                sortState={sortState}
+                                isActiveFilter={isFieldFiltered("createdAt")}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`createdAt-popover-${popoverKeys["createdAt"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="createdAt"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("createdAt")}
+                                    isOpen={openFilter === "createdAt"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => formatDate(info.getValue())
+                })
+            ] as ColumnDef<AuditLog>[],
+        [
+            columnHelper,
+            t,
+            sorting,
+            filterConfig,
+            isFieldFiltered,
+            allConditions,
+            currentLogic,
+            applyConditions,
+            removeFieldConditions,
+            openFilter,
+            setOpenFilter,
+            bumpKey,
+            popoverKeys
+        ]
+    );
+
     const sortBy = sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
     const page = pageIndex + 1;
@@ -110,9 +331,10 @@ export const AuditLogPage: FC = () => {
                 page,
                 perPage,
                 ...(sortBy ? { sortBy } : {}),
-                ...(sortOrder ? { sortOrder } : {})
+                ...(sortOrder ? { sortOrder } : {}),
+                ...(filterQueryString ? { filter: filterQueryString } : {})
             }) satisfies FetchAuditLogsParams,
-        [page, perPage, sortBy, sortOrder]
+        [page, perPage, sortBy, sortOrder, filterQueryString]
     );
 
     useRealtimeEvents({ "audit-log": ["audit-logs"] });
@@ -176,6 +398,15 @@ export const AuditLogPage: FC = () => {
                 }
             />
 
+            {hasActiveFilters && (
+                <FilterChips
+                    conditions={filters.groups.flatMap(g => g.conditions)}
+                    fieldConfigs={filterConfig.fields}
+                    onRemove={handleRemoveFilterCondition}
+                    onClearAll={resetFilters}
+                />
+            )}
+
             <div className={styles["audit-log-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
                     <p className={styles["audit-log-page__empty"]}>{t("loading")}</p>
@@ -187,6 +418,8 @@ export const AuditLogPage: FC = () => {
                     <DataTable
                         table={table}
                         total={total}
+                        sorting={sorting}
+                        onSort={handleSort}
                         className={styles["audit-log-page__table"]}
                         onRowDoubleClick={log => {
                             if (log.oldValue != null || log.newValue != null) {

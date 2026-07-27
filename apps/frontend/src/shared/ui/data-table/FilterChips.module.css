@@ -1,0 +1,65 @@
+.filter-chips {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--semantic-border-default);
+    background-color: var(--semantic-bg-surface);
+}
+
+.filter-chips__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background-color: var(--semantic-fill-primary-selected);
+    color: var(--semantic-text-primary);
+    font-family: Geologica;
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.filter-chips__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--semantic-text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.filter-chips__remove:hover {
+    background-color: var(--semantic-fill-primary-hover);
+    color: var(--semantic-text-primary);
+}
+
+.filter-chips__clear {
+    --btn-gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+    border: none;
+    background-color: var(--semantic-btn-accent-fill-hover-bg);
+    color: var(--semantic-btn-accent-fill-text);
+    font-family: Geologica;
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.filter-chips__clear:hover {
+    background-color: var(--semantic-btn-accent-fill-bg);
+}

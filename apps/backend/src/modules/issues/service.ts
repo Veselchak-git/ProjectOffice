@@ -13,6 +13,8 @@ import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
 import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
 import { resolveProjectAccess } from "@/shared/lib/project-access/index.js";
 import { assertValidAssignee } from "@/shared/lib/validate-assignee/index.js";
+import { buildFilter, parseFilterQuery } from "@/shared/lib/filter/index.js";
+import type { FieldDefinition } from "@/shared/lib/filter/types.js";
 import {
     IssueCategory,
     IssuePriority,
@@ -83,10 +85,12 @@ export const mapIssue = (i: IssueRow, myRole?: string | null): IssueResponse => 
     updatedAt: i.updatedAt.toISOString(),
 });
 
-const ISSUE_SORT_FIELDS = new Set(["title", "status", "priority", "category", "createdAt", "updatedAt"]);
+const ISSUE_SORT_FIELDS = new Set(["title", "status", "priority", "category", "createdAt", "updatedAt", "assigneeLogin"]);
 
 const buildIssueOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
-    buildOrderBy(ISSUE_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" });
+    buildOrderBy(ISSUE_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" }, {
+        assigneeLogin: (order: string) => ({ assignee: { login: order } }),
+    });
 
 const include = {
     project: { select: { name: true } },
@@ -115,12 +119,12 @@ export const getIssuesListService = async (
 ): Promise<IssueListResponse> => {
     try {
         const prisma = request.server.prisma;
-        const { q, page = 1, perPage = 20, sortBy, sortOrder = "desc", status, priority, category } = request.query;
+        const { page = 1, perPage = 20, sortBy, sortOrder = "desc", filter } = request.query;
 
         const userId = Number(request.user.sub);
         const userRole = request.user.role;
 
-        const where: Record<string, unknown> = {};
+        const roleBasedWhere: Record<string, unknown> = {};
 
         if (userRole === Role.ADMIN) {
             // ADMIN sees all issues
@@ -131,16 +135,37 @@ export const getIssuesListService = async (
             });
 
             const projectIds = userProjects.map(up => up.projectId);
-            where.OR = [
+            roleBasedWhere.OR = [
                 { assigneeId: userId },
                 ...(projectIds.length > 0 ? [{ projectId: { in: projectIds } }] : []),
             ];
         }
 
-        if (q) where.title = { contains: q };
-        if (status) where.status = status;
-        if (priority) where.priority = priority;
-        if (category) where.category = category;
+        const filterFields: FieldDefinition[] = [
+            { field: "title", type: "text", label: "Title" },
+            { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
+            { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
+            { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
+            { field: "createdAt", type: "date", label: "Created At" },
+        ];
+
+        const filterQuery = parseFilterQuery(filter);
+        const filterWhere = buildFilter(filterQuery, filterFields);
+
+        // Handle assigneeLogin filter separately — it's a relation field (assignee.login)
+        let assigneeWhere: Record<string, unknown> | undefined;
+        if (filterQuery) {
+            for (const c of filterQuery.conditions) {
+                if (c.field === "assigneeLogin" && c.operator === "contains" && typeof c.value === "string") {
+                    assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
+                }
+            }
+        }
+
+        const additionalWheres = [filterWhere, assigneeWhere].filter(Boolean);
+        const where: Record<string, unknown> = additionalWheres.length === 0
+            ? roleBasedWhere
+            : { AND: [roleBasedWhere, ...additionalWheres] };
 
         const orderBy = buildIssueOrderBy(sortBy, sortOrder);
         const { skip, take } = paginationArgs(page, perPage);
@@ -167,17 +192,38 @@ export const getProjectIssuesService = async (
     try {
         const prisma = request.server.prisma;
         const { id } = request.params;
-        const { q, page = 1, perPage = 20, sortBy, sortOrder = "desc", status, priority, category } = request.query;
+        const { page = 1, perPage = 20, sortBy, sortOrder = "desc", filter } = request.query;
 
         await resolveProjectAccess(request, id);
         const localRole = request.projectAccess.localRole ?? undefined;
 
-        const where: Record<string, unknown> = { projectId: id };
+        const baseWhere: Record<string, unknown> = { projectId: id };
 
-        if (q) where.title = { contains: q };
-        if (status) where.status = status;
-        if (priority) where.priority = priority;
-        if (category) where.category = category;
+        const filterFields: FieldDefinition[] = [
+            { field: "title", type: "text", label: "Title" },
+            { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
+            { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
+            { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
+            { field: "createdAt", type: "date", label: "Created At" },
+        ];
+
+        const filterQuery = parseFilterQuery(filter);
+        const filterWhere = buildFilter(filterQuery, filterFields);
+
+        // Handle assigneeLogin filter separately — it's a relation field (assignee.login)
+        let assigneeWhere: Record<string, unknown> | undefined;
+        if (filterQuery) {
+            for (const c of filterQuery.conditions) {
+                if (c.field === "assigneeLogin" && c.operator === "contains" && typeof c.value === "string") {
+                    assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
+                }
+            }
+        }
+
+        const additionalWheres = [filterWhere, assigneeWhere].filter(Boolean);
+        const where: Record<string, unknown> = additionalWheres.length === 0
+            ? baseWhere
+            : { AND: [baseWhere, ...additionalWheres] };
 
         const orderBy = buildIssueOrderBy(sortBy, sortOrder);
         const { skip, take } = paginationArgs(page, perPage);

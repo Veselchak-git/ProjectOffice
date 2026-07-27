@@ -29,9 +29,7 @@ export interface Issue {
 }
 
 export interface FetchIssuesParams extends PaginationQueryParams {
-    status?: string;
-    priority?: string;
-    category?: string;
+    filter?: string;
 }
 
 export interface CreateIssueData {

@@ -47,11 +47,20 @@ export function useDynamicPerPage(
         };
 
         window.addEventListener("resize", onResize);
+
+        // Observe container size changes (e.g. when filter chips appear/disappear
+        // push the table area up/down, changing rect.top and available height).
+        const observer = new ResizeObserver(onResize);
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+
         return () => {
             window.removeEventListener("resize", onResize);
+            observer.disconnect();
             if (timerRef.current) clearTimeout(timerRef.current);
         };
-    }, [calc, debounceMs]);
+    }, [calc, debounceMs, containerRef]);
 
     return { perPage, ready };
 }

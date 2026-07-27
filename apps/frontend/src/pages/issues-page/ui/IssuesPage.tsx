@@ -7,10 +7,11 @@
  */
 import { ISSUES } from "@helpdesk-portal/i18n";
 import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
-import { Button } from "@helpdesk-portal/ui-kit";
+import { Button, Chip } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createColumnHelper } from "@tanstack/react-table";
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import type { FC } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -19,12 +20,16 @@ import { rootReducer } from "@/app/store";
 import type { FetchIssuesParams, Issue } from "@/entities/issue";
 import { deleteIssue, fetchIssues } from "@/entities/issue";
 
+import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useTable } from "@/shared/lib/use-table";
+import { useFilterState, usePopoverKeys } from "@/shared/lib/use-table-filter";
+import type { FieldOption } from "@/shared/lib/use-table-filter/types";
 import { useTablePage } from "@/shared/lib/use-table-page";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
-import { DataTable, createDateColumn, createSelectColumn } from "@/shared/ui/data-table";
+import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
+import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
 import { PageHeader } from "@/shared/ui/page-header";
 
 import { ALL_COLUMNS } from "../model/columns";
@@ -41,8 +46,6 @@ import styles from "./IssuesPage.module.css";
 
 rootReducer.inject(issuesPageSlice);
 
-const columnHelper = createColumnHelper<Issue>();
-
 export const IssuesPage: FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation(ISSUES);
@@ -51,66 +54,121 @@ export const IssuesPage: FC = () => {
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
     const rowSelection = useAppSelector(selectRowSelection);
-    const statusLabels: Record<string, string> = {
-        NEW: t("status.new"),
-        ACKNOWLEDGED: t("status.acknowledged"),
-        CONFIRMED: t("status.confirmed"),
-        ASSIGNED: t("status.assigned"),
-        RESOLVED: t("status.resolved"),
-        CLOSED: t("status.closed")
-    };
+    const filterConfig = useMemo<{ fields: FieldOption[] }>(
+        () => ({
+            fields: [
+                {
+                    field: "status",
+                    label: t("filter.status"),
+                    type: "enum",
+                    enumValues: [
+                        { value: "NEW", label: t("filter.statusOptions.NEW") },
+                        { value: "ACKNOWLEDGED", label: t("filter.statusOptions.ACKNOWLEDGED") },
+                        { value: "CONFIRMED", label: t("filter.statusOptions.CONFIRMED") },
+                        { value: "ASSIGNED", label: t("filter.statusOptions.ASSIGNED") },
+                        { value: "RESOLVED", label: t("filter.statusOptions.RESOLVED") },
+                        { value: "CLOSED", label: t("filter.statusOptions.CLOSED") }
+                    ]
+                },
+                {
+                    field: "priority",
+                    label: t("filter.priority"),
+                    type: "enum",
+                    enumValues: [
+                        { value: "CRITICAL", label: t("filter.priorityOptions.CRITICAL") },
+                        { value: "SERIOUS", label: t("filter.priorityOptions.SERIOUS") },
+                        { value: "MINOR", label: t("filter.priorityOptions.MINOR") },
+                        { value: "GENERAL", label: t("filter.priorityOptions.GENERAL") }
+                    ]
+                },
+                {
+                    field: "category",
+                    label: t("filter.category"),
+                    type: "enum",
+                    enumValues: [
+                        { value: "BUG", label: t("filter.categoryOptions.BUG") },
+                        { value: "FEATURE", label: t("filter.categoryOptions.FEATURE") },
+                        { value: "TASK", label: t("filter.categoryOptions.TASK") },
+                        { value: "IMPROVEMENT", label: t("filter.categoryOptions.IMPROVEMENT") },
+                        { value: "QUESTION", label: t("filter.categoryOptions.QUESTION") }
+                    ]
+                },
+                { field: "title", label: t("filter.title"), type: "text" },
+                { field: "assigneeLogin", label: t("filter.assigneeLogin"), type: "text" },
+                { field: "createdAt", label: t("filter.createdAt"), type: "date" }
+            ]
+        }),
+        [t]
+    );
+    const {
+        filters,
+        resetFilters,
+        hasActiveFilters,
+        filterQueryString,
+        removeCondition,
+        allConditions,
+        currentLogic,
+        applyConditions,
+        removeFieldConditions
+    } = useFilterState("issues", filterConfig);
+    const [openFilter, setOpenFilter] = useState<string | null>(null);
+    const { popoverKeys, bumpKey } = usePopoverKeys();
 
-    const priorityLabels: Record<string, string> = {
-        CRITICAL: t("priority.critical"),
-        SERIOUS: t("priority.serious"),
-        MINOR: t("priority.minor"),
-        GENERAL: t("priority.general")
-    };
+    const statusLabels = useMemo(
+        () => ({
+            NEW: t("status.new"),
+            ACKNOWLEDGED: t("status.acknowledged"),
+            CONFIRMED: t("status.confirmed"),
+            ASSIGNED: t("status.assigned"),
+            RESOLVED: t("status.resolved"),
+            CLOSED: t("status.closed")
+        }),
+        [t]
+    );
 
-    const columns = [
-        createSelectColumn(columnHelper),
-        columnHelper.accessor("title", {
-            header: t("table.title"),
-            enableSorting: true
+    const priorityLabels = useMemo(
+        () => ({
+            CRITICAL: t("priority.critical"),
+            SERIOUS: t("priority.serious"),
+            MINOR: t("priority.minor"),
+            GENERAL: t("priority.general")
         }),
-        columnHelper.accessor("projectName", {
-            header: t("table.project"),
-            enableSorting: false
-        }),
-        columnHelper.accessor("status", {
-            header: t("table.status"),
-            enableSorting: true,
-            cell: info => (
-                <span
-                    className={`${styles["issues-table__status-badge"]} ${styles[`issues-table__status-badge--${info.getValue().toLowerCase()}`]}`}
-                >
-                    {statusLabels[info.getValue()] ?? info.getValue()}
-                </span>
-            )
-        }),
-        columnHelper.accessor("priority", {
-            header: t("table.priority"),
-            enableSorting: true,
-            cell: info => (
-                <span
-                    className={`${styles["issues-table__priority"]} ${styles[`issues-table__priority--${info.getValue().toLowerCase()}`]}`}
-                >
-                    {priorityLabels[info.getValue()] ?? info.getValue()}
-                </span>
-            )
-        }),
-        columnHelper.accessor("category", {
-            header: t("table.category"),
-            enableSorting: true,
-            cell: info => t(`category.${info.getValue().toLowerCase()}`)
-        }),
-        columnHelper.accessor("assigneeLogin", {
-            header: t("table.assignee"),
-            enableSorting: false,
-            cell: info => info.getValue() ?? "—"
-        }),
-        createDateColumn(columnHelper, t)
-    ];
+        [t]
+    );
+
+    const getStatusChipColor = useCallback((status: string): "orange" | "neutral" | "red" | "green" => {
+        switch (status) {
+            case "NEW":
+                return "orange";
+            case "ACKNOWLEDGED":
+                return "neutral";
+            case "CONFIRMED":
+                return "orange";
+            case "ASSIGNED":
+                return "red";
+            case "RESOLVED":
+                return "green";
+            case "CLOSED":
+                return "neutral";
+            default:
+                return "neutral";
+        }
+    }, []);
+
+    const getPriorityChipColor = useCallback((priority: string): "orange" | "neutral" | "red" => {
+        switch (priority) {
+            case "CRITICAL":
+                return "red";
+            case "SERIOUS":
+                return "orange";
+            case "MINOR":
+                return "orange";
+            case "GENERAL":
+                return "neutral";
+            default:
+                return "neutral";
+        }
+    }, []);
 
     const {
         containerRef,
@@ -138,27 +196,288 @@ export const IssuesPage: FC = () => {
         }
     });
 
+    const columnHelper = useMemo(() => createColumnHelper<Issue>(), []);
+
+    const columns = useMemo(
+        () =>
+            [
+                createSelectColumn(columnHelper),
+                columnHelper.accessor("title", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.title")}
+                                field="title"
+                                sortState={sortState}
+                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "title") ?? false}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`title-popover-${popoverKeys["title"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="title"
+                                    isOpen={openFilter === "title"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("title")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
+                }),
+                columnHelper.accessor("projectName", {
+                    header: t("table.project"),
+                    enableSorting: false
+                }),
+                columnHelper.accessor("status", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.status")}
+                                field="status"
+                                sortState={sortState}
+                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "status") ?? false}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`status-popover-${popoverKeys["status"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="status"
+                                    isOpen={openFilter === "status"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("status")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => (
+                        <Chip color={getStatusChipColor(info.getValue())}>
+                            {statusLabels[info.getValue()] ?? info.getValue()}
+                        </Chip>
+                    )
+                }),
+                columnHelper.accessor("priority", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.priority")}
+                                field="priority"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "priority") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`priority-popover-${popoverKeys["priority"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="priority"
+                                    isOpen={openFilter === "priority"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("priority")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => (
+                        <Chip color={getPriorityChipColor(info.getValue())}>
+                            {priorityLabels[info.getValue()] ?? info.getValue()}
+                        </Chip>
+                    )
+                }),
+                columnHelper.accessor("category", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.category")}
+                                field="category"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "category") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`category-popover-${popoverKeys["category"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="category"
+                                    isOpen={openFilter === "category"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("category")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => t(`category.${info.getValue().toLowerCase()}`)
+                }),
+                columnHelper.accessor("assigneeLogin", {
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.assignee")}
+                                field="assigneeLogin"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "assigneeLogin") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`assigneeLogin-popover-${popoverKeys["assigneeLogin"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="assigneeLogin"
+                                    isOpen={openFilter === "assigneeLogin"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("assigneeLogin")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => info.getValue() ?? "—"
+                }),
+                columnHelper.accessor((row: Issue) => row.createdAt, {
+                    id: "createdAt",
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.created")}
+                                field="createdAt"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "createdAt") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`createdAt-popover-${popoverKeys["createdAt"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="createdAt"
+                                    isOpen={openFilter === "createdAt"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("createdAt")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true,
+                    cell: info => formatDate(info.getValue())
+                })
+            ] as ColumnDef<Issue>[],
+        [
+            columnHelper,
+            t,
+            sorting,
+            filterConfig,
+            statusLabels,
+            priorityLabels,
+            getStatusChipColor,
+            getPriorityChipColor,
+            filters,
+            allConditions,
+            currentLogic,
+            applyConditions,
+            removeFieldConditions,
+            setOpenFilter,
+            openFilter,
+            bumpKey,
+            popoverKeys
+        ]
+    );
     const sortBy = sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
     const page = pageIndex + 1;
 
-    const issueParams = {
-        page,
-        perPage,
-        ...(sortBy ? { sortBy } : {}),
-        ...(sortOrder ? { sortOrder } : {})
-    } satisfies FetchIssuesParams;
+    const issueParams = useMemo(
+        () =>
+            ({
+                page,
+                perPage,
+                ...(sortBy ? { sortBy } : {}),
+                ...(sortOrder ? { sortOrder } : {}),
+                ...(filterQueryString ? { filter: filterQueryString } : {})
+            }) satisfies FetchIssuesParams,
+        [page, perPage, sortBy, sortOrder, filterQueryString]
+    );
 
     const { data, isPending, isError, error } = useQuery({
         queryKey: ["issues", issueParams],
         queryFn: () => fetchIssues(issueParams),
         enabled: ready,
         placeholderData: keepPreviousData,
-        refetchInterval: 30000
+        refetchInterval: 30000,
+        structuralSharing: false
     });
 
     const issues = data?.issues ?? [];
     const total = data?.total ?? 0;
+    const issuesRef = useRef(issues);
+    if (issuesRef.current !== issues) {
+        issuesRef.current = issues;
+    }
+
+    const handleSort = useCallback(
+        (columnId: string) => {
+            setSorting(prev => {
+                const current = prev.find(s => s.id === columnId);
+                if (!current) return [{ id: columnId, desc: false }];
+                if (!current.desc) return [{ id: columnId, desc: true }];
+                return [];
+            });
+        },
+        [setSorting]
+    );
 
     const { table } = useTable({
         data: issues,
@@ -231,6 +550,21 @@ export const IssuesPage: FC = () => {
                 }
             />
 
+            {hasActiveFilters && (
+                <FilterChips
+                    conditions={filters.groups.flatMap(g => g.conditions)}
+                    fieldConfigs={filterConfig.fields}
+                    onRemove={conditionId => {
+                        const groupIdx = filters.groups.findIndex(g => g.conditions.some(c => c.id === conditionId));
+                        if (groupIdx !== -1) {
+                            const condIdx = filters.groups[groupIdx]!.conditions.findIndex(c => c.id === conditionId);
+                            removeCondition(groupIdx, condIdx);
+                        }
+                    }}
+                    onClearAll={() => resetFilters()}
+                />
+            )}
+
             <div className={styles["issues-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
                     <p className={styles["issues-page__empty"]}>{t("loading")}</p>
@@ -241,6 +575,8 @@ export const IssuesPage: FC = () => {
                 ) : (
                     <DataTable
                         table={table}
+                        sorting={sorting}
+                        onSort={handleSort}
                         onRowDoubleClick={row => navigate(`/tasks/${row.id}`)}
                         total={total}
                         className={styles["issues-page__table"]}

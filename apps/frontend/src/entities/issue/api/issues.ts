@@ -22,7 +22,8 @@ export interface FetchIssuesResponse {
 async function fetchIssuesByUrl(url: string, params?: FetchIssuesParams): Promise<FetchIssuesResponse> {
     const query = buildQueryString(params);
     const res = await apiClient(`${url}${query}`);
-    return handleApiResponse<FetchIssuesResponse>(res, ISSUES, "error.loading");
+    const result = await handleApiResponse<FetchIssuesResponse>(res, ISSUES, "error.loading");
+    return result;
 }
 
 export async function fetchIssues(params?: FetchIssuesParams): Promise<FetchIssuesResponse> {

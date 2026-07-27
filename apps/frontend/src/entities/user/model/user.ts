@@ -19,7 +19,7 @@ export interface UpdateUserData {
     role?: "USER" | "ADMIN";
 }
 
-export type FetchUsersParams = PaginationQueryParams;
+export type FetchUsersParams = PaginationQueryParams & { filter?: string };
 
 export interface FetchUsersResponse {
     users: User[];

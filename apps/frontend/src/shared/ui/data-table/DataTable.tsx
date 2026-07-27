@@ -1,4 +1,4 @@
-import { type Table, flexRender } from "@tanstack/react-table";
+import { type SortingState, type Table, flexRender } from "@tanstack/react-table";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,8 @@ interface DataTableProps<TData> {
     className?: string | undefined;
     children?: ReactNode;
     total?: number;
+    sorting?: SortingState;
+    onSort?: (columnId: string) => void;
 }
 
 export function DataTable<TData>({
@@ -21,7 +23,8 @@ export function DataTable<TData>({
     onRowDoubleClick,
     className,
     children,
-    total
+    total,
+    onSort
 }: DataTableProps<TData>) {
     const { t } = useTranslation();
 
@@ -33,29 +36,21 @@ export function DataTable<TData>({
                         {table.getHeaderGroups().map(headerGroup => (
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map(header => {
-                                    const canSort = header.column.getCanSort();
                                     return (
                                         <th
                                             key={header.id}
                                             colSpan={header.colSpan}
-                                            className={clsx(
-                                                styles["data-table__th"],
-                                                canSort && styles["data-table__th--sortable"]
-                                            )}
-                                            onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                                            className={styles["data-table__th"]}
                                             style={{
                                                 width: header.getSize() !== 150 ? header.getSize() : undefined
                                             }}
+                                            onClick={() => {
+                                                if (header.column.getCanSort() && onSort) {
+                                                    onSort(header.column.id);
+                                                }
+                                            }}
                                         >
                                             {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {canSort && (
-                                                <span className={styles["data-table__sort-icon"]}>
-                                                    {{
-                                                        asc: " ▲",
-                                                        desc: " ▼"
-                                                    }[header.column.getIsSorted() as string] ?? " ▸"}
-                                                </span>
-                                            )}
                                         </th>
                                     );
                                 })}
@@ -90,6 +85,17 @@ export function DataTable<TData>({
                                 </tr>
                             ))
                         )}
+                        {total !== undefined &&
+                            table.getRowModel().rows.length > 0 &&
+                            table.getRowModel().rows.length < table.getState().pagination.pageSize &&
+                            Array.from(
+                                { length: table.getState().pagination.pageSize - table.getRowModel().rows.length },
+                                (_, i) => (
+                                    <tr key={`filler-${i}`} className={styles["data-table__filler-row"]}>
+                                        <td colSpan={table.getAllColumns().length} />
+                                    </tr>
+                                )
+                            )}
                     </tbody>
                 </table>
             </div>

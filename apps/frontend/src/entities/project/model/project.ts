@@ -27,7 +27,9 @@ export interface Project {
     myRole?: ProjectMemberRole;
 }
 
-export type FetchProjectsParams = PaginationQueryParams;
+export type FetchProjectsParams = PaginationQueryParams & {
+    filter?: string;
+};
 
 export interface CreateProjectData {
     name: string;

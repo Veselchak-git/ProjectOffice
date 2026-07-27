@@ -46,6 +46,7 @@ export const auditLogListQuerySchema = Type.Object({
         sortBy: "createdAt",
         sortOrder: "desc",
     }),
+    filter: Type.Optional(Type.String()),
 });
 
 export type AuditLogListQuery = Static<typeof auditLogListQuerySchema>;

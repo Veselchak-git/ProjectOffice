@@ -13,6 +13,8 @@
  * Все права защищены
  */
 import { COMMON, PROJECTS } from "@helpdesk-portal/i18n";
+import AddIcon from "@helpdesk-portal/icons/Plus.svg?react";
+import CloseIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import { Button, Input, Select } from "@helpdesk-portal/ui-kit";
 import type { FC } from "react";
 import { useState } from "react";
@@ -139,7 +141,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                         }}
                     />
                     <Button type="button" disabled={!versionInput.trim()} onClick={addVersion}>
-                        +
+                        <AddIcon />
                     </Button>
                 </div>
                 {versions.length > 0 && (
@@ -152,7 +154,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({ initial, onSubmit, onCancel 
                                     className={styles["project-form__tag-remove"]}
                                     onClick={() => removeVersion(v)}
                                 >
-                                    ×
+                                    <CloseIcon />
                                 </Button>
                             </span>
                         ))}

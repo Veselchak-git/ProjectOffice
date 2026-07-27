@@ -1,3 +1,4 @@
+import { buildFilter, parseFilterQuery } from "../../shared/lib/filter/index.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { ProjectMemberRole, Role } from "@/generated/prisma/enums.js";
 import { Prisma } from "@/generated/prisma/client.js";
@@ -30,13 +31,10 @@ const findResponsible = (memberships: { user: { login: string }; role: string }[
     return manager?.user.login ?? memberships[0]?.user.login ?? "";
 };
 
-const PROJECT_SORT_FIELDS = new Set(["name", "status", "createdAt", "taskCount", "versionCount"]);
+const PROJECT_SORT_FIELDS = new Set(["name", "status", "createdAt"]);
 
 const buildProjectOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
-    buildOrderBy(PROJECT_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" }, {
-        taskCount: order => ({ issues: { _count: order } }),
-        versionCount: order => ({ versions: { _count: order } }),
-    });
+    buildOrderBy(PROJECT_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" });
 
 const mapProject = (p: {
     id: number;
@@ -64,16 +62,23 @@ export const getProjectsListService = async (
 ): Promise<ProjectListResponse> => {
     try {
         const prisma = request.server.prisma;
-        const { q, page = 1, perPage = 20, sortBy, sortOrder = "desc" } = request.query;
+        const { filter, page = 1, perPage = 20, sortBy, sortOrder = "desc" } = request.query;
 
         const userId = Number(request.user.sub);
         const userRole = request.user.role;
 
         const where: Record<string, unknown> = {};
-        if (q) where.name = { contains: q };
         if (userRole !== Role.ADMIN) {
             where.memberships = { some: { userId } };
         }
+
+        const filterWhere = buildFilter(parseFilterQuery(filter), [
+            { field: "name", label: "Название", type: "text" },
+            { field: "status", label: "Статус", type: "enum", enumValues: ["ACTIVE", "ARCHIVED"] },
+            { field: "createdAt", label: "Дата создания", type: "date" },
+        ]);
+
+        const finalWhere = filterWhere ? { AND: [where, filterWhere] } : where;
         const orderBy = buildProjectOrderBy(sortBy, sortOrder);
         const { skip, take } = paginationArgs(page, perPage);
 
@@ -84,9 +89,9 @@ export const getProjectsListService = async (
         } as const;
 
         const [projects, total, active] = await prisma.$transaction([
-            prisma.project.findMany({ where, orderBy, skip, take, include }),
-            prisma.project.count({ where }),
-            prisma.project.count({ where: { ...where, status: "ACTIVE" } }),
+            prisma.project.findMany({ where: finalWhere, orderBy, skip, take, include }),
+            prisma.project.count({ where: finalWhere }),
+            prisma.project.count({ where: { ...finalWhere, status: "ACTIVE" } }),
         ]);
 
         return {

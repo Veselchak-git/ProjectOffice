@@ -13,4 +13,6 @@ export interface AuditLog {
     createdAt: string;
 }
 
-export type FetchAuditLogsParams = PaginationQueryParams;
+export type FetchAuditLogsParams = PaginationQueryParams & {
+    filter?: string;
+};

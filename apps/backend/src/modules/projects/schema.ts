@@ -1,6 +1,14 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ * 
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+
 import { type Static, Type } from "@fastify/type-provider-typebox";
 
-import { createPaginationQuerySchema } from "@/schemas/pagination-query/index.js";
+import { createPaginationQueryFields } from "@/schemas/pagination-query/index.js";
 
 const versionSchema = Type.Object({
     id: Type.Number(),
@@ -39,9 +47,12 @@ export const projectListResponseSchema = Type.Object({
 
 export type ProjectListResponse = Static<typeof projectListResponseSchema>;
 
-export const getProjectsListQuerySchema = createPaginationQuerySchema({
-    sortBy: "createdAt",
-    sortOrder: "desc",
+export const getProjectsListQuerySchema = Type.Object({
+    ...createPaginationQueryFields({
+        sortBy: "createdAt",
+        sortOrder: "desc",
+    }),
+    filter: Type.Optional(Type.String()),
 });
 
 export type GetProjectsListQuery = Static<typeof getProjectsListQuerySchema>;

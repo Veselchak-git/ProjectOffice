@@ -1,0 +1,99 @@
+.tag-picker {
+    position: relative;
+    font-family: Geologica;
+    font-size: 13px;
+}
+
+.tag-picker__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-width: 140px;
+    padding: 6px 10px;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 6px;
+    background-color: var(--semantic-bg-surface);
+    color: var(--semantic-text-primary);
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.tag-picker__trigger:hover {
+    border-color: var(--semantic-btn-accent-stroke-hover-border);
+}
+
+.tag-picker__trigger :global(.ui-kit-btn__label) {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag-picker__trigger--open {
+    border-color: var(--semantic-btn-accent-stroke-hover-border);
+    box-shadow: 0 0 0 1px var(--semantic-btn-accent-stroke-hover-border);
+}
+
+.tag-picker__trigger-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-picker__arrow {
+    flex-shrink: 0;
+    font-size: 10px;
+    color: var(--semantic-text-secondary);
+}
+
+.tag-picker__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 6px;
+    background-color: var(--semantic-bg-surface-elevated);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tag-picker__option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+.tag-picker__option:hover {
+    background-color: var(--semantic-fill-primary-hover);
+}
+
+.tag-picker__option--selected {
+    background-color: var(--semantic-fill-primary-selected);
+}
+
+.tag-picker__checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--semantic-btn-accent-stroke-hover-border);
+}
+
+.tag-picker__option-label {
+    flex: 1;
+    color: var(--semantic-text-primary);
+}

@@ -2,6 +2,7 @@ import { type Static, Type } from "@fastify/type-provider-typebox";
 
 import { IssueCategory, IssuePriority, IssueStatus } from "@/generated/prisma/enums.js";
 import { createPaginationQueryFields } from "@/schemas/pagination-query/index.js";
+import { filterQueryStringSchema } from "@/shared/lib/filter/index.js";
 
 export const issueResponseSchema = Type.Object({
     id: Type.Number(),
@@ -42,9 +43,7 @@ export const issuesListQuerySchema = Type.Object({
         sortBy: "createdAt",
         sortOrder: "desc",
     }),
-    status: Type.Optional(Type.Enum(IssueStatus)),
-    priority: Type.Optional(Type.Enum(IssuePriority)),
-    category: Type.Optional(Type.Enum(IssueCategory)),
+    filter: filterQueryStringSchema,
 });
 
 export type IssuesListQuery = Static<typeof issuesListQuerySchema>;

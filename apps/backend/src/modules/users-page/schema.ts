@@ -1,7 +1,7 @@
 import { Role } from "@/generated/prisma/client.js";
 import { type Static, Type } from "@fastify/type-provider-typebox";
 
-import { createPaginationQuerySchema } from "@/schemas/pagination-query/index.js";
+import { createPaginationQueryFields } from "@/schemas/pagination-query/index.js";
 
 export const userResponseSchema = Type.Object({
     id: Type.Number(),
@@ -12,9 +12,12 @@ export const userResponseSchema = Type.Object({
 
 export type UserResponse = Static<typeof userResponseSchema>;
 
-export const getUsersQuerySchema = createPaginationQuerySchema({
-    sortBy: "id",
-    sortOrder: "asc",
+export const getUsersQuerySchema = Type.Object({
+    ...createPaginationQueryFields({
+        sortBy: "id",
+        sortOrder: "asc",
+    }),
+    filter: Type.Optional(Type.String()),
 });
 
 export type GetUsersQuery = Static<typeof getUsersQuerySchema>;

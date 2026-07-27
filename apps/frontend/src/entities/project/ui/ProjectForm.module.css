@@ -40,6 +40,15 @@
     display: flex;
     gap: 8px;
     align-items: flex-start;
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.project-form__versions-input :global(.ui-kit-btn-accent.ui-kit-btn-fill) {
+    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
+    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
 }
 
 .project-form__tags {
@@ -91,4 +100,9 @@
     gap: 8px;
     justify-content: flex-end;
     margin-top: 8px;
+}
+
+.project-form__actions :global(.ui-kit-btn-accent.ui-kit-btn-fill) {
+    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
+    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
 }

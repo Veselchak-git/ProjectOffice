@@ -11,7 +11,8 @@ import type { TFunction } from "i18next";
 
 import type { User } from "@/entities/user";
 
-import { createColumnMeta, createDateColumn, createSelectColumn } from "@/shared/ui/data-table";
+import { createColumnMeta } from "@/shared/ui/data-table";
+import { createDateColumn, createSelectColumn } from "@/shared/ui/data-table/column-helpers";
 
 export interface GetUsersColumnsDeps {
     t: TFunction;

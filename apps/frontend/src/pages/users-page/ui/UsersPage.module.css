@@ -155,3 +155,7 @@
 .users-page__table-area td:last-child {
     overflow: visible;
 }
+
+.users-page__form-error--spaced {
+    margin-bottom: 16px;
+}

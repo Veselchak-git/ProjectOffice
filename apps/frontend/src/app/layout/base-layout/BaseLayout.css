@@ -1,6 +1,5 @@
 .base-layout {
     --semantic-fill-primary-hover: var(--accent-50);
-    --semantic-fill-primary-selected: var(--accent-100);
     display: flex;
     min-height: 100vh;
     background-color: var(--semantic-bg-base);
@@ -8,7 +7,6 @@
 
 [data-color-mode="dark"] .base-layout {
     --semantic-fill-primary-hover: var(--accent-950);
-    --semantic-fill-primary-selected: var(--accent-900);
 }
 
 .sidebar {

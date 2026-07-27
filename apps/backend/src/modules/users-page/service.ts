@@ -5,6 +5,8 @@ import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
 import { hashPassword } from "@/shared/lib/hash-password/index.js";
 import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
+import { buildFilter, parseFilterQuery } from "@/shared/lib/filter/index.js";
+import type { FieldDefinition } from "@/shared/lib/filter/types.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 
 import type {
@@ -17,13 +19,22 @@ import type {
 
 const USER_SORT_FIELDS = new Set(["login", "role", "createdAt"]);
 
+const FILTER_FIELDS: FieldDefinition[] = [
+    { field: "login", label: "Login", type: "text" },
+    { field: "role", label: "Role", type: "enum", enumValues: ["ADMIN", "USER", "MANAGER"] },
+    { field: "createdAt", label: "Created At", type: "date" },
+];
+
 export const getUsersService = async (
     request: FastifyRequestTypeBox<typeof getUsersSchema>
 ): Promise<{ users: UserResponse[]; total: number; page: number; perPage: number }> => {
     try {
-        const { q, page = 1, perPage = 20, sortBy, sortOrder = "asc" } = request.query;
+        const { page = 1, perPage = 20, sortBy, sortOrder = "asc", filter } = request.query;
 
-        const where = { deletedAt: null, ...(q ? { login: { contains: q } } : {}) };
+        const filterWhere = buildFilter(parseFilterQuery(filter), FILTER_FIELDS);
+        const where = filterWhere
+            ? { AND: [{ deletedAt: null }, filterWhere] }
+            : { deletedAt: null };
         const orderBy = buildOrderBy(USER_SORT_FIELDS, sortBy, sortOrder, { id: "asc" });
         const { skip, take } = paginationArgs(page, perPage);
 
