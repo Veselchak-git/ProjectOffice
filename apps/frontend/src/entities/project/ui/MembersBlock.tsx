@@ -36,6 +36,7 @@ interface MembersListModalProps {
     currentLogin: string | undefined;
     currentUserId: number | undefined;
     projectRole: ProjectMemberRole | undefined;
+    onLeave?: () => void;
 }
 
 export const MembersListModal: FC<MembersListModalProps> = ({
@@ -45,7 +46,8 @@ export const MembersListModal: FC<MembersListModalProps> = ({
     globalRole,
     currentLogin,
     currentUserId,
-    projectRole
+    projectRole,
+    onLeave
 }) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
@@ -159,6 +161,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
     const handleLeave = async () => {
         if (!window.confirm(t(`${PROJECTS}:members.confirmLeave`))) return;
         await removeMember(currentUserId!);
+        onLeave?.();
     };
 
     const handleAdd = async () => {

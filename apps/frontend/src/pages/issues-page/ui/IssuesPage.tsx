@@ -11,9 +11,9 @@ import { Button, Chip } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import type { FC } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import type { FetchIssuesParams, Issue } from "@/entities/issue";
 import { deleteIssue, fetchIssues } from "@/entities/issue";
@@ -108,6 +108,48 @@ export const IssuesPage: FC = () => {
         applyConditions,
         removeFieldConditions
     } = useFilterState("issues", filterConfig);
+
+    // --- Apply filter from URL query param on first mount ---
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlFilterApplied = useRef(false);
+
+    useEffect(() => {
+        if (urlFilterApplied.current) return;
+        const rawFilter = searchParams.get("filter");
+        if (!rawFilter) return;
+
+        try {
+            const parsed = JSON.parse(rawFilter);
+            if (
+                parsed &&
+                typeof parsed === "object" &&
+                Array.isArray(parsed.conditions) &&
+                (parsed.logic === "AND" || parsed.logic === "OR")
+            ) {
+                const conditions = parsed.conditions.map(
+                    (c: { field: string; operator: string; value: string | string[] }) => ({
+                        id: crypto.randomUUID(),
+                        field: c.field,
+                        operator: c.operator,
+                        value: c.value
+                    })
+                );
+                applyConditions(conditions, parsed.logic);
+                urlFilterApplied.current = true;
+                setSearchParams(
+                    prev => {
+                        const next = new URLSearchParams(prev);
+                        next.delete("filter");
+                        return next;
+                    },
+                    { replace: true }
+                );
+            }
+        } catch {
+            // ignore invalid filter JSON
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const [openFilter, setOpenFilter] = useState<string | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const { popoverKeys, bumpKey } = usePopoverKeys();

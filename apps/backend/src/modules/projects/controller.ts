@@ -149,6 +149,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
                 createProjectAccessGuard({
                     requiredRoles: [ProjectMemberRole.MANAGER],
                     allowGlobalAdmin: true,
+                    allowSelfLeave: true,
                 }),
             ],
         },

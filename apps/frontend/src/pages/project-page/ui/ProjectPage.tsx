@@ -208,6 +208,7 @@ export const ProjectPage: FC = () => {
                 currentLogin={user?.login}
                 currentUserId={user?.id ? Number(user.id) : undefined}
                 projectRole={project.myRole}
+                onLeave={() => navigate("/projects", { replace: true })}
             />
 
             <Modal

@@ -20,9 +20,10 @@ interface Props {
     summary?: DashboardSummary | undefined;
     isLoading?: boolean;
     userRole?: UserRole | undefined;
+    login?: string | undefined;
 }
 
-export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole }) => {
+export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole, login }) => {
     const { t } = useTranslation(HOME);
 
     if (isLoading) {
@@ -44,10 +45,28 @@ export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole }) =
         );
     }
 
+    const buildFilterQuery = (filter: unknown): string => `?filter=${encodeURIComponent(JSON.stringify(filter))}`;
+
     const counters = [
         { label: t("dashboard.projects"), value: summary?.totalProjects ?? 0, to: "/projects" },
-        { label: t("dashboard.assigned"), value: summary?.totalAssigned ?? 0, to: "/tasks" },
-        { label: t("dashboard.closed"), value: summary?.totalClosed ?? 0, to: "/tasks" }
+        {
+            label: t("dashboard.assigned"),
+            value: summary?.totalAssigned ?? 0,
+            to: login
+                ? `/tasks${buildFilterQuery({
+                      logic: "AND",
+                      conditions: [{ field: "assigneeLogin", operator: "eq", value: login }]
+                  })}`
+                : "/tasks"
+        },
+        {
+            label: t("dashboard.closed"),
+            value: summary?.totalClosed ?? 0,
+            to: `/tasks${buildFilterQuery({
+                logic: "AND",
+                conditions: [{ field: "status", operator: "eq", value: "CLOSED" }]
+            })}`
+        }
     ];
 
     if (userRole === "ADMIN") {

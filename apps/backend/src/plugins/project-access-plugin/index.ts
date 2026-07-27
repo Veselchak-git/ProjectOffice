@@ -103,6 +103,7 @@ export interface ProjectAccessGuardOptions {
     allowGlobalAdmin?: boolean;
     checkSelfModification?: boolean;
     checkRoleHierarchy?: boolean;
+    allowSelfLeave?: boolean;
 }
 
 export const createProjectAccessGuard = (options?: ProjectAccessGuardOptions): preHandlerHookHandler => {
@@ -114,10 +115,17 @@ export const createProjectAccessGuard = (options?: ProjectAccessGuardOptions): p
 
         request.projectAccess = { globalRole, localRole: null };
 
+        const targetUserId = params.userId != null ? Number(params.userId) : undefined;
+
         if (options?.checkSelfModification) {
-            const targetUserId = params.userId != null ? Number(params.userId) : undefined;
             if (targetUserId !== undefined && targetUserId === userId) {
                 throw new AppError(HTTP_STATUS.FORBIDDEN, "Cannot change your own role", "SELF_ROLE_CHANGE");
+            }
+        }
+
+        if (options?.allowSelfLeave) {
+            if (targetUserId !== undefined && targetUserId === userId) {
+                return;
             }
         }
 

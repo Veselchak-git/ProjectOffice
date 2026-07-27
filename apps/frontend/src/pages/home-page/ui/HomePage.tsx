@@ -38,7 +38,12 @@ export const HomePage: FC = () => {
 
     return (
         <div className={styles["home-page"]}>
-            <DashboardCounters summary={data?.summary} isLoading={isPending} userRole={user?.role} />
+            <DashboardCounters
+                summary={data?.summary}
+                isLoading={isPending}
+                userRole={user?.role}
+                login={user?.login}
+            />
             <section className={styles["home-page__section"]}>
                 <h2 className={styles["home-page__section-title"]}>{t("activity.title")}</h2>
                 <ActivityFeed activity={data?.activity ?? []} isLoading={isPending} />
