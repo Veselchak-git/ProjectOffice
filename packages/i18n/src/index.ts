@@ -15,6 +15,7 @@ export const ISSUES = "issues";
 export const AUDIT = "audit";
 export const VALIDATION = "validation";
 export const HOME = "home";
+export const DATE_TIME_PICKER = "dateTimePicker";
 
 export type Namespace =
     | typeof COMMON
@@ -25,7 +26,8 @@ export type Namespace =
     | typeof ISSUES
     | typeof AUDIT
     | typeof VALIDATION
-    | typeof HOME;
+    | typeof HOME
+    | typeof DATE_TIME_PICKER;
 
 export const ALL_NAMESPACES: Namespace[] = [
     COMMON,
@@ -37,4 +39,5 @@ export const ALL_NAMESPACES: Namespace[] = [
     AUDIT,
     VALIDATION,
     HOME,
+    DATE_TIME_PICKER,
 ];
