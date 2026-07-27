@@ -6,6 +6,7 @@
  * Все права защищены
  */
 import { AUDIT } from "@helpdesk-portal/i18n";
+import ArrowRightIcon from "@helpdesk-portal/icons/ArrowRight.svg?react";
 import { Modal } from "@helpdesk-portal/ui-kit";
 import clsx from "clsx";
 import type { FC, ReactNode } from "react";
@@ -94,19 +95,25 @@ const DiffRow: FC<DiffRowProps> = ({ diff }) => (
         {diff.field === "status" ? (
             <>
                 <StatusBadge status={diff.oldValue.replace(/"/g, "")} />
-                <span className={styles["audit-log-page__modal-diff-arrow"]}>→</span>
+                <span className={styles["audit-log-page__modal-diff-arrow"]}>
+                    <ArrowRightIcon />
+                </span>
                 <StatusBadge status={diff.newValue.replace(/"/g, "")} />
             </>
         ) : diff.field === "priority" ? (
             <>
                 <StatusBadge status={diff.oldValue.replace(/"/g, "")} variant="priority" />
-                <span className={styles["audit-log-page__modal-diff-arrow"]}>→</span>
+                <span className={styles["audit-log-page__modal-diff-arrow"]}>
+                    <ArrowRightIcon />
+                </span>
                 <StatusBadge status={diff.newValue.replace(/"/g, "")} variant="priority" />
             </>
         ) : (
             <>
                 <span className={styles["audit-log-page__modal-diff-old"]}>{diff.oldValue}</span>
-                <span className={styles["audit-log-page__modal-diff-arrow"]}>→</span>
+                <span className={styles["audit-log-page__modal-diff-arrow"]}>
+                    <ArrowRightIcon />
+                </span>
                 <span className={styles["audit-log-page__modal-diff-new"]}>{diff.newValue}</span>
             </>
         )}

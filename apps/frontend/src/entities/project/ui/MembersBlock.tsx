@@ -6,6 +6,7 @@
  * Все права защищены
  */
 import { PROJECTS } from "@helpdesk-portal/i18n";
+import ResetInputIcon from "@helpdesk-portal/icons/ResetInput.svg?react";
 import { Button, Select } from "@helpdesk-portal/ui-kit";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -177,7 +178,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                 <div className={styles["members-block-modal__header"]}>
                     <h2 className={styles["members-block-modal__title"]}>{t(`${PROJECTS}:members.title`)}</h2>
                     <Button className={styles["members-block-modal__close"]} type="button" onClick={onClose}>
-                        ✕
+                        <ResetInputIcon />
                     </Button>
                 </div>
 
@@ -252,7 +253,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                             onClick={() => handleRemove(m.userId)}
                                             title={t(`${PROJECTS}:members.deleteTooltip`)}
                                         >
-                                            ✕
+                                            <ResetInputIcon />
                                         </Button>
                                     )}
                                     {m.userId === currentUserId && (
@@ -261,7 +262,7 @@ export const MembersListModal: FC<MembersListModalProps> = ({
                                             type="button"
                                             onClick={handleLeave}
                                         >
-                                            ✕
+                                            <ResetInputIcon />
                                         </Button>
                                     )}
                                 </div>
