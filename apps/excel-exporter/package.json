@@ -1,0 +1,30 @@
+{
+    "name": "excel-exporter",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc -p tsconfig.build.json",
+        "type-check": "tsc --noEmit -p tsconfig.json",
+        "lint": "eslint .",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "fastify": "5.8.5",
+        "@fastify/cors": "11.3.0",
+        "@fastify/env": "7.0.0",
+        "@fastify/type-provider-typebox": "6.1.0",
+        "@fastify/multipart": "10.1.0",
+        "exceljs": "4.4.0",
+        "fastify-plugin": "6.0.0"
+    },
+    "devDependencies": {
+        "@helpdesk-portal/eslint-config": "*",
+        "@helpdesk-portal/typescript-config": "*",
+        "@types/node": "24.12.3",
+        "tsx": "4.22.4",
+        "typescript": "6.0.3",
+        "vitest": "4.1.8"
+    }
+}
