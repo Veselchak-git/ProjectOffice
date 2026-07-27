@@ -76,7 +76,11 @@ function formatDate(dateStr: string, locale: string, timezone: string): string {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-        timeZone: timezone,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: timezone
     }).format(date);
 }
 
