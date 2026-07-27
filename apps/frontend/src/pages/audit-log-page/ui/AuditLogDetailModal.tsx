@@ -6,7 +6,7 @@
  * Все права защищены
  */
 import { AUDIT } from "@helpdesk-portal/i18n";
-import ArrowRightIcon from "@helpdesk-portal/icons/ArrowRight.svg?react";
+import ArrowRightIcon from "@helpdesk-portal/icons/OtherArrowRight.svg?react";
 import { Modal } from "@helpdesk-portal/ui-kit";
 import clsx from "clsx";
 import type { FC, ReactNode } from "react";

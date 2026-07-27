@@ -90,6 +90,13 @@
 .audit-log-page__modal-diff-arrow {
     color: var(--semantic-text-secondary);
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.audit-log-page__modal-diff-arrow svg {
+    width: 16px;
+    height: 16px;
 }
 
 .audit-log-page__modal-diff-new {
