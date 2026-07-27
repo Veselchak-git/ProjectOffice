@@ -51,7 +51,7 @@
     margin-left: auto;
     flex-shrink: 0;
     border: none;
-    background-color: var(--semantic-btn-accent-fill-hover-bg);
+    background-color: var(--semantic-btn-accent-fill-bg);
     color: var(--semantic-btn-accent-fill-text);
     font-family: Geologica;
     svg {
@@ -61,5 +61,5 @@
 }
 
 .filter-chips__clear:hover {
-    background-color: var(--semantic-btn-accent-fill-bg);
+    background-color: var(--semantic-btn-accent-fill-hover-bg);
 }

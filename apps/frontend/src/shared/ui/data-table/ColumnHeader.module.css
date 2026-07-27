@@ -1,8 +1,9 @@
 .column-header {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 4px;
+    width: 100%;
     font-family: Geologica;
     font-size: 12px;
     font-weight: 500;
@@ -24,6 +25,7 @@
     border: none;
     background: none;
     cursor: pointer;
+    margin-left: auto;
 }
 
 .column-header__filter-icon svg {

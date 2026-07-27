@@ -11,11 +11,13 @@ import clsx from "clsx";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { DateTimePicker } from "@/shared/ui/date-time-picker/DateTimePicker";
+
 import { getOperatorsForFieldType, getValueInputType } from "../../lib/use-table-filter/operator-helpers";
 import type { FieldOption, FilterCondition, FilterOperator } from "../../lib/use-table-filter/types";
 import styles from "./FilterPopover.module.css";
 
-const POPOVER_WIDTH = 550;
+const POPOVER_WIDTH = 470;
 
 export interface FilterPopoverProps {
     fields: FieldOption[];
@@ -134,153 +136,105 @@ interface ContentProps {
     onReset: () => void;
 }
 
-function FilterPopoverContent({ fields, conditions, logic: logicProp, initialField, onApply, onReset }: ContentProps) {
+function FilterPopoverContent({ fields, conditions: allConditions, initialField, onApply, onReset }: ContentProps) {
     const { t } = useTranslation("common");
 
+    // ── Filter only conditions matching this column ────────────────────
+    const fieldConditions = useMemo(
+        () =>
+            allConditions.filter(c => (initialField ? c.field === initialField : c.field === allConditions[0]?.field)),
+        [allConditions, initialField]
+    );
+    const ownCondition = fieldConditions[0];
+
     // ── Initial values (recomputed via useMemo when props change) ──────
-    const initialFieldValues = useMemo(() => {
-        const arr: string[] = ["", ""];
-        conditions.forEach((c, i) => {
-            if (i < 2) arr[i] = c.field;
-        });
-        if (initialField && !arr[0]) arr[0] = initialField;
-        return arr;
-    }, [conditions, initialField]);
-
-    const initialOperatorValues = useMemo(() => {
-        const defaultOp = (index: number): FilterOperator => {
-            const f = index === 0 && initialField ? initialField : initialFieldValues[index];
-            const fieldOpt = fields.find(fo => fo.field === (f ?? ""));
-            const ops = fieldOpt ? getOperatorsForFieldType(fieldOpt.type) : [];
-            return (ops[0]?.value as FilterOperator) ?? "contains";
-        };
-        const arr: FilterOperator[] = [defaultOp(0), defaultOp(1)];
-        conditions.forEach((c, i) => {
-            if (i < 2) arr[i] = c.operator;
-        });
-        return arr;
-    }, [conditions, initialField, fields, initialFieldValues]);
-
-    const initialValueValues = useMemo(() => {
-        const arr: (string | string[])[] = ["", ""];
-        conditions.forEach((c, i) => {
-            if (i < 2) arr[i] = c.value;
-        });
-        return arr;
-    }, [conditions]);
+    const initialFieldValue = initialField ?? ownCondition?.field ?? "";
+    const initialOperatorValue: FilterOperator =
+        ownCondition?.operator ??
+        (() => {
+            if (initialField) {
+                const fieldOpt = fields.find(fo => fo.field === initialField);
+                const ops = fieldOpt ? getOperatorsForFieldType(fieldOpt.type) : [];
+                return (ops[0]?.value as FilterOperator) ?? "contains";
+            }
+            return "contains";
+        })();
+    const initialValueValue = ownCondition?.value ?? "";
 
     // ── Local editing state ────────────────────────────────────────────
-    const [fieldValues, setFieldValues] = useState<string[]>(initialFieldValues);
-    const [operatorValues, setOperatorValues] = useState<FilterOperator[]>(initialOperatorValues);
-    const [valueValues, setValueValues] = useState<(string | string[])[]>(initialValueValues);
-    const [logicValue, setLogicValue] = useState<"AND" | "OR">(logicProp);
+    const [fieldValue, setFieldValue] = useState<string>(initialFieldValue);
+    const [operatorValue, setOperatorValue] = useState<FilterOperator>(initialOperatorValue);
+    const [valueValue, setValueValue] = useState<string | string[]>(initialValueValue);
 
     // ── Handlers (no useCallback — React Compiler manages memoisation) ─
 
-    const handleFieldChange = (rowIndex: number, newField: string) => {
-        setFieldValues(prev => {
-            const next = [...prev];
-            next[rowIndex] = newField;
-            return next;
-        });
+    const handleFieldChange = (newField: string) => {
+        setFieldValue(newField);
 
         const fieldOption = fields.find(f => f.field === newField);
         if (fieldOption) {
             const operators = getOperatorsForFieldType(fieldOption.type);
             const firstOperator = operators[0]?.value ?? "contains";
-            setOperatorValues(prev => {
-                const next = [...prev];
-                next[rowIndex] = firstOperator;
-                return next;
-            });
+            setOperatorValue(firstOperator);
         }
 
-        setValueValues(prev => {
-            const next = [...prev];
-            next[rowIndex] = "";
-            return next;
-        });
+        setValueValue("");
     };
 
-    const handleOperatorChange = (rowIndex: number, newOperator: FilterOperator) => {
-        const prevOperator = operatorValues[rowIndex]!;
-        const prevType = getValueInputType(prevOperator);
+    const handleOperatorChange = (newOperator: FilterOperator) => {
+        const prevType = getValueInputType(operatorValue);
         const newType = getValueInputType(newOperator);
 
-        setOperatorValues(prev => {
-            const next = [...prev];
-            next[rowIndex] = newOperator;
-            return next;
-        });
+        setOperatorValue(newOperator);
 
         if (prevType !== newType) {
-            setValueValues(prev => {
-                const next = [...prev];
-                next[rowIndex] = newType === "multiselect" ? [] : "";
-                return next;
-            });
+            setValueValue(newType === "multiselect" ? [] : "");
         }
     };
 
-    const handleValueChange = (rowIndex: number, newValue: string | string[]) => {
-        setValueValues(prev => {
-            const next = [...prev];
-            next[rowIndex] = newValue;
-            return next;
-        });
-    };
-
-    const handleToggleLogic = () => {
-        setLogicValue(prev => (prev === "AND" ? "OR" : "AND"));
+    const handleValueChange = (newValue: string | string[]) => {
+        setValueValue(newValue);
     };
 
     const handleApply = useCallback(() => {
-        const appliedConditions: FilterCondition[] = [];
+        const conditionField = initialField ?? fieldValue;
 
-        for (let i = 0; i < 2; i++) {
-            if (fieldValues[i]) {
-                appliedConditions.push({
-                    id: generateId(),
-                    field: fieldValues[i]!,
-                    operator: operatorValues[i]!,
-                    value: valueValues[i]!
-                });
-            }
-        }
+        // Keep conditions for other fields, replace/remove for this field
+        const otherConditions = allConditions.filter(c => c.field !== conditionField);
+        const merged = fieldValue
+            ? [...otherConditions, { id: generateId(), field: fieldValue, operator: operatorValue, value: valueValue }]
+            : otherConditions;
 
-        onApply(appliedConditions, logicValue);
-    }, [fieldValues, operatorValues, valueValues, logicValue, onApply]);
+        onApply(merged, "AND");
+    }, [fieldValue, operatorValue, valueValue, onApply, allConditions, initialField]);
 
     const handleReset = () => {
-        const defaultOp = (index: number): FilterOperator => {
-            const f = index === 0 && initialField ? initialField : "";
-            const fieldOpt = fields.find(fo => fo.field === f);
-            const ops = fieldOpt ? getOperatorsForFieldType(fieldOpt.type) : [];
-            return (ops[0]?.value as FilterOperator) ?? "contains";
-        };
-        setFieldValues([initialField ?? "", ""]);
-        setOperatorValues([defaultOp(0), defaultOp(1)]);
-        setValueValues(["", ""]);
-        setLogicValue(logicProp);
+        setFieldValue(initialField ?? "");
+        const defaultOp = (() => {
+            if (initialField) {
+                const fieldOpt = fields.find(fo => fo.field === initialField);
+                const ops = fieldOpt ? getOperatorsForFieldType(fieldOpt.type) : [];
+                return (ops[0]?.value as FilterOperator) ?? "contains";
+            }
+            return "contains" as FilterOperator;
+        })();
+        setOperatorValue(defaultOp);
+        setValueValue("");
         onReset();
     };
 
-    // ── Derived display logic ──────────────────────────────────────────
-    const hasSecondRow = initialField ? true : Boolean(fieldValues[1]);
-    const showConnector = Boolean(fieldValues[0] && fieldValues[1]);
-
     // ── Render helpers ─────────────────────────────────────────────────
-    const renderValueInput = (rowIndex: number) => {
-        const fieldOption = fields.find(f => f.field === fieldValues[rowIndex]);
-        const inputType = getValueInputType(operatorValues[rowIndex]!);
+    const renderValueInput = () => {
+        const fieldOption = fields.find(f => f.field === fieldValue);
+        const inputType = getValueInputType(operatorValue);
 
         if (inputType === "multiselect" && fieldOption?.enumValues) {
-            const selected = Array.isArray(valueValues[rowIndex]) ? (valueValues[rowIndex] as string[]) : [];
+            const selected = Array.isArray(valueValue) ? valueValue : [];
             return (
                 <MultiSelect
                     options={fieldOption.enumValues}
                     selected={selected}
-                    onChange={values => handleValueChange(rowIndex, values)}
+                    onChange={values => handleValueChange(values)}
                     placeholder={
                         selected.length > 0
                             ? t("filter.selectedCount", { count: selected.length })
@@ -294,12 +248,9 @@ function FilterPopoverContent({ fields, conditions, logic: logicProp, initialFie
 
         if (inputType === "date") {
             return (
-                <Input
-                    type="date"
-                    className={styles.valueInput}
-                    value={typeof valueValues[rowIndex] === "string" ? (valueValues[rowIndex] as string) : ""}
-                    onChange={e => handleValueChange(rowIndex, e.target.value)}
-                    data-test={`filter-value-${rowIndex}`}
+                <DateTimePicker
+                    value={typeof valueValue === "string" ? valueValue : ""}
+                    onChange={v => handleValueChange(v)}
                 />
             );
         }
@@ -309,50 +260,16 @@ function FilterPopoverContent({ fields, conditions, logic: logicProp, initialFie
                 type="text"
                 className={styles.valueInput}
                 placeholder={t("filter.placeholder.value")}
-                value={typeof valueValues[rowIndex] === "string" ? (valueValues[rowIndex] as string) : ""}
-                onChange={e => handleValueChange(rowIndex, e.target.value)}
-                data-test={`filter-value-${rowIndex}`}
+                value={typeof valueValue === "string" ? valueValue : ""}
+                onChange={e => handleValueChange(e.target.value)}
+                data-test="filter-value-0"
             />
         );
     };
 
-    const renderRow = (rowIndex: number) => {
-        const isFixedField = rowIndex === 0 && initialField != null;
-        const fieldOption = fields.find(f => f.field === fieldValues[rowIndex]);
-        const operators = fieldOption ? getOperatorsForFieldType(fieldOption.type) : getOperatorsForFieldType("text");
-
-        return (
-            <div className={styles.row} data-test={`filter-row-${rowIndex}`}>
-                {isFixedField ? (
-                    <span className={styles.fieldLabel} data-test="filter-field-label-0">
-                        {fieldOption?.label ?? initialField}
-                    </span>
-                ) : (
-                    <Select
-                        className={styles.fieldSelect ?? ""}
-                        placeholder={t("filter.placeholder.select")}
-                        options={fields.map(field => ({ value: field.field, label: field.label }))}
-                        value={fieldValues[rowIndex] ?? ""}
-                        onValueChange={value => handleFieldChange(rowIndex, value)}
-                        usePortal={false}
-                        data-test={`filter-field-${rowIndex}`}
-                    />
-                )}
-
-                <Select
-                    className={styles.fieldSelect ?? ""}
-                    placeholder={t("filter.placeholder.select")}
-                    options={operators.map(op => ({ value: op.value, label: t(`filter.operator.${op.value}`) }))}
-                    value={operatorValues[rowIndex] ?? ""}
-                    onValueChange={value => handleOperatorChange(rowIndex, value as FilterOperator)}
-                    usePortal={false}
-                    data-test={`filter-operator-${rowIndex}`}
-                />
-
-                {renderValueInput(rowIndex)}
-            </div>
-        );
-    };
+    const isFixedField = initialField != null;
+    const fieldOption = fields.find(f => f.field === fieldValue);
+    const operators = fieldOption ? getOperatorsForFieldType(fieldOption.type) : getOperatorsForFieldType("text");
 
     // ── Render ─────────────────────────────────────────────────────────
     return (
@@ -362,22 +279,35 @@ function FilterPopoverContent({ fields, conditions, logic: logicProp, initialFie
                 {t("filter.title")}
             </div>
 
-            {renderRow(0)}
+            <div className={styles.row} data-test="filter-row-0">
+                {isFixedField ? (
+                    <span className={styles.fieldLabel} data-test="filter-field-label-0">
+                        {fieldOption?.label ?? initialField}
+                    </span>
+                ) : (
+                    <Select
+                        className={styles.fieldSelect ?? ""}
+                        placeholder={t("filter.placeholder.select")}
+                        options={fields.map(field => ({ value: field.field, label: field.label }))}
+                        value={fieldValue}
+                        onValueChange={handleFieldChange}
+                        usePortal={false}
+                        data-test="filter-field-0"
+                    />
+                )}
 
-            {showConnector && (
-                <Button
-                    type="button"
-                    onClick={handleToggleLogic}
-                    variant="stroke"
-                    size="s"
-                    className={styles.connectorBtn}
-                    data-test="filter-logic-toggle"
-                >
-                    {t(`filter.logic.${logicValue}`)}
-                </Button>
-            )}
+                <Select
+                    className={styles.fieldSelect ?? ""}
+                    placeholder={t("filter.placeholder.select")}
+                    options={operators.map(op => ({ value: op.value, label: t(`filter.operator.${op.value}`) }))}
+                    value={operatorValue}
+                    onValueChange={value => handleOperatorChange(value as FilterOperator)}
+                    usePortal={false}
+                    data-test="filter-operator-0"
+                />
 
-            {hasSecondRow && renderRow(1)}
+                {renderValueInput()}
+            </div>
 
             <div className={styles.actions} data-test="filter-actions">
                 <Button

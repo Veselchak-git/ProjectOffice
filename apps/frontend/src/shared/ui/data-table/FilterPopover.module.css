@@ -3,7 +3,7 @@
     top: 100%;
     left: 0;
     z-index: 200;
-    width: 550px;
+    width: 470px;
     margin-top: 12px;
     padding: 16px;
     border: 1px solid var(--semantic-border-default);
@@ -78,45 +78,19 @@
     font-weight: 600;
     font-size: 13px;
     color: var(--semantic-text-primary);
-    padding: 6px 10px;
+    padding: 6px 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 0;
+    width: 140px;
+    justify-self: center;
+    align-self: center;
+    text-align: center;
 }
 
 .valueInput {
     min-width: 0;
 }
-
-
-.connectorBtn {
-    display: block;
-    margin: 4px auto;
-    padding: 2px 12px;
-    min-width: 60px;
-    width: fit-content;
-    border: 1px solid var(--semantic-border-default);
-    border-radius: 4px;
-    background-color: var(--semantic-bg-surface);
-    color: var(--semantic-text-secondary);
-    cursor: pointer;
-    font-family: Geologica, sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition:
-        border-color 0.15s ease,
-        background-color 0.15s ease,
-        color 0.15s ease;
-}
-
-.connectorBtn:hover {
-    border-color: var(--semantic-btn-accent-stroke-hover-border);
-    color: var(--semantic-text-primary);
-}
-
 .actions {
     display: flex;
     justify-content: flex-end;
@@ -127,7 +101,8 @@
 }
 
 .resetBtn {
-    --btn-hover-bg: var(--accent-400);
+    --btn-hover-bg: var(--semantic-btn-accent-stroke-hover-bg);
+    --btn-hover-border-color: var(--semantic-btn-accent-stroke-hover-border);
 }
 
 .applyBtn {
