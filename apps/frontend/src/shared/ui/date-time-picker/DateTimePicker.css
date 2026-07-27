@@ -1,0 +1,265 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ *
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ *
+ * Overrides для react-datepicker в соответствии с темизацией портала.
+ */
+
+.datetime-picker__wrapper {
+    display: inline-flex;
+}
+
+/* ─── Trigger wrapper (ref target for popper) ─────────────────── */
+
+.datetime-picker__trigger-wrapper {
+    display: inline-flex;
+}
+
+/* ─── Trigger button (calendar icon) ──────────────────────────── */
+
+.datetime-picker__trigger {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background: var(--semantic-bg-surface);
+    color: var(--semantic-text-tertiary);
+    text-decoration: none;
+}
+
+.datetime-picker__trigger svg {
+    width: 16px;
+    height: 16px;
+}
+
+.datetime-picker__trigger:hover {
+    background: var(--semantic-fill-primary-hover);
+    border-color: var(--semantic-btn-accent-stroke-hover-border);
+    color: var(--semantic-text-primary);
+}
+
+.datetime-picker__trigger--active {
+    color: var(--semantic-accent-primary);
+    border-color: var(--semantic-accent-primary);
+}
+
+.datetime-picker__trigger--active:hover {
+    background: var(--semantic-fill-primary-hover);
+    border-color: var(--semantic-btn-accent-stroke-hover-border);
+    color: var(--semantic-accent-primary);
+}
+
+/* ─── Time input (<input type="time" step="1">) ─────────────── */
+
+/* Капшн над time input */
+.datetime-picker__calendar .react-datepicker-time__caption {
+    color: var(--semantic-text-secondary);
+    font-family: Geologica, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 2px;
+}
+
+.datetime-picker__calendar .datetime-picker__time-input {
+    box-sizing: border-box;
+    min-height: 40px;
+    padding: 8px 32px 8px 12px;
+    border: 2px solid var(--semantic-border-default);
+    border-radius: 8px;
+    background: var(--semantic-bg-surface);
+    color: var(--semantic-text-primary);
+    font-family: Geologica, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    -moz-appearance: textfield;
+}
+
+/* Нативный пикер (иконка часов) */
+.datetime-picker__calendar .datetime-picker__time-input::-webkit-calendar-picker-indicator {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    cursor: pointer;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M13 0C10.4288 0 7.91543 0.762437 5.77759 2.1909C3.63975 3.61935 1.97351 5.64968 0.989572 8.02512C0.0056327 10.4006 -0.251811 13.0144 0.249797 15.5362C0.751405 18.0579 1.98953 20.3743 3.80762 22.1924C5.6257 24.0105 7.94208 25.2486 10.4638 25.7502C12.9856 26.2518 15.5995 25.9944 17.9749 25.0104C20.3503 24.0265 22.3807 22.3603 23.8091 20.2224C25.2376 18.0846 26 15.5712 26 13C25.9964 9.5533 24.6256 6.24882 22.1884 3.81163C19.7512 1.37445 16.4467 0.00363977 13 0ZM13 24C10.8244 24 8.69767 23.3549 6.88873 22.1462C5.07979 20.9375 3.66989 19.2195 2.83733 17.2095C2.00477 15.1995 1.78693 12.9878 2.21137 10.854C2.63581 8.72022 3.68345 6.7602 5.22183 5.22183C6.76021 3.68345 8.72022 2.6358 10.854 2.21136C12.9878 1.78692 15.1995 2.00476 17.2095 2.83733C19.2195 3.66989 20.9375 5.07979 22.1462 6.88873C23.3549 8.69767 24 10.8244 24 13C23.9967 15.9164 22.8367 18.7123 20.7745 20.7745C18.7123 22.8367 15.9164 23.9967 13 24ZM21 13C21 13.2652 20.8946 13.5196 20.7071 13.7071C20.5196 13.8946 20.2652 14 20 14H13C12.7348 14 12.4804 13.8946 12.2929 13.7071C12.1054 13.5196 12 13.2652 12 13V6C12 5.73478 12.1054 5.48043 12.2929 5.29289C12.4804 5.10536 12.7348 5 13 5C13.2652 5 13.5196 5.10536 13.7071 5.29289C13.8946 5.48043 14 5.73478 14 6V12H20C20.2652 12 20.5196 12.1054 20.7071 12.2929C20.8946 12.4804 21 12.7348 21 13Z' fill='%236B7280'/%3E%3C/svg%3E") no-repeat center;
+    background-size: 16px;
+}
+
+.datetime-picker__calendar .datetime-picker__time-input::-webkit-calendar-picker-indicator:hover {
+    filter: brightness(0.7);
+}
+
+/* Убираем spin-кнопки */
+.datetime-picker__calendar .datetime-picker__time-input::-webkit-inner-spin-button,
+.datetime-picker__calendar .datetime-picker__time-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Текст внутри input */
+.datetime-picker__calendar .datetime-picker__time-input::-webkit-datetime-edit {
+    color: var(--semantic-text-primary);
+    font-family: Geologica, sans-serif;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+/* Hover */
+.datetime-picker__calendar .datetime-picker__time-input:hover {
+    background: var(--semantic-bg-base);
+    border-color: var(--semantic-border-strong);
+}
+
+/* Focus */
+.datetime-picker__calendar .datetime-picker__time-input:focus {
+    outline: none;
+    background: var(--semantic-bg-surface);
+    box-shadow: 0 0 0 2px var(--semantic-focus);
+    border-color: var(--semantic-border-default);
+}
+
+/* Placeholder */
+.datetime-picker__calendar .datetime-picker__time-input::placeholder {
+    color: var(--semantic-text-tertiary);
+}
+
+/* ─── Dark theme — time input ────────────────────────────────── */
+
+[data-color-mode="dark"] .datetime-picker__calendar .datetime-picker__time-input::-webkit-calendar-picker-indicator {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M13 0C10.4288 0 7.91543 0.762437 5.77759 2.1909C3.63975 3.61935 1.97351 5.64968 0.989572 8.02512C0.0056327 10.4006 -0.251811 13.0144 0.249797 15.5362C0.751405 18.0579 1.98953 20.3743 3.80762 22.1924C5.6257 24.0105 7.94208 25.2486 10.4638 25.7502C12.9856 26.2518 15.5995 25.9944 17.9749 25.0104C20.3503 24.0265 22.3807 22.3603 23.8091 20.2224C25.2376 18.0846 26 15.5712 26 13C25.9964 9.5533 24.6256 6.24882 22.1884 3.81163C19.7512 1.37445 16.4467 0.00363977 13 0ZM13 24C10.8244 24 8.69767 23.3549 6.88873 22.1462C5.07979 20.9375 3.66989 19.2195 2.83733 17.2095C2.00477 15.1995 1.78693 12.9878 2.21137 10.854C2.63581 8.72022 3.68345 6.7602 5.22183 5.22183C6.76021 3.68345 8.72022 2.6358 10.854 2.21136C12.9878 1.78692 15.1995 2.00476 17.2095 2.83733C19.2195 3.66989 20.9375 5.07979 22.1462 6.88873C23.3549 8.69767 24 10.8244 24 13C23.9967 15.9164 22.8367 18.7123 20.7745 20.7745C18.7123 22.8367 15.9164 23.9967 13 24ZM21 13C21 13.2652 20.8946 13.5196 20.7071 13.7071C20.5196 13.8946 20.2652 14 20 14H13C12.7348 14 12.4804 13.8946 12.2929 13.7071C12.1054 13.5196 12 13.2652 12 13V6C12 5.73478 12.1054 5.48043 12.2929 5.29289C12.4804 5.10536 12.7348 5 13 5C13.2652 5 13.5196 5.10536 13.7071 5.29289C13.8946 5.48043 14 5.73478 14 6V12H20C20.2652 12 20.5196 12.1054 20.7071 12.2929C20.8946 12.4804 21 12.7348 21 13Z' fill='%239CA3AF'/%3E%3C/svg%3E") no-repeat center;
+    background-size: 16px;
+}
+
+[data-color-mode="dark"] .datetime-picker__calendar .datetime-picker__time-input::-webkit-calendar-picker-indicator:hover {
+    filter: brightness(0.5);
+}
+
+/* ─── Calendar popup ──────────────────────────────────────────── */
+
+.datetime-picker__calendar {
+    font-family: Geologica, sans-serif;
+    background: var(--semantic-bg-surface);
+    border: 1px solid var(--semantic-border-default);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.datetime-picker__calendar .react-datepicker__header {
+    background: var(--semantic-bg-surface);
+    border-bottom: 1px solid var(--semantic-border-default);
+    padding-top: 8px;
+}
+
+.datetime-picker__calendar .react-datepicker__current-month {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--semantic-text-primary);
+}
+
+.datetime-picker__calendar .react-datepicker__day-name {
+    color: var(--semantic-text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.datetime-picker__calendar .react-datepicker__day {
+    color: var(--semantic-text-primary);
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.datetime-picker__calendar .react-datepicker__day:hover {
+    background: var(--semantic-fill-primary-hover);
+}
+
+.datetime-picker__calendar .react-datepicker__day--selected {
+    background: var(--semantic-accent-primary) !important;
+    color: var(--semantic-btn-accent-fill-text) !important;
+}
+
+.datetime-picker__calendar .react-datepicker__day--keyboard-selected {
+    background: var(--semantic-fill-primary-selected);
+}
+
+.datetime-picker__calendar .react-datepicker__day--today {
+    font-weight: 700;
+    color: var(--semantic-accent-primary);
+}
+
+.datetime-picker__calendar .react-datepicker__day--outside-month {
+    color: var(--semantic-text-disabled);
+}
+
+/* ─── Navigation arrows ─────────────────────────────────────────── */
+
+.datetime-picker__calendar .react-datepicker__navigation {
+    top: 8px;
+}
+
+.datetime-picker__calendar .react-datepicker__navigation-icon::before {
+    border-color: var(--semantic-text-secondary);
+}
+
+.datetime-picker__calendar .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+    border-color: var(--semantic-text-primary);
+}
+
+/* ─── Time section ──────────────────────────────────────────────── */
+
+.datetime-picker__calendar .react-datepicker__time-container {
+    border-left: 1px solid var(--semantic-border-default);
+    width: 85px;
+}
+
+.datetime-picker__calendar .react-datepicker__time-container .react-datepicker__header--time {
+    background: var(--semantic-bg-surface);
+    border-bottom: 1px solid var(--semantic-border-default);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--semantic-text-secondary);
+}
+
+.datetime-picker__calendar .react-datepicker__time-box {
+    font-size: 13px;
+}
+
+.datetime-picker__calendar .react-datepicker__time-list-item {
+    color: var(--semantic-text-primary);
+    font-size: 13px;
+    line-height: 32px;
+    height: 32px;
+}
+
+.datetime-picker__calendar .react-datepicker__time-list-item:hover {
+    background: var(--semantic-fill-primary-hover) !important;
+}
+
+.datetime-picker__calendar .react-datepicker__time-list-item--selected {
+    background: var(--semantic-accent-primary) !important;
+    color: var(--semantic-btn-accent-fill-text) !important;
+    font-weight: 600;
+}
+
+/* ─── Triangle ──────────────────────────────────────────────────── */
+
+.datetime-picker__calendar .react-datepicker__triangle {
+    display: none;
+}
+
+/* ─── Dark theme overrides ───────────────────────────────────────── */
+
+[data-color-mode="dark"] .datetime-picker__calendar {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-color-mode="dark"] .datetime-picker__calendar .react-datepicker__day--keyboard-selected {
+    background: var(--semantic-fill-primary-selected);
+}
