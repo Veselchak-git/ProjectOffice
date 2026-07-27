@@ -67,6 +67,7 @@
         "@types/react-dom": "19.2.3",
         "global-jsdom": "29.0.0",
         "react-router": "7.14.0",
+        "react-datepicker": "9.1.0",
         //storybook
         "@storybook/addon-a11y": "10.4.3",
         "@storybook/addon-docs": "10.4.3",
