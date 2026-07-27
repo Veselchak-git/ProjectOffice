@@ -1,0 +1,328 @@
+@layer components {
+    .multi-select {
+        --multi-select-gap: 4px;
+        --multi-select-label-text: var(--semantic-text-primary, var(--neutral-900));
+        --multi-select-label-font-size: var(--font-size-label-s, 11px);
+        --multi-select-label-font-weight: var(--font-weight-light, 300);
+        --multi-select-bg: var(--semantic-bg-surface, var(--neutral-100));
+        --multi-select-text: var(--semantic-text-primary, var(--neutral-900));
+        --multi-select-placeholder: var(--semantic-text-tertiary, var(--neutral-500));
+        --multi-select-border-color: transparent;
+        --multi-select-border-width: 2px;
+        --multi-select-min-height: 40px;
+        --multi-select-padding-inline: 12px;
+        --multi-select-padding-block: 8px;
+        --multi-select-border-radius: 8px;
+        --multi-select-font-size: var(--font-size-body-m, 14px);
+        --multi-select-font-weight: var(--font-weight-regular, 400);
+        --multi-select-icon-size: 16px;
+        --multi-select-focus-outline-color: var(--semantic-focus);
+        --multi-select-hover-bg: var(--semantic-fill-primary-hover, var(--neutral-50));
+        --multi-select-error-bg: var(--red-100);
+        --multi-select-error-border-color: var(--red-500);
+        --multi-select-error-text: var(--red-500);
+        --multi-select-disabled-opacity: 0.4;
+        --multi-select-list-padding: 4px;
+        --multi-select-list-bg: var(--semantic-bg-surface-elevated, #ffffff);
+        --multi-select-list-border: 1px solid var(--semantic-border-default, var(--neutral-300));
+        --multi-select-list-border-radius: 8px;
+        --multi-select-list-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --multi-select-list-max-height: 300px;
+        --multi-select-item-padding: 8px 12px;
+        --multi-select-item-font-size: var(--font-size-body-m, 14px);
+        --multi-select-item-font-weight: var(--font-weight-regular, 400);
+        --multi-select-item-color: var(--semantic-text-primary, var(--neutral-900));
+        --multi-select-item-border-radius: 6px;
+        --multi-select-item-hover-bg: var(--semantic-fill-primary-hover, var(--neutral-100));
+        --multi-select-item-highlighted-bg: var(--semantic-fill-primary-hover, var(--neutral-200));
+        --multi-select-item-selected-color: var(--semantic-text-accent, var(--accent-600));
+        --multi-select-item-selected-bg: var(--accent-50);
+        --multi-select-chip-gap: 4px;
+        --multi-select-chip-font-size: var(--font-size-body-s, 12px);
+        --multi-select-chip-bg: var(--semantic-fill-primary-hover, var(--neutral-100));
+        --multi-select-chip-radius: 4px;
+        --multi-select-chip-padding: 2px 6px;
+        --multi-select-chip-height: 22px;
+
+        display: flex;
+        flex-direction: column;
+        gap: var(--multi-select-gap);
+        width: 100%;
+    }
+
+    /* ─── Label ─── */
+
+    .multi-select__label {
+        color: var(--multi-select-label-text);
+        font-size: var(--multi-select-label-font-size);
+        font-weight: var(--multi-select-label-font-weight);
+        line-height: 1.3;
+        user-select: none;
+    }
+
+    /* ─── Trigger ─── */
+
+    .multi-select__trigger {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-height: var(--multi-select-min-height);
+        padding: var(--multi-select-padding-block) var(--multi-select-padding-inline);
+        border: var(--multi-select-border-width) solid var(--multi-select-border-color);
+        border-radius: var(--multi-select-border-radius);
+        background-color: var(--multi-select-bg);
+        color: var(--semantic-text-primary);
+        font-size: var(--multi-select-font-size);
+        font-weight: var(--multi-select-font-weight);
+        line-height: 1.2;
+        text-align: left;
+        cursor: pointer;
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .multi-select:hover:not(.multi-select-error):not(.multi-select-disabled) .multi-select__trigger {
+        background-color: var(--multi-select-hover-bg);
+    }
+
+    .multi-select__trigger:focus-visible {
+        box-shadow: 0 0 0 2px var(--multi-select-focus-outline-color);
+    }
+
+    .multi-select__trigger:disabled,
+    .multi-select__trigger[data-disabled] {
+        opacity: var(--multi-select-disabled-opacity);
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* ─── Chips container ─── */
+
+    .multi-select__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* ─── Individual chip ─── */
+
+    .multi-select__chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--multi-select-chip-gap);
+        height: var(--multi-select-chip-height);
+        padding: var(--multi-select-chip-padding);
+        background: var(--multi-select-chip-bg);
+        border-radius: var(--multi-select-chip-radius);
+        font-size: var(--multi-select-chip-font-size);
+        color: var(--multi-select-text);
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .multi-select__chip-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 120px;
+    }
+    /* ─── Placeholder ─── */
+
+    .multi-select__placeholder {
+        flex: 1;
+        color: var(--multi-select-placeholder);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        align-self: center;
+    }
+
+    /* ─── Arrow / Icon ─── */
+
+    .multi-select__arrow {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: var(--multi-select-icon-size);
+        height: var(--multi-select-icon-size);
+        color: var(--multi-select-text);
+        transition: transform 0.2s ease;
+        align-self: center;
+    }
+
+    .multi-select__trigger[data-popup-open] .multi-select__arrow {
+        transform: rotate(180deg);
+    }
+
+    /* ─── Positioner ─── */
+
+    .multi-select__positioner {
+        z-index: 300;
+    }
+
+    /* ─── Popup – vars must be declared here too because Portal renders outside root ─── */
+
+    .multi-select__popup {
+        --multi-select-list-padding: 4px;
+        --multi-select-list-bg: var(--semantic-bg-surface-elevated, #ffffff);
+        --multi-select-list-border: 1px solid var(--semantic-border-default, var(--neutral-300));
+        --multi-select-list-border-radius: 8px;
+        --multi-select-list-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --multi-select-list-max-height: 300px;
+        --multi-select-item-padding: 8px 12px;
+        --multi-select-item-font-size: var(--font-size-body-m, 14px);
+        --multi-select-item-font-weight: var(--font-weight-regular, 400);
+        --multi-select-item-color: var(--semantic-text-primary, var(--neutral-900));
+        --multi-select-item-border-radius: 6px;
+        --multi-select-item-hover-bg: var(--semantic-fill-primary-hover, var(--neutral-100));
+        --multi-select-item-highlighted-bg: var(--semantic-fill-primary-hover, var(--neutral-200));
+        --multi-select-item-selected-color: var(--semantic-text-accent, var(--accent-600));
+        --multi-select-item-selected-bg: var(--accent-50);
+    }
+
+    /* ─── List ─── */
+
+    .multi-select__list {
+        display: flex;
+        flex-direction: column;
+        padding: var(--multi-select-list-padding);
+        background: var(--multi-select-list-bg);
+        border: var(--multi-select-list-border);
+        border-radius: var(--multi-select-list-border-radius);
+        box-shadow: var(--multi-select-list-shadow);
+        max-height: var(--multi-select-list-max-height);
+        overflow-y: auto;
+    }
+
+    /* ─── Item ─── */
+
+    .multi-select__item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: var(--multi-select-item-padding);
+        font-size: var(--multi-select-item-font-size);
+        font-weight: var(--multi-select-item-font-weight);
+        color: var(--multi-select-item-color);
+        border-radius: var(--multi-select-item-border-radius);
+        cursor: pointer;
+        transition: background 0.15s ease;
+        user-select: none;
+    }
+
+    .multi-select__item:hover {
+        background: var(--multi-select-item-hover-bg);
+    }
+
+    .multi-select__item[data-highlighted] {
+        background: var(--multi-select-item-highlighted-bg);
+    }
+
+    .multi-select__item[data-selected] {
+        color: var(--multi-select-item-selected-color);
+        background: var(--multi-select-item-selected-bg);
+    }
+
+    .multi-select__item[data-selected]:hover {
+        background: var(--multi-select-item-selected-bg);
+    }
+
+    /* ─── Item indicator (checkbox) ─── */
+
+    .multi-select__item-indicator {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+    }
+
+    .multi-select__indicator-box {
+        fill: none;
+        stroke: var(--multi-select-item-color);
+        transition: fill 0.15s ease, stroke 0.15s ease;
+    }
+
+    .multi-select__indicator-check {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .multi-select__item[data-selected] .multi-select__indicator-box {
+        fill: var(--multi-select-item-selected-color);
+        stroke: var(--multi-select-item-selected-color);
+    }
+
+    .multi-select__item[data-selected] .multi-select__indicator-check {
+        opacity: 1;
+        stroke: #ffffff;
+    }
+
+    /* ─── Item label ─── */
+
+    .multi-select__item-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ─── Error message ─── */
+
+    .multi-select__error {
+        color: var(--multi-select-error-text);
+        font-size: var(--font-size-label-s, 11px);
+        font-weight: var(--font-weight-light, 300);
+        line-height: 1.3;
+    }
+
+    /* ─── Error state ─── */
+
+    .multi-select.multi-select-error .multi-select__trigger {
+        background-color: var(--multi-select-error-bg);
+        border-color: var(--multi-select-error-border-color);
+    }
+
+    .multi-select.multi-select-error .multi-select__trigger:focus-visible {
+        box-shadow: 0 0 0 2px var(--multi-select-error-border-color);
+    }
+
+    /* ─── Disabled state ─── */
+    .multi-select.multi-select-disabled {
+        opacity: var(--multi-select-disabled-opacity);
+        pointer-events: none;
+    }
+
+    /* ─── Size S ─── */
+    .multi-select-size-s {
+        --multi-select-min-height: 32px;
+        --multi-select-padding-inline: 8px;
+        --multi-select-padding-block: 6px;
+        --multi-select-font-size: 13px;
+        --multi-select-icon-size: 14px;
+    }
+
+    /* ─── Size L ─── */
+    .multi-select-size-l {
+        --multi-select-min-height: 48px;
+        --multi-select-padding-inline: 16px;
+        --multi-select-padding-block: 12px;
+        --multi-select-font-size: var(--font-size-body-l, 16px);
+        --multi-select-icon-size: 20px;
+    }
+
+    /* ─── Dark mode ─── */
+
+    [data-color-mode="dark"] .multi-select {
+        --multi-select-error-bg: var(--red-900);
+        --multi-select-error-border-color: var(--red-400);
+        --multi-select-error-text: var(--red-300);
+    }
+}

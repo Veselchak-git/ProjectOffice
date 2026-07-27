@@ -43,9 +43,9 @@ export const Select: FC<ISelectProps> = ({
 
                 <BaseSelect.Trigger className="ui-kit-select__trigger">
                     {startIcon ? <span className="ui-kit-select__icon">{startIcon}</span> : null}
-                    <BaseSelect.Value className="ui-kit-select__value" placeholder={placeholder}>
+                    <BaseSelect.Value className="ui-kit-select__value">
                         {currentValue => {
-                            if (currentValue == null) return null;
+                            if (currentValue == null) return placeholder ?? null;
                             const option = options.find(o => o.value === currentValue);
                             return option?.label ?? currentValue;
                         }}

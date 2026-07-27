@@ -93,6 +93,9 @@
     --semantic-fill-disabled: var(--neutral-200);
     --semantic-border-default: var(--neutral-400);
     --semantic-focus: var(--accent-300);
+    --semantic-accent-primary: var(--accent-600);
+    --semantic-text-link: var(--accent-600);
+    --semantic-fill-primary-selected: var(--accent-100);
 
     --semantic-btn-accent-fill-text: var(--neutral-50);
     --semantic-btn-accent-fill-bg: var(--accent-600);
@@ -154,6 +157,9 @@
     --semantic-fill-disabled: var(--neutral-950);
     --semantic-border-default: var(--neutral-700);
     --semantic-focus: var(--accent-300);
+    --semantic-accent-primary: var(--accent-400);
+    --semantic-text-link: var(--accent-400);
+    --semantic-fill-primary-selected: var(--accent-900);
 
     --semantic-btn-accent-fill-text: var(--neutral-50);
     --semantic-btn-accent-fill-bg: var(--accent-600);
