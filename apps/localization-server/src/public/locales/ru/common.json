@@ -12,6 +12,7 @@
     "export": "Экспорт",
     "columns": "Колонки",
     "noData": "Нет данных",
+    "ok": "OK",
     "showing": "{{from}}–{{to}} из {{total}}",
     "selectedCount": "Выбрано: {{count}}",
     "pagination": {
@@ -23,7 +24,8 @@
     "error": {
         "loading": "Ошибка загрузки",
         "connection": "Ошибка соединения с сервером",
-        "default": "Ошибка"
+        "default": "Ошибка",
+        "title": "Ошибка"
     },
     "filter": {
         "title": "Фильтр",

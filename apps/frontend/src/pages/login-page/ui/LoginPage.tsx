@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { useAuth } from "@/shared/lib/auth";
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 
 import type { LoginFormValues } from "../model/login-form";
 import { getLoginEmailRules, getLoginPasswordRules } from "../model/login-form";
@@ -85,7 +86,7 @@ export const LoginPage: FC = () => {
                     if (serverError) setServerError(null);
                 }}
             >
-                {serverError ? <div className={styles["login-page__error-banner"]}>{serverError}</div> : null}
+                <ErrorModal isOpen={!!serverError} message={serverError ?? ""} onClose={() => setServerError(null)} />
 
                 <Controller
                     name="login"

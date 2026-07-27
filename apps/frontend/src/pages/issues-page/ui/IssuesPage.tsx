@@ -18,6 +18,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import type { FetchIssuesParams, Issue } from "@/entities/issue";
 import { deleteIssue, fetchIssues } from "@/entities/issue";
 
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useTable } from "@/shared/lib/use-table";
@@ -45,6 +46,7 @@ import styles from "./IssuesPage.module.css";
 export const IssuesPage: FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation(ISSUES);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const queryClient = useQueryClient();
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
@@ -642,10 +644,6 @@ export const IssuesPage: FC = () => {
             <div className={styles["issues-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
                     <p className={styles["issues-page__empty"]}>{t("loading")}</p>
-                ) : isError && !data ? (
-                    <p className={styles["issues-page__empty"]}>
-                        {error instanceof Error ? error.message : t("error.loading")}
-                    </p>
                 ) : (
                     <DataTable
                         table={table}
@@ -657,6 +655,11 @@ export const IssuesPage: FC = () => {
                     />
                 )}
             </div>
+            <ErrorModal
+                isOpen={isError || !!errorMessage}
+                message={errorMessage ?? (error instanceof Error ? error.message : t("error.loading"))}
+                onClose={() => setErrorMessage(null)}
+            />
             <ExportModal
                 isOpen={exportOpen}
                 onClose={() => setExportOpen(false)}

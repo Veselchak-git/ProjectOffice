@@ -22,6 +22,7 @@ import { deleteProject, fetchProject, fetchProjectMembers, updateProject } from 
 import { MembersListModal, ProjectForm } from "@/entities/project";
 
 import { useAuth } from "@/shared/lib/auth";
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDateTime } from "@/shared/lib/format-date";
 
 import { DetailCard } from "@/shared/ui/detail-card";
@@ -38,6 +39,7 @@ export const ProjectPage: FC = () => {
     const queryClient = useQueryClient();
     const [editing, setEditing] = useState(false);
     const [creatingIssue, setCreatingIssue] = useState(false);
+    const [issueFormError, setIssueFormError] = useState<string | null>(null);
     const [membersOpen, setMembersOpen] = useState(false);
 
     const projectId = Number(id);
@@ -106,16 +108,12 @@ export const ProjectPage: FC = () => {
     if (isError || !project) {
         return (
             <div className={styles["project-page"]}>
-                <div className={styles["project-page__not-found"]}>
-                    <h1>{error instanceof Error ? error.message : t("detail.notFound")}</h1>
-                    <Button
-                        className={styles["project-page__back-btn"]}
-                        type="button"
-                        onClick={() => navigate("/projects")}
-                    >
-                        {t("detail.backToList")}
-                    </Button>
-                </div>
+                <ErrorModal
+                    isOpen
+                    message={error instanceof Error ? error.message : t("detail.notFound")}
+                    onClose={() => navigate("/projects")}
+                    onOkNavigate="/projects"
+                />
             </div>
         );
     }
@@ -221,6 +219,12 @@ export const ProjectPage: FC = () => {
                     versions={project.versions}
                     onSubmit={data => createIssueMutate(data as CreateIssueData).then(() => {})}
                     onCancel={() => setCreatingIssue(false)}
+                    onFormError={setIssueFormError}
+                />
+                <ErrorModal
+                    isOpen={!!issueFormError}
+                    message={issueFormError ?? ""}
+                    onClose={() => setIssueFormError(null)}
                 />
             </Modal>
         </div>

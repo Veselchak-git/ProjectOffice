@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { fetchDashboard } from "@/entities/dashboard";
 
 import { useAuth } from "@/shared/lib/auth";
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 
 import { ActivityFeed } from "./ActivityFeed";
 import { DashboardCounters } from "./DashboardCounters";
@@ -26,16 +27,6 @@ export const HomePage: FC = () => {
         queryFn: fetchDashboard
     });
 
-    if (isError) {
-        return (
-            <div className={styles["home-page"]}>
-                <p className={styles["home-page__error"]}>
-                    {error instanceof Error ? error.message : t("error.loading")}
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div className={styles["home-page"]}>
             <DashboardCounters
@@ -48,6 +39,11 @@ export const HomePage: FC = () => {
                 <h2 className={styles["home-page__section-title"]}>{t("activity.title")}</h2>
                 <ActivityFeed activity={data?.activity ?? []} isLoading={isPending} />
             </section>
+            <ErrorModal
+                isOpen={isError}
+                message={error instanceof Error ? error.message : t("error.loading")}
+                onClose={() => {}}
+            />
         </div>
     );
 };

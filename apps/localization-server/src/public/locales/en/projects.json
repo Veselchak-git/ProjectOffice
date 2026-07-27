@@ -86,7 +86,8 @@
         "SELF_ROLE_CHANGE": "Cannot change your own permissions",
         "ROLE_HIERARCHY": "Cannot assign a role higher than your own",
         "AUTH_FORBIDDEN": "Insufficient permissions for this action",
-        "USER_NOT_FOUND": "User not found"
+        "USER_NOT_FOUND": "User not found",
+        "PROJECT_ALREADY_EXISTS": "Project with this name already exists"
     },
     "members": {
         "title": "Project members",

@@ -23,6 +23,7 @@ interface IssueFormProps {
     onSubmit: (data: CreateIssueData & { status?: IssueStatus; solution?: string }) => Promise<void> | void;
     onCancel: () => void;
     submitLabel?: string;
+    onFormError?(msg: string | null): void;
 }
 
 interface IssueFormValues {
@@ -38,7 +39,15 @@ interface IssueFormValues {
     solution: string;
 }
 
-export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSubmit, onCancel, submitLabel }) => {
+export const IssueForm: FC<IssueFormProps> = ({
+    initial,
+    versions,
+    members,
+    onSubmit,
+    onCancel,
+    submitLabel,
+    onFormError
+}) => {
     const { t } = useTranslation(ISSUES);
 
     const {
@@ -102,15 +111,13 @@ export const IssueForm: FC<IssueFormProps> = ({ initial, versions, members, onSu
                     message: t(`error.${code}`, { defaultValue: message })
                 });
             } else {
-                setError("root", { message: code ? t(`error.${code}`, { defaultValue: message }) : message });
+                onFormError?.(code ? t(`error.${code}`, { defaultValue: message }) : message);
             }
         }
     };
 
     return (
         <form className={styles["issue-form"]} onSubmit={handleSubmit(handleFormSubmit)} noValidate>
-            {errors.root?.message && <div className={styles["issue-form__error"]}>{errors.root.message}</div>}
-
             <Controller
                 name="title"
                 control={control}

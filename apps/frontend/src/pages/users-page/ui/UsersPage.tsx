@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { UserForm, createUser, deleteUser, fetchUsers, updateUser } from "@/entities/user";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/entities/user";
 
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDate } from "@/shared/lib/format-date";
 import { i18n } from "@/shared/lib/i18n";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
@@ -423,15 +424,9 @@ export const UsersPage: FC = () => {
                 />
             )}
 
-            {pageError && <div className={styles["users-page__form-error--spaced"]}>{pageError}</div>}
-
             <div className={styles["users-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
                     <p className={styles["users-page__empty"]}>{t("loading")}</p>
-                ) : isError && !data ? (
-                    <p className={styles["users-page__empty"]}>
-                        {error instanceof Error ? error.message : t("error.loading")}
-                    </p>
                 ) : (
                     <DataTable table={table} total={total} sorting={sorting} onSort={handleSort} />
                 )}
@@ -441,6 +436,7 @@ export const UsersPage: FC = () => {
                 <UserForm
                     onSubmit={data => createUserMutate(data).then(() => {})}
                     onCancel={() => setCreating(false)}
+                    onFormError={setPageError}
                 />
             </Modal>
 
@@ -450,6 +446,7 @@ export const UsersPage: FC = () => {
                         user={editingUser}
                         onSubmit={data => editUserMutate({ id: editingUser.id, data }).then(() => {})}
                         onCancel={() => setEditingUser(null)}
+                        onFormError={setPageError}
                     />
                 )}
             </Modal>
@@ -509,6 +506,12 @@ export const UsersPage: FC = () => {
                     createdAt: "table.created"
                 }}
             />
+
+            <ErrorModal
+                isOpen={!!pageError || (isError && !isPending)}
+                message={pageError ?? (error instanceof Error ? error.message : t("error.loading"))}
+                onClose={() => setPageError(null)}
+            />
         </div>
     );
 };
@@ -517,6 +520,7 @@ interface EditUserFormProps {
     user: User;
     onSubmit(data: UpdateUserData): Promise<void>;
     onCancel(): void;
+    onFormError?(msg: string | null): void;
 }
 
 interface EditFormValues {
@@ -525,15 +529,14 @@ interface EditFormValues {
     role: string;
 }
 
-const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
+const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel, onFormError }) => {
     const { t: tu } = useTranslation(USERS);
     const [showPassword, setShowPassword] = useState(false);
 
     const {
         control,
         handleSubmit: rhfHandleSubmit,
-        formState: { errors, isSubmitting, isDirty },
-        setError
+        formState: { errors, isSubmitting, isDirty }
     } = useForm<EditFormValues>({
         mode: "onChange",
         defaultValues: { login: "", password: "", role: user.role }
@@ -552,28 +555,17 @@ const EditUserForm: FC<EditUserFormProps> = ({ user, onSubmit, onCancel }) => {
             if (data.password) updateData.password = data.password;
             if (data.role !== user.role) updateData.role = data.role as User["role"];
             if (Object.keys(updateData).length === 0) {
-                setError("root", { message: i18n.t(`${USERS}:edit.noChanges`) });
+                onFormError?.(i18n.t(`${USERS}:edit.noChanges`));
                 return;
             }
             await onSubmit(updateData);
         } catch (err) {
-            setError("root", { message: err instanceof Error ? err.message : i18n.t(`${USERS}:edit.error`) });
+            onFormError?.(err instanceof Error ? err.message : i18n.t(`${USERS}:edit.error`));
         }
     };
 
     return (
-        <form
-            className={styles["users-page__form"]}
-            onSubmit={rhfHandleSubmit(handleFormSubmit)}
-            noValidate
-            onChange={() => {
-                if (errors.root) setError("root", { message: "" });
-            }}
-        >
-            {errors.root?.message ? (
-                <div className={styles["users-page__form-error"]}>{errors.root.message}</div>
-            ) : null}
-
+        <form className={styles["users-page__form"]} onSubmit={rhfHandleSubmit(handleFormSubmit)} noValidate>
             <div className={styles["users-page__old-data"]}>
                 <span className={styles["users-page__old-data-label"]}>{tu("edit.currentData")}</span>
                 <div className={styles["users-page__old-data-row"]}>

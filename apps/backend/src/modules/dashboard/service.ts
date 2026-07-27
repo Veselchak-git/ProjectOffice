@@ -1,6 +1,6 @@
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { IssueStatus, Role } from "@/generated/prisma/enums.js";
-import { handlePrismaError } from "@/shared/lib/prisma-error-handler/index.js";
+
 
 import type { IssueRow } from "@/modules/issues/service.js";
 import { mapIssue } from "@/modules/issues/service.js";
@@ -41,8 +41,7 @@ const mapAuditEventType = (eventType: string): ActivityItem["type"] | null => {
 export const getDashboardService = async (
     request: FastifyRequestTypeBox<typeof getDashboardSchema>,
 ): Promise<DashboardResponse> => {
-    try {
-        const prisma = request.server.prisma;
+    const prisma = request.server.prisma;
         const userId = Number(request.user.sub);
         const userRole = request.user.role;
 
@@ -175,7 +174,4 @@ export const getDashboardService = async (
             activity,
             myIssues: myIssues.map(i => mapIssue(i as unknown as IssueRow)),
         };
-    } catch (error) {
-        throw handlePrismaError(error);
-    }
 };

@@ -1,0 +1,35 @@
+.error-modal-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    color: var(--red-500);
+}
+
+.error-modal-message {
+    text-align: center;
+    font-size: var(--font-size-body-m);
+    color: var(--semantic-text-primary);
+    margin: 0 0 20px;
+    line-height: 1.5;
+}
+
+.error-modal-button {
+    display: flex;
+    justify-content: center;
+}
+
+.ok-button {
+    --btn-bg: var(--neutral-50);
+    --btn-text: var(--accent-600);
+    --btn-border-width: 2px;
+    --btn-border-color: var(--accent-600);
+    --btn-hover-bg: var(--accent-600);
+    --btn-hover-text: var(--neutral-50);
+    --btn-hover-border-color: var(--accent-600);
+    --btn-active-bg: var(--accent-700);
+    --btn-active-text: var(--neutral-50);
+    --btn-active-border-color: var(--accent-700);
+}

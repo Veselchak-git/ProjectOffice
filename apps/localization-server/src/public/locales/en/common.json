@@ -12,6 +12,7 @@
     "export": "Export",
     "columns": "Columns",
     "noData": "No data",
+    "ok": "OK",
     "showing": "{{from}}–{{to}} of {{total}}",
     "selectedCount": "Selected: {{count}}",
     "pagination": {
@@ -23,7 +24,8 @@
     "error": {
         "loading": "Loading error",
         "connection": "Connection error",
-        "default": "Error"
+        "default": "Error",
+        "title": "Error"
     },
     "filter": {
         "title": "Filter",

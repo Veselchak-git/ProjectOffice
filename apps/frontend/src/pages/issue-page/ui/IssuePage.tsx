@@ -19,6 +19,7 @@ import { IssueForm } from "@/entities/issue";
 import { fetchProjectMembers } from "@/entities/project";
 
 import { useAuth } from "@/shared/lib/auth";
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDateTime } from "@/shared/lib/format-date";
 
 import { DetailCard } from "@/shared/ui/detail-card";
@@ -34,6 +35,7 @@ export const IssuePage: FC = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [editing, setEditing] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
 
     const {
         data: issue,
@@ -94,15 +96,15 @@ export const IssuePage: FC = () => {
         );
     }
 
-    if (isError || !issue) {
+    if (!issue) {
         return (
             <div className={styles["issue-page"]}>
-                <div className={styles["issue-page__not-found"]}>
-                    <h1>{error instanceof Error ? error.message : t("error.notFound")}</h1>
-                    <Button className={styles["issue-page__back-btn"]} type="button" onClick={() => navigate("/tasks")}>
-                        {t("detail.backToList")}
-                    </Button>
-                </div>
+                <ErrorModal
+                    isOpen
+                    message={error instanceof Error ? error.message : t("error.notFound")}
+                    onClose={() => navigate("/tasks")}
+                    onOkNavigate="/tasks"
+                />
             </div>
         );
     }
@@ -137,6 +139,7 @@ export const IssuePage: FC = () => {
                         versions={versions}
                         onSubmit={handleEdit}
                         onCancel={() => setEditing(false)}
+                        onFormError={setFormError}
                         submitLabel={t("form.save")}
                     />
                 </div>
@@ -241,6 +244,16 @@ export const IssuePage: FC = () => {
                     </DetailField>
                 )}
             </DetailCard>
+
+            <ErrorModal
+                isOpen={!!formError || isError || !issue}
+                message={formError ?? (error instanceof Error ? error.message : t("error.notFound"))}
+                onClose={() => {
+                    setFormError(null);
+                    if (isError || !issue) navigate("/tasks");
+                }}
+                {...(!formError ? { onOkNavigate: "/tasks" } : {})}
+            />
         </div>
     );
 };

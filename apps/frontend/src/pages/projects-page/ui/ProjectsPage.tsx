@@ -20,6 +20,7 @@ import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities
 import { createProject, deleteProject, fetchProjects } from "@/entities/project";
 import { ProjectForm } from "@/entities/project";
 
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useTable } from "@/shared/lib/use-table";
@@ -47,6 +48,7 @@ import styles from "./ProjectsPage.module.css";
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation(PROJECTS);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const filterConfig = useMemo<{ fields: FieldOption[] }>(
         () => ({
             fields: [
@@ -399,7 +401,8 @@ export const ProjectsPage: FC = () => {
     const selectedCount = selectedIds.length;
 
     const { mutateAsync: deleteProjectMutate } = useMutation({
-        mutationFn: (id: number) => deleteProject(id)
+        mutationFn: (id: number) => deleteProject(id),
+        onError: e => setErrorMessage(e.message)
     });
 
     const handleDeleteSelected = async () => {
@@ -415,7 +418,8 @@ export const ProjectsPage: FC = () => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
             queryClient.invalidateQueries({ queryKey: ["audit-log-available"] });
             setCreating(false);
-        }
+        },
+        onError: e => setErrorMessage(e.message)
     });
 
     return (
@@ -478,10 +482,6 @@ export const ProjectsPage: FC = () => {
             <div className={styles["projects-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
                     <p className={styles["projects-page__empty"]}>{t("loading")}</p>
-                ) : isError && !data ? (
-                    <p className={styles["projects-page__empty"]}>
-                        {error instanceof Error ? error.message : t("error.loading")}
-                    </p>
                 ) : (
                     <DataTable
                         table={table}
@@ -542,6 +542,11 @@ export const ProjectsPage: FC = () => {
                     responsible: "table.responsible",
                     createdAt: "table.created"
                 }}
+            />
+            <ErrorModal
+                isOpen={!!errorMessage || (isError && !isPending)}
+                message={errorMessage ?? (error instanceof Error ? error.message : t("error.loading"))}
+                onClose={() => setErrorMessage(null)}
             />
         </div>
     );

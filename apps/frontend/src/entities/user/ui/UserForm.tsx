@@ -21,6 +21,7 @@ import styles from "./UserForm.module.css";
 interface UserFormProps {
     onSubmit(data: CreateUserData): Promise<void>;
     onCancel(): void;
+    onFormError?(msg: string | null): void;
 }
 
 interface CreateFormValues {
@@ -29,15 +30,14 @@ interface CreateFormValues {
     role: string;
 }
 
-export const UserForm: FC<UserFormProps> = ({ onSubmit, onCancel }) => {
+export const UserForm: FC<UserFormProps> = ({ onSubmit, onCancel, onFormError }) => {
     const { t: tu } = useTranslation(USERS);
     const [showPassword, setShowPassword] = useState(false);
 
     const {
         control,
         handleSubmit: rhfHandleSubmit,
-        formState: { errors, isSubmitting },
-        setError
+        formState: { errors, isSubmitting }
     } = useForm<CreateFormValues>({
         mode: "onChange",
         defaultValues: { login: "", password: "", role: "USER" }
@@ -62,7 +62,7 @@ export const UserForm: FC<UserFormProps> = ({ onSubmit, onCancel }) => {
                 role: data.role as CreateUserData["role"]
             });
         } catch (err) {
-            setError("root", { message: err instanceof Error ? err.message : i18n.t(`${USERS}:create.error`) });
+            onFormError?.(err instanceof Error ? err.message : i18n.t(`${USERS}:create.error`));
         }
     };
 
@@ -72,10 +72,9 @@ export const UserForm: FC<UserFormProps> = ({ onSubmit, onCancel }) => {
             onSubmit={rhfHandleSubmit(handleFormSubmit)}
             noValidate
             onChange={() => {
-                if (errors.root) setError("root", { message: "" });
+                onFormError?.(null);
             }}
         >
-            {errors.root?.message ? <div className={styles["user-form__error"]}>{errors.root.message}</div> : null}
             <Controller
                 name="login"
                 control={control}

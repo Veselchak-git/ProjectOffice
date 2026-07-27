@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import type { AuditLog, FetchAuditLogsParams } from "@/entities/audit-log";
 import { fetchAuditLogs } from "@/entities/audit-log";
 
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
 import { useRealtimeEvents } from "@/shared/lib/sse";
@@ -49,6 +50,7 @@ export const AuditLogPage: FC = () => {
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
     const [openFilter, setOpenFilter] = useState<string | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { popoverKeys, bumpKey } = usePopoverKeys();
 
     const filterConfig = useMemo<{ fields: FieldOption[] }>(
@@ -465,10 +467,6 @@ export const AuditLogPage: FC = () => {
             <div className={styles["audit-log-page__table-area"]} ref={containerRef}>
                 {isPending && !data ? (
                     <p className={styles["audit-log-page__empty"]}>{t("loading")}</p>
-                ) : isError && !data ? (
-                    <p className={styles["audit-log-page__empty"]}>
-                        {error instanceof Error ? error.message : t("error.loading")}
-                    </p>
                 ) : (
                     <DataTable
                         table={table}
@@ -526,6 +524,12 @@ export const AuditLogPage: FC = () => {
                     objectId: "table.objectId",
                     createdAt: "table.created"
                 }}
+            />
+
+            <ErrorModal
+                isOpen={!!errorMessage || (isError && !isPending)}
+                message={errorMessage ?? (error instanceof Error ? error.message : t("error.loading"))}
+                onClose={() => setErrorMessage(null)}
             />
         </div>
     );

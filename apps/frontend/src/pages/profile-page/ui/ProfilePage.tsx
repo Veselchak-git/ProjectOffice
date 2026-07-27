@@ -15,6 +15,7 @@ import type { FC } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
+import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { getLoginPasswordRules } from "@/shared/lib/validation";
 
 import { changePasswordRequest } from "../api/changePassword";
@@ -90,7 +91,7 @@ export const ProfilePage: FC = () => {
                     if (successMessage) setSuccessMessage(null);
                 }}
             >
-                {serverError ? <div className={styles["profile-page__error-banner"]}>{serverError}</div> : null}
+                <ErrorModal isOpen={!!serverError} message={serverError ?? ""} onClose={() => setServerError(null)} />
                 {successMessage ? <div className={styles["profile-page__success-banner"]}>{successMessage}</div> : null}
 
                 <Controller
