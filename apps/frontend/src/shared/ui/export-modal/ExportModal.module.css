@@ -1,0 +1,55 @@
+.section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+    color: var(--color-text-secondary);
+}
+
+.checkbox-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    min-height: 36px;
+}
+
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.checkbox-hint {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    text-align: right;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border-default);
+}
+
+.confirm-btn {
+    --btn-bg: var(--semantic-btn-accent-fill-hover-bg);
+    --btn-hover-bg: var(--semantic-btn-accent-fill-bg);
+    background-color: var(--btn-bg);
+    color: var(--semantic-btn-accent-fill-text);
+    border: none;
+    font-family: Geologica;
+}
+
+.confirm-btn:hover:not(:disabled) {
+    background-color: var(--btn-hover-bg);
+}
+
+
