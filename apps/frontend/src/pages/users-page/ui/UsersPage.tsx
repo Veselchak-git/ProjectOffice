@@ -17,8 +17,6 @@ import type { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { rootReducer } from "@/app/store";
-
 import { UserForm, createUser, deleteUser, fetchUsers, updateUser } from "@/entities/user";
 import type { CreateUserData, FetchUsersParams, UpdateUserData, User } from "@/entities/user";
 
@@ -34,6 +32,7 @@ import { getLoginEmailRules, getLoginPasswordRules } from "@/shared/lib/validati
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
 import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
 import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
+import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
 
 import { ALL_COLUMNS, getRoleOptions } from "../model/columns";
@@ -43,12 +42,9 @@ import {
     selectRowSelection,
     setColumnOrder,
     setColumnVisibility,
-    setRowSelection,
-    usersPageSlice
+    setRowSelection
 } from "../model/users-page-slice";
 import styles from "./UsersPage.module.css";
-
-rootReducer.inject(usersPageSlice);
 
 export const UsersPage: FC = () => {
     const { t } = useTranslation(USERS);
@@ -77,6 +73,7 @@ export const UsersPage: FC = () => {
     const [creating, setCreating] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [bulkRoleChange, setBulkRoleChange] = useState(false);
+    const [exportOpen, setExportOpen] = useState(false);
     const dispatch = useAppDispatch();
     const columnVisibility = useAppSelector(selectColumnVisibility);
     const columnOrder = useAppSelector(selectColumnOrder);
@@ -386,7 +383,12 @@ export const UsersPage: FC = () => {
                                 {t("table.edit")}
                             </Button>
                         )}
-                        <Button className={styles["users-page__export-btn"]} type="button" startIcon={<ExportIcon />}>
+                        <Button
+                            className={styles["users-page__export-btn"]}
+                            type="button"
+                            onClick={() => setExportOpen(true)}
+                            startIcon={<ExportIcon />}
+                        >
                             {t("actions.export")}
                         </Button>
                         <ColumnsDropdown
@@ -469,6 +471,44 @@ export const UsersPage: FC = () => {
                     onCancel={() => setBulkRoleChange(false)}
                 />
             )}
+
+            <ExportModal
+                isOpen={exportOpen}
+                onClose={() => setExportOpen(false)}
+                onExport={() => {
+                    setExportOpen(false);
+                }}
+                exportUrl="/api/export/users"
+                hasActiveFilters={hasActiveFilters}
+                hasActiveSorting={sorting.length > 0}
+                {...(hasActiveFilters
+                    ? {
+                          activeFiltersDescription: allConditions
+                              .map(c => filterConfig.fields.find(f => f.field === c.field)?.label ?? c.field)
+                              .join(", ")
+                      }
+                    : {})}
+                {...(sorting.length > 0
+                    ? {
+                          activeSortingDescription: sorting
+                              .map(s => {
+                                  const label = t(`table.${s.id === "createdAt" ? "created" : s.id}`);
+                                  return `${label} ${s.desc ? "↓" : "↑"}`;
+                              })
+                              .join(", ")
+                      }
+                    : {})}
+                {...(filterQueryString ? { filterQueryString } : {})}
+                {...(sortBy ? { sortBy } : {})}
+                {...(sortOrder ? { sortOrder } : {})}
+                columnNamespace={USERS}
+                availableLocales={["ru", "en"]}
+                columnLabelKeys={{
+                    login: "table.login",
+                    role: "table.role",
+                    createdAt: "table.created"
+                }}
+            />
         </div>
     );
 };

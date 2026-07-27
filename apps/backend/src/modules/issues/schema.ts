@@ -48,6 +48,25 @@ export const issuesListQuerySchema = Type.Object({
 
 export type IssuesListQuery = Static<typeof issuesListQuerySchema>;
 
+export const getIssuesExportQuerySchema = Type.Object({
+    filter: Type.Optional(Type.String()),
+    sortBy: Type.Optional(Type.String()),
+    sortOrder: Type.Optional(Type.Union([Type.Literal("asc"), Type.Literal("desc")])),
+});
+
+export type GetIssuesExportQuery = Static<typeof getIssuesExportQuerySchema>;
+
+export const issueExportResponseSchema = Type.Object({
+    issues: Type.Array(issueResponseSchema),
+});
+
+export type IssueExportResponse = Static<typeof issueExportResponseSchema>;
+
+export const getIssuesExportSchema = {
+    querystring: getIssuesExportQuerySchema,
+    response: { 200: issueExportResponseSchema },
+};
+
 export const getIssuesListSchema = {
     querystring: issuesListQuerySchema,
     response: {

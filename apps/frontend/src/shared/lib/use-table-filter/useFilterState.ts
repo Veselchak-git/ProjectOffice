@@ -48,19 +48,6 @@ export function useFilterState(tableKey: string, config: TableFilterConfig) {
         [config.fields]
     );
 
-    const removeCondition = useCallback((groupIdx: number, condIdx: number) => {
-        setFilters(prev => {
-            const group = prev.groups[groupIdx];
-            if (!group) return prev;
-
-            const newConditions = group.conditions.filter((_, i) => i !== condIdx);
-            const newGroups = [...prev.groups];
-            newGroups[groupIdx] = { ...group, conditions: newConditions };
-
-            return { ...prev, groups: newGroups };
-        });
-    }, []);
-
     const updateCondition = useCallback((groupIdx: number, condIdx: number, updates: Partial<FilterCondition>) => {
         setFilters(prev => {
             const group = prev.groups[groupIdx];
@@ -98,6 +85,22 @@ export function useFilterState(tableKey: string, config: TableFilterConfig) {
         [tableKey, filters]
     );
 
+    const removeCondition = useCallback(
+        (groupIdx: number, condIdx: number) => {
+            const group = filters.groups[groupIdx];
+            if (!group) return;
+            const nextState: FilterState = {
+                ...filters,
+                groups: filters.groups.map((g, i) =>
+                    i === groupIdx ? { ...g, conditions: g.conditions.filter((_, j) => j !== condIdx) } : g
+                )
+            };
+            setFilters(nextState);
+            applyFilters(nextState);
+        },
+        [filters, setFilters, applyFilters]
+    );
+
     const resetFilters = useCallback(() => {
         const empty = createEmptyState(config);
         clearFilterState(tableKey);
@@ -116,7 +119,7 @@ export function useFilterState(tableKey: string, config: TableFilterConfig) {
         if (allConditions.length === 0) return undefined;
 
         const query = {
-            logic: "AND",
+            logic: appliedFilters.groups[0]?.logic ?? "AND",
             conditions: allConditions
         };
 

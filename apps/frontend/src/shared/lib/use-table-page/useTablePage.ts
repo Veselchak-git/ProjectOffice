@@ -6,14 +6,17 @@
  * Все права защищены
  */
 import type { DragEndEvent } from "@dnd-kit/core";
+import { BrowserStorage } from "@helpdesk-portal/ui-kit";
 import type { OnChangeFn, SortingState, VisibilityState } from "@tanstack/react-table";
-import { type RefObject, useCallback, useRef, useState } from "react";
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 import { useClickOutside } from "@/shared/lib/use-click-outside";
 import { useDynamicPerPage } from "@/shared/lib/use-dynamic-per-page";
 import { usePersistColumnSettings } from "@/shared/lib/use-persist-column-settings";
 
 import { reorderColumn } from "@/shared/ui/data-table";
+
+const storage = BrowserStorage.create();
 
 export interface UseTablePageOptions {
     page: string;
@@ -46,7 +49,11 @@ export function useTablePage({
     onColumnOrderChange
 }: UseTablePageOptions): UseTablePageResult {
     const [pageIndex, setPageIndex] = useState(0);
-    const [sorting, setSorting] = useState<SortingState>([]);
+    const [sorting, setSorting] = useState<SortingState>(() => {
+        if (!storage) return [];
+        const saved = storage.getArray<{ id: string; desc: boolean }>(`sorting:${pageSlug}`);
+        return saved ?? [];
+    });
     const [columnsOpen, setColumnsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const columnsRef = useRef<HTMLDivElement>(null);
@@ -59,6 +66,11 @@ export function useTablePage({
         paginationHeight: 34,
         min: 5
     });
+
+    useEffect(() => {
+        if (!storage) return;
+        storage.setArray(`sorting:${pageSlug}`, sorting);
+    }, [pageSlug, sorting]);
 
     usePersistColumnSettings({
         page: pageSlug,

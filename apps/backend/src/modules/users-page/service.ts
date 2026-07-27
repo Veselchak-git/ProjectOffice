@@ -13,8 +13,10 @@ import type {
     createUserSchema,
     deleteUserSchema,
     getUsersSchema,
+    getUsersExportSchema,
     updateUserSchema,
     UserResponse,
+    UsersExportResponse,
 } from "./schema.js";
 
 const USER_SORT_FIELDS = new Set(["login", "role", "createdAt"]);
@@ -59,6 +61,37 @@ export const getUsersService = async (
             total,
             page,
             perPage,
+        };
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+};
+
+export const getUsersExportService = async (
+    request: FastifyRequestTypeBox<typeof getUsersExportSchema>
+): Promise<UsersExportResponse> => {
+    try {
+        const { sortBy, sortOrder = "asc", filter } = request.query;
+
+        const filterWhere = buildFilter(parseFilterQuery(filter), FILTER_FIELDS);
+        const where = filterWhere
+            ? { AND: [{ deletedAt: null }, filterWhere] }
+            : { deletedAt: null };
+        const orderBy = buildOrderBy(USER_SORT_FIELDS, sortBy, sortOrder, { id: "asc" });
+
+        const users = await request.server.prisma.user.findMany({
+            where,
+            orderBy,
+            select: { id: true, login: true, role: true, createdAt: true },
+        });
+
+        return {
+            users: users.map(u => ({
+                id: u.id,
+                login: u.login,
+                role: u.role as Role,
+                createdAt: u.createdAt.toISOString(),
+            })),
         };
     } catch (error) {
         throw handlePrismaError(error);

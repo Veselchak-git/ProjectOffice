@@ -4,10 +4,10 @@ import fp from "fastify-plugin";
 
 import { JWT_DECORATOR_AUTHENTICATE, JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
-import { USER_PATH, USERS_PATH } from "@/shared/routes.js";
+import { USER_PATH, USERS_EXPORT_PATH, USERS_PATH } from "@/shared/routes.js";
 
-import { createUserSchema, deleteUserSchema, getUsersSchema, updateUserSchema } from "./schema.js";
-import { createUserService, deleteUserService, getUsersService, updateUserService } from "./service.js";
+import { createUserSchema, deleteUserSchema, getUsersExportSchema, getUsersSchema, updateUserSchema } from "./schema.js";
+import { createUserService, deleteUserService, getUsersExportService, getUsersService, updateUserService } from "./service.js";
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
     fastify.get(
@@ -56,6 +56,15 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [fastify.authorize(Role.ADMIN)],
         },
         deleteUserService,
+    );
+
+    fastify.get(
+        USERS_EXPORT_PATH,
+        {
+            schema: getUsersExportSchema,
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+        },
+        getUsersExportService,
     );
 };
 

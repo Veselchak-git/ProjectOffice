@@ -85,3 +85,23 @@ export const getAuditLogStreamSchema = {
         200: Type.String(),
     },
 };
+
+// Audit log export query
+export const getAuditLogExportQuerySchema = Type.Object({
+    filter: Type.Optional(Type.String()),
+    sortBy: Type.Optional(Type.String()),
+    sortOrder: Type.Optional(Type.Union([Type.Literal("asc"), Type.Literal("desc")])),
+});
+export type GetAuditLogExportQuery = Static<typeof getAuditLogExportQuerySchema>;
+
+// Audit log export response (no pagination - returns all matching logs)
+export const auditLogExportResponseSchema = Type.Object({
+    logs: Type.Array(auditLogItemSchema),
+});
+export type AuditLogExportResponse = Static<typeof auditLogExportResponseSchema>;
+
+// Full schema for GET /audit-log/export
+export const getAuditLogExportSchema = {
+    querystring: getAuditLogExportQuerySchema,
+    response: { 200: auditLogExportResponseSchema },
+};

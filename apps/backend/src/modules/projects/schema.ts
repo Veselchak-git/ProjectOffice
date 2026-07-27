@@ -64,6 +64,25 @@ export const getProjectsListSchema = {
     },
 };
 
+export const getProjectsExportQuerySchema = Type.Object({
+    filter: Type.Optional(Type.String()),
+    sortBy: Type.Optional(Type.String()),
+    sortOrder: Type.Optional(Type.Union([Type.Literal("asc"), Type.Literal("desc")])),
+});
+
+export type GetProjectsExportQuery = Static<typeof getProjectsExportQuerySchema>;
+
+export const projectExportResponseSchema = Type.Object({
+    projects: Type.Array(projectResponseSchema),
+});
+
+export const getProjectsExportSchema = {
+    querystring: getProjectsExportQuerySchema,
+    response: {
+        200: projectExportResponseSchema,
+    },
+};
+
 const projectDetailResponseSchema = Type.Object({
     id: Type.Number(),
     name: Type.String(),

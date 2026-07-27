@@ -7,6 +7,7 @@ import { createProjectAccessGuard } from "@/shared/lib/project-access/index.js";
 
 import {
     ISSUES_PATH,
+    ISSUES_EXPORT_PATH,
     ISSUE_PATH,
     PROJECT_ISSUES_PATH,
 } from "@/shared/routes.js";
@@ -18,6 +19,7 @@ import {
     createIssueSchema,
     updateIssueSchema,
     deleteIssueSchema,
+    getIssuesExportSchema,
 } from "./schema.js";
 import {
     getIssuesListService,
@@ -26,6 +28,7 @@ import {
     createIssueService,
     updateIssueService,
     deleteIssueService,
+    getIssuesExportService,
 } from "./service.js";
 
 const plugin: FastifyPluginAsyncTypebox = async fastify => {
@@ -87,6 +90,15 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
         },
         deleteIssueService,
+    );
+
+    fastify.get(
+        ISSUES_EXPORT_PATH,
+        {
+            schema: getIssuesExportSchema,
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+        },
+        getIssuesExportService,
     );
 };
 

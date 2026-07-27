@@ -53,6 +53,27 @@ export const createUserSchema = {
     },
 };
 
+export const getUsersExportQuerySchema = Type.Object({
+    filter: Type.Optional(Type.String()),
+    sortBy: Type.Optional(Type.String()),
+    sortOrder: Type.Optional(Type.Union([Type.Literal("asc"), Type.Literal("desc")])),
+});
+
+export type GetUsersExportQuery = Static<typeof getUsersExportQuerySchema>;
+
+export const usersExportResponseSchema = Type.Object({
+    users: Type.Array(userResponseSchema),
+});
+
+export type UsersExportResponse = Static<typeof usersExportResponseSchema>;
+
+export const getUsersExportSchema = {
+    querystring: getUsersExportQuerySchema,
+    response: {
+        200: usersExportResponseSchema,
+    },
+};
+
 export const deleteUserSchema = {
     params: Type.Object({
         id: Type.Number(),

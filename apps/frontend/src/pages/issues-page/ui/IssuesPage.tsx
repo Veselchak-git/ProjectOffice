@@ -15,8 +15,6 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { rootReducer } from "@/app/store";
-
 import type { FetchIssuesParams, Issue } from "@/entities/issue";
 import { deleteIssue, fetchIssues } from "@/entities/issue";
 
@@ -30,11 +28,11 @@ import { useTablePage } from "@/shared/lib/use-table-page";
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
 import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
 import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
+import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
-    issuesPageSlice,
     selectColumnOrder,
     selectColumnVisibility,
     selectRowSelection,
@@ -43,8 +41,6 @@ import {
     setRowSelection
 } from "../model/issues-page-slice";
 import styles from "./IssuesPage.module.css";
-
-rootReducer.inject(issuesPageSlice);
 
 export const IssuesPage: FC = () => {
     const navigate = useNavigate();
@@ -93,6 +89,7 @@ export const IssuesPage: FC = () => {
                         { value: "QUESTION", label: t("filter.categoryOptions.QUESTION") }
                     ]
                 },
+                { field: "projectName", label: t("filter.projectName"), type: "text" },
                 { field: "title", label: t("filter.title"), type: "text" },
                 { field: "assigneeLogin", label: t("filter.assigneeLogin"), type: "text" },
                 { field: "createdAt", label: t("filter.createdAt"), type: "date" }
@@ -112,6 +109,7 @@ export const IssuesPage: FC = () => {
         removeFieldConditions
     } = useFilterState("issues", filterConfig);
     const [openFilter, setOpenFilter] = useState<string | null>(null);
+    const [exportOpen, setExportOpen] = useState(false);
     const { popoverKeys, bumpKey } = usePopoverKeys();
 
     const statusLabels = useMemo(
@@ -234,8 +232,37 @@ export const IssuesPage: FC = () => {
                     enableSorting: true
                 }),
                 columnHelper.accessor("projectName", {
-                    header: t("table.project"),
-                    enableSorting: false
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.project")}
+                                field="projectName"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "projectName") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`projectName-popover-${popoverKeys["projectName"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="projectName"
+                                    isOpen={openFilter === "projectName"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("projectName")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
                 }),
                 columnHelper.accessor("status", {
                     header: ({ column }) => {
@@ -533,7 +560,12 @@ export const IssuesPage: FC = () => {
                                 {t("actions.deleteSelected", { count: selectedCount })}
                             </Button>
                         )}
-                        <Button className={styles["issues-page__export-btn"]} type="button" startIcon={<ExportIcon />}>
+                        <Button
+                            className={styles["issues-page__export-btn"]}
+                            type="button"
+                            onClick={() => setExportOpen(true)}
+                            startIcon={<ExportIcon />}
+                        >
                             {t("actions.export")}
                         </Button>
                         <ColumnsDropdown
@@ -583,6 +615,48 @@ export const IssuesPage: FC = () => {
                     />
                 )}
             </div>
+            <ExportModal
+                isOpen={exportOpen}
+                onClose={() => setExportOpen(false)}
+                onExport={() => {
+                    setExportOpen(false);
+                }}
+                exportUrl="/api/export/issues"
+                hasActiveFilters={hasActiveFilters}
+                hasActiveSorting={sorting.length > 0}
+                {...(hasActiveFilters
+                    ? {
+                          activeFiltersDescription: allConditions
+                              .map(c => filterConfig.fields.find(f => f.field === c.field)?.label ?? c.field)
+                              .join(", ")
+                      }
+                    : {})}
+                {...(sorting.length > 0
+                    ? {
+                          activeSortingDescription: sorting
+                              .map(s => {
+                                  const sortLabelKey = s.id === "createdAt" ? "created" : s.id;
+                                  const label = t(`table.${sortLabelKey}`);
+                                  return `${label} ${s.desc ? "↓" : "↑"}`;
+                              })
+                              .join(", ")
+                      }
+                    : {})}
+                {...(filterQueryString ? { filterQueryString } : {})}
+                {...(sortBy ? { sortBy } : {})}
+                {...(sortOrder ? { sortOrder } : {})}
+                columnNamespace={ISSUES}
+                availableLocales={["ru", "en"]}
+                columnLabelKeys={{
+                    title: "table.title",
+                    status: "table.status",
+                    priority: "table.priority",
+                    category: "table.category",
+                    projectName: "table.project",
+                    assigneeLogin: "table.assignee",
+                    createdAt: "table.created"
+                }}
+            />
         </div>
     );
 };

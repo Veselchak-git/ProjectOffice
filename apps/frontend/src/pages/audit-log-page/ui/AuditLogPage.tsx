@@ -10,11 +10,10 @@ import ExportIcon from "@helpdesk-portal/icons/Export.svg?react";
 import { Button } from "@helpdesk-portal/ui-kit";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
-
-import { rootReducer } from "@/app/store";
 
 import type { AuditLog, FetchAuditLogsParams } from "@/entities/audit-log";
 import { fetchAuditLogs } from "@/entities/audit-log";
@@ -29,10 +28,10 @@ import { useTablePage } from "@/shared/lib/use-table-page";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
 import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
+import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
 
 import {
-    auditLogPageSlice,
     selectColumnOrder,
     selectColumnVisibility,
     setColumnOrder,
@@ -42,8 +41,6 @@ import { ALL_COLUMNS } from "../model/columns";
 import { AuditLogDetailModal } from "./AuditLogDetailModal";
 import styles from "./AuditLogPage.module.css";
 
-rootReducer.inject(auditLogPageSlice);
-
 export const AuditLogPage: FC = () => {
     const { t } = useTranslation(AUDIT);
     const dispatch = useAppDispatch();
@@ -51,6 +48,7 @@ export const AuditLogPage: FC = () => {
     const columnOrder = useAppSelector(selectColumnOrder);
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
     const [openFilter, setOpenFilter] = useState<string | null>(null);
+    const [exportOpen, setExportOpen] = useState(false);
     const { popoverKeys, bumpKey } = usePopoverKeys();
 
     const filterConfig = useMemo<{ fields: FieldOption[] }>(
@@ -84,6 +82,8 @@ export const AuditLogPage: FC = () => {
                         { value: "AUDIT_LOG", label: t("filter.objects.AUDIT_LOG") }
                     ]
                 },
+                { field: "subjectId", label: t("filter.subjectId"), type: "text" },
+                { field: "objectId", label: t("filter.objectId"), type: "text" },
                 { field: "createdAt", label: t("filter.createdAt"), type: "date" }
             ]
         }),
@@ -263,12 +263,66 @@ export const AuditLogPage: FC = () => {
                     enableSorting: true
                 }),
                 columnHelper.accessor("subjectId", {
-                    header: t("table.subjectId"),
-                    enableSorting: false
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.subjectId")}
+                                field="subjectId"
+                                sortState={sortState}
+                                isActiveFilter={isFieldFiltered("subjectId")}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`subjectId-popover-${popoverKeys["subjectId"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="subjectId"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("subjectId")}
+                                    isOpen={openFilter === "subjectId"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
                 }),
                 columnHelper.accessor("objectId", {
-                    header: t("table.objectId"),
-                    enableSorting: false
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.objectId")}
+                                field="objectId"
+                                sortState={sortState}
+                                isActiveFilter={isFieldFiltered("objectId")}
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`objectId-popover-${popoverKeys["objectId"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="objectId"
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("objectId")}
+                                    isOpen={openFilter === "objectId"}
+                                    onClose={() => setOpenFilter(null)}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
                 }),
                 columnHelper.accessor((row: AuditLog) => row.createdAt, {
                     id: "createdAt",
@@ -381,6 +435,7 @@ export const AuditLogPage: FC = () => {
                         <Button
                             className={styles["audit-log-page__export-btn"]}
                             type="button"
+                            onClick={() => setExportOpen(true)}
                             startIcon={<ExportIcon />}
                         >
                             {t("actions.export")}
@@ -431,6 +486,47 @@ export const AuditLogPage: FC = () => {
             </div>
 
             {selectedLog && <AuditLogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
+
+            <ExportModal
+                isOpen={exportOpen}
+                onClose={() => setExportOpen(false)}
+                onExport={() => {
+                    setExportOpen(false);
+                }}
+                exportUrl="/api/export/audit-log"
+                hasActiveFilters={hasActiveFilters}
+                hasActiveSorting={sorting.length > 0}
+                {...(hasActiveFilters
+                    ? {
+                          activeFiltersDescription: allConditions
+                              .map(c => filterConfig.fields.find(f => f.field === c.field)?.label ?? c.field)
+                              .join(", ")
+                      }
+                    : {})}
+                {...(sorting.length > 0
+                    ? {
+                          activeSortingDescription: sorting
+                              .map(s => {
+                                  const label = t(`table.${s.id === "createdAt" ? "created" : s.id}`);
+                                  return `${label} ${s.desc ? "↓" : "↑"}`;
+                              })
+                              .join(", ")
+                      }
+                    : {})}
+                {...(filterQueryString ? { filterQueryString } : {})}
+                {...(sortBy ? { sortBy } : {})}
+                {...(sortOrder ? { sortOrder } : {})}
+                columnNamespace={AUDIT}
+                availableLocales={["ru", "en"]}
+                columnLabelKeys={{
+                    eventType: "table.eventType",
+                    subjectType: "table.subjectType",
+                    objectType: "table.objectType",
+                    subjectId: "table.subjectId",
+                    objectId: "table.objectId",
+                    createdAt: "table.created"
+                }}
+            />
         </div>
     );
 };

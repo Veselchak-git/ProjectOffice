@@ -35,6 +35,7 @@ import {
     createIssueSchema,
     deleteIssueSchema,
     getIssueByIdSchema,
+    getIssuesExportSchema,
     getIssuesListSchema,
     getProjectIssuesSchema,
     updateIssueSchema,
@@ -85,11 +86,12 @@ export const mapIssue = (i: IssueRow, myRole?: string | null): IssueResponse => 
     updatedAt: i.updatedAt.toISOString(),
 });
 
-const ISSUE_SORT_FIELDS = new Set(["title", "status", "priority", "category", "createdAt", "updatedAt", "assigneeLogin"]);
+const ISSUE_SORT_FIELDS = new Set(["title", "status", "priority", "category", "createdAt", "updatedAt", "assigneeLogin", "projectName"]);
 
 const buildIssueOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
     buildOrderBy(ISSUE_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" }, {
         assigneeLogin: (order: string) => ({ assignee: { login: order } }),
+        projectName: (order: string) => ({ project: { name: order } }),
     });
 
 const include = {
@@ -181,6 +183,69 @@ export const getIssuesListService = async (
             page,
             perPage,
         };
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+};
+
+export const getIssuesExportService = async (
+    request: FastifyRequestTypeBox<typeof getIssuesExportSchema>
+): Promise<{ issues: IssueResponse[] }> => {
+    try {
+        const prisma = request.server.prisma;
+        const { filter, sortBy, sortOrder = "desc" } = request.query;
+
+        const userId = Number(request.user.sub);
+        const userRole = request.user.role;
+
+        const roleBasedWhere: Record<string, unknown> = {};
+
+        if (userRole === Role.ADMIN) {
+            // ADMIN sees all issues
+        } else {
+            const userProjects = await prisma.projectMember.findMany({
+                where: { userId },
+                select: { projectId: true },
+            });
+
+            const projectIds = userProjects.map(up => up.projectId);
+            roleBasedWhere.OR = [
+                { assigneeId: userId },
+                ...(projectIds.length > 0 ? [{ projectId: { in: projectIds } }] : []),
+            ];
+        }
+
+        const filterFields: FieldDefinition[] = [
+            { field: "title", type: "text", label: "Title" },
+            { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
+            { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
+            { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
+            { field: "createdAt", type: "date", label: "Created At" },
+        ];
+
+        const filterQuery = parseFilterQuery(filter);
+        const filterWhere = buildFilter(filterQuery, filterFields);
+
+        // Handle assigneeLogin filter separately — it's a relation field (assignee.login)
+        let assigneeWhere: Record<string, unknown> | undefined;
+        if (filterQuery) {
+            for (const c of filterQuery.conditions) {
+                if (c.field === "assigneeLogin" && c.operator === "contains" && typeof c.value === "string") {
+                    assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
+                }
+            }
+        }
+
+        const additionalWheres = [filterWhere, assigneeWhere].filter(Boolean);
+        const where: Record<string, unknown> = additionalWheres.length === 0
+            ? roleBasedWhere
+            : { AND: [roleBasedWhere, ...additionalWheres] };
+
+        const orderBy = buildIssueOrderBy(sortBy, sortOrder);
+
+        const issues = await prisma.issue.findMany({ where, orderBy, include });
+
+        return { issues: issues.map(i => mapIssue(i)) };
     } catch (error) {
         throw handlePrismaError(error);
     }

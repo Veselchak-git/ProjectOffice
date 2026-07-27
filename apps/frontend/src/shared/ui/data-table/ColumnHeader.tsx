@@ -46,17 +46,19 @@ export const ColumnHeader: FC<ColumnHeaderProps> = ({
 
     return (
         <div className={headerClassName} data-test={`column-header-${field}`}>
-            <Button
-                variant="link"
-                size="m"
-                iconOnly
-                className={styles["column-header__filter-icon"]}
-                onClick={handleFilterClick}
-                data-test={`column-header-filter-icon-${field}`}
-                aria-label={`Фильтр по ${title}`}
-            >
-                {isActiveFilter ? <ResetFilterIcon /> : <FilterIcon />}
-            </Button>
+            {onFilterClick && (
+                <Button
+                    variant="link"
+                    size="m"
+                    iconOnly
+                    className={styles["column-header__filter-icon"]}
+                    onClick={handleFilterClick}
+                    data-test={`column-header-filter-icon-${field}`}
+                    aria-label={`Фильтр по ${title}`}
+                >
+                    {isActiveFilter ? <ResetFilterIcon /> : <FilterIcon />}
+                </Button>
+            )}
             <span className={styles["column-header__title"]} data-test={`column-header-title-${field}`}>
                 {title}
             </span>

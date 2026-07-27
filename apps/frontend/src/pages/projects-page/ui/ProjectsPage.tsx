@@ -16,8 +16,6 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { rootReducer } from "@/app/store";
-
 import type { CreateProjectData, FetchProjectsParams, Project } from "@/entities/project";
 import { createProject, deleteProject, fetchProjects } from "@/entities/project";
 import { ProjectForm } from "@/entities/project";
@@ -32,11 +30,11 @@ import { useTablePage } from "@/shared/lib/use-table-page";
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
 import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
 import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
+import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
 
 import { ALL_COLUMNS } from "../model/columns";
 import {
-    projectsPageSlice,
     selectColumnOrder,
     selectColumnVisibility,
     selectRowSelection,
@@ -45,8 +43,6 @@ import {
     setRowSelection
 } from "../model/projects-page-slice";
 import styles from "./ProjectsPage.module.css";
-
-rootReducer.inject(projectsPageSlice);
 
 export const ProjectsPage: FC = () => {
     const navigate = useNavigate();
@@ -64,6 +60,7 @@ export const ProjectsPage: FC = () => {
                         { value: "ARCHIVED", label: t("filter.statusOptions.ARCHIVED") }
                     ]
                 },
+                { field: "responsible", label: t("filter.responsible"), type: "text" },
                 { field: "createdAt", label: t("filter.createdAt"), type: "date" }
             ]
         }),
@@ -75,6 +72,7 @@ export const ProjectsPage: FC = () => {
     const columnOrder = useAppSelector(selectColumnOrder);
     const rowSelection = useAppSelector(selectRowSelection);
     const [creating, setCreating] = useState(false);
+    const [exportOpen, setExportOpen] = useState(false);
 
     const {
         filters,
@@ -197,8 +195,19 @@ export const ProjectsPage: FC = () => {
                     }
                 }),
                 columnHelper.accessor("versions", {
-                    header: t("table.versions"),
-                    enableSorting: false,
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.versions")}
+                                field="versions"
+                                sortState={sortState}
+                                isActiveFilter={false}
+                            />
+                        );
+                    },
+                    enableSorting: true,
                     cell: info => {
                         const versions = info.getValue() as { id: number; version: string }[];
                         if (versions.length === 0) return "-";
@@ -218,12 +227,52 @@ export const ProjectsPage: FC = () => {
                 }),
                 columnHelper.accessor("taskCount", {
                     id: "tasks",
-                    header: t("table.tasks"),
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.tasks")}
+                                field="tasks"
+                                sortState={sortState}
+                                isActiveFilter={false}
+                            />
+                        );
+                    },
                     enableSorting: true
                 }),
                 columnHelper.accessor("responsible", {
-                    header: t("table.responsible"),
-                    enableSorting: false
+                    header: ({ column }) => {
+                        const sorted = sorting.find(s => s.id === column.id);
+                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
+                        return (
+                            <ColumnHeader
+                                title={t("table.responsible")}
+                                field="responsible"
+                                sortState={sortState}
+                                isActiveFilter={
+                                    filters.groups[0]?.conditions.some(c => c.field === "responsible") ?? false
+                                }
+                                onFilterClick={f => {
+                                    setOpenFilter(f);
+                                    bumpKey(f);
+                                }}
+                            >
+                                <FilterPopover
+                                    key={`responsible-popover-${popoverKeys["responsible"] ?? 0}`}
+                                    fields={filterConfig.fields}
+                                    conditions={allConditions}
+                                    logic={currentLogic}
+                                    initialField="responsible"
+                                    isOpen={openFilter === "responsible"}
+                                    onClose={() => setOpenFilter(null)}
+                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
+                                    onReset={() => removeFieldConditions("responsible")}
+                                />
+                            </ColumnHeader>
+                        );
+                    },
+                    enableSorting: true
                 }),
                 columnHelper.accessor("createdAt", {
                     header: ({ column }) => {
@@ -288,7 +337,8 @@ export const ProjectsPage: FC = () => {
         [setSorting]
     );
 
-    const sortBy = sorting[0]?.id === "tasks" ? "taskCount" : sorting[0]?.id;
+    const sortBy =
+        sorting[0]?.id === "tasks" ? "taskCount" : sorting[0]?.id === "versions" ? "versionCount" : sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;
     const page = pageIndex + 1;
 
@@ -392,6 +442,7 @@ export const ProjectsPage: FC = () => {
                             className={styles["projects-page__export-btn"]}
                             type="button"
                             startIcon={<ExportIcon />}
+                            onClick={() => setExportOpen(true)}
                         >
                             {t("actions.export")}
                         </Button>
@@ -449,6 +500,49 @@ export const ProjectsPage: FC = () => {
                     onCancel={() => setCreating(false)}
                 />
             </Modal>
+            <ExportModal
+                isOpen={exportOpen}
+                onClose={() => setExportOpen(false)}
+                onExport={() => {
+                    setExportOpen(false);
+                }}
+                exportUrl="/api/export/projects"
+                hasActiveFilters={hasActiveFilters}
+                hasActiveSorting={sorting.length > 0}
+                {...(hasActiveFilters
+                    ? {
+                          activeFiltersDescription: allConditions
+                              .map(c => filterConfig.fields.find(f => f.field === c.field)?.label ?? c.field)
+                              .join(", ")
+                      }
+                    : {})}
+                {...(sorting.length > 0
+                    ? {
+                          activeSortingDescription: sorting
+                              .map(s => {
+                                  const columnId = s.id === "tasks" ? "tasks" : s.id;
+                                  const sortLabelKey = columnId === "createdAt" ? "created" : columnId;
+                                  const label = t(`table.${sortLabelKey}`);
+                                  return `${label} ${s.desc ? "↓" : "↑"}`;
+                              })
+                              .join(", ")
+                      }
+                    : {})}
+                {...(filterQueryString ? { filterQueryString } : {})}
+                {...(sortBy ? { sortBy } : {})}
+                {...(sortOrder ? { sortOrder } : {})}
+                columnNamespace={PROJECTS}
+                availableLocales={["ru", "en"]}
+                columnLabelKeys={{
+                    name: "table.name",
+                    description: "table.description",
+                    status: "table.status",
+                    versions: "table.versions",
+                    tasks: "table.tasks",
+                    responsible: "table.responsible",
+                    createdAt: "table.created"
+                }}
+            />
         </div>
     );
 };

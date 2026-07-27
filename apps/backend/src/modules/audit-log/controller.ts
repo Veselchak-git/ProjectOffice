@@ -5,16 +5,17 @@ import { JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import type { JwtPayload } from "@/plugins/jwt-plugin/model.js";
 import { Role } from "@/generated/prisma/enums.js";
 import { getManagerProjectIds } from "@/shared/lib/project-access/index.js";
-import { AUDIT_LOG_AVAILABLE_PATH, AUDIT_LOG_PATH, AUDIT_LOG_STREAM_PATH } from "@/shared/routes.js";
+import { AUDIT_LOG_AVAILABLE_PATH, AUDIT_LOG_PATH, AUDIT_LOG_STREAM_PATH, AUDIT_LOG_EXPORT_PATH } from "@/shared/routes.js";
 
 import { auditLogEmitter } from "./emitter.js";
 import type { EntityChangeEvent } from "./emitter.js";
 import {
     getAuditLogAvailableSchema,
+    getAuditLogExportSchema,
     getAuditLogListSchema,
     getAuditLogStreamSchema,
 } from "./schema.js";
-import { getAuditLogListService } from "./service.js";
+import { getAuditLogExportService, getAuditLogListService } from "./service.js";
 
 function writeJsonError(raw: import("http").ServerResponse, statusCode: number, message: string) {
     raw.writeHead(statusCode, { "Content-Type": "application/json" });
@@ -69,6 +70,16 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
         },
         getAuditLogListService,
+    );
+
+    // New endpoint: GET /audit-log/export (export all matching logs without pagination)
+    fastify.get(
+        AUDIT_LOG_EXPORT_PATH,
+        {
+            schema: getAuditLogExportSchema,
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+        },
+        getAuditLogExportService,
     );
 
     // New endpoint: GET /audit-log/stream (SSE)

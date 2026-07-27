@@ -7,6 +7,7 @@ import { createProjectAccessGuard } from "@/shared/lib/project-access/index.js";
 
 import {
     PROJECTS_LIST_PATH,
+    PROJECTS_EXPORT_PATH,
     PROJECT_PATH,
     PROJECT_MEMBERS_PATH,
     PROJECT_MEMBER_PATH,
@@ -14,6 +15,7 @@ import {
 
 import {
     getProjectsListSchema,
+    getProjectsExportSchema,
     getProjectByIdSchema,
     createProjectSchema,
     updateProjectSchema,
@@ -25,6 +27,7 @@ import {
 } from "./schema.js";
 import {
     getProjectsListService,
+    getProjectsExportService,
     getProjectByIdService,
     createProjectService,
     updateProjectService,
@@ -45,6 +48,15 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
         },
         getProjectsListService,
+    );
+
+    fastify.get(
+        PROJECTS_EXPORT_PATH,
+        {
+            schema: getProjectsExportSchema,
+            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+        },
+        getProjectsExportService,
     );
 
     fastify.get(

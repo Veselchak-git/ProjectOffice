@@ -27,9 +27,13 @@ export default mergeConfig(
         server: {
             port: 3000,
             proxy: {
+                "/api/export": {
+                    target: process.env.VITE_EXPORTER_URL ?? "http://localhost:3003",
+                    secure: false
+                },
                 "/api": {
-                    target: process.env.VITE_BACKEND_URL ?? "http://localhost:8442", // Используем переменную окружения
-                    secure: false // Отключаем проверку SSL-сертификата
+                    target: process.env.VITE_BACKEND_URL ?? "http://localhost:8442",
+                    secure: false
                 }
             }
         },

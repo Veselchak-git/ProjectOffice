@@ -17,9 +17,9 @@ import type { UserRole } from "@/shared/lib/auth";
 import styles from "./DashboardCounters.module.css";
 
 interface Props {
-    summary?: DashboardSummary;
+    summary?: DashboardSummary | undefined;
     isLoading?: boolean;
-    userRole?: UserRole;
+    userRole?: UserRole | undefined;
 }
 
 export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole }) => {
