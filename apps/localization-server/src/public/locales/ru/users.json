@@ -102,5 +102,21 @@
             "ADMIN": "Администратор",
             "USER": "Пользователь"
         }
+    },
+    "exportModal": {
+        "title": "Экспорт таблицы",
+        "exportParamsLabel": "Параметры экспорта",
+        "applyFilters": "Применить фильтры",
+        "applySorting": "Применить сортировку",
+        "activePrefix": "активно:",
+        "exportLanguageLabel": "Язык экспорта",
+        "cancel": "Отмена",
+        "confirm": "Экспорт",
+        "exporting": "Экспорт…",
+        "error": "Ошибка экспорта",
+        "locale": {
+            "ru": "Русский",
+            "en": "English"
+        }
     }
 }

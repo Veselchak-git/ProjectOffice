@@ -135,6 +135,7 @@
         "priority": "Priority",
         "category": "Category",
         "title": "Title",
+        "projectName": "Project",
         "assigneeLogin": "Assignee",
         "createdAt": "Created",
         "statusOptions": {
@@ -157,6 +158,22 @@
             "TASK": "Task",
             "IMPROVEMENT": "Improvement",
             "QUESTION": "Question"
+        }
+    },
+    "exportModal": {
+        "title": "Export table",
+        "exportParamsLabel": "Export options",
+        "applyFilters": "Apply filters",
+        "applySorting": "Apply sorting",
+        "activePrefix": "active:",
+        "exportLanguageLabel": "Export language",
+        "cancel": "Cancel",
+        "confirm": "Export",
+        "exporting": "Exporting…",
+        "error": "Export error",
+        "locale": {
+            "ru": "Russian",
+            "en": "English"
         }
     }
 }

@@ -40,6 +40,8 @@
         "eventType": "Event Type",
         "subjectType": "Subject Type",
         "objectType": "Object Type",
+        "subjectId": "Subject ID",
+        "objectId": "Object ID",
         "createdAt": "Date",
         "events": {
             "ADDED": "Added",
@@ -55,6 +57,22 @@
             "PROJECT": "Project",
             "USER": "User",
             "AUDIT_LOG": "Audit"
+        }
+    },
+    "exportModal": {
+        "title": "Export table",
+        "exportParamsLabel": "Export options",
+        "applyFilters": "Apply filters",
+        "applySorting": "Apply sorting",
+        "activePrefix": "active:",
+        "exportLanguageLabel": "Export language",
+        "cancel": "Cancel",
+        "confirm": "Export",
+        "exporting": "Exporting…",
+        "error": "Export error",
+        "locale": {
+            "ru": "Russian",
+            "en": "English"
         }
     }
 }
