@@ -47,6 +47,10 @@ vi.mock("react-i18next", () => {
         useTranslation: () => ({
             t,
             i18n: { language: "ru", changeLanguage: vi.fn() }
-        })
+        }),
+        initReactI18next: {
+            type: "3rdParty",
+            init: vi.fn()
+        }
     };
 });
