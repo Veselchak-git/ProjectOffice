@@ -37,7 +37,7 @@
 ### Быстрый старт
 
 ```bash
-node scripts/sse-load-test.mjs --login admin@example.com --password admin123
+node scripts/sse-load-test.mjs --login admin@example.com --password Test123456
 ```
 
 Запустит дефолтные стадии (10 → 50 → 100 → 200 соединений, по 60 секунд каждая).
@@ -49,7 +49,7 @@ node scripts/sse-load-test.mjs --login admin@example.com --password admin123
 | `--host` | `localhost` | Хост backend-сервера |
 | `--port` | `3000` | Порт backend-сервера |
 | `--login` | `admin@example.com` | Email пользователя для аутентификации |
-| `--password` | `admin123` | Пароль пользователя |
+| `--password` | `Test123456` | Пароль пользователя |
 | `--stages` | `10:60,50:60,100:60,200:60` | Стадии нагрузки в формате `коннекты:секунды` |
 | `--event-interval` | `10` | Интервал (сек) между инъекциями событий |
 | `--inject-path` | `/api/projects` | Эндпоинт для инъекции событий |
@@ -63,7 +63,7 @@ node scripts/sse-load-test.mjs --login admin@example.com --password admin123
 node scripts/sse-load-test.mjs \
   --stages "10:60" \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Средняя нагрузка (50 соединений)**
@@ -72,7 +72,7 @@ node scripts/sse-load-test.mjs \
 node scripts/sse-load-test.mjs \
   --stages "10:30,50:120" \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Максимальная нагрузка (200 соединений)**
@@ -81,7 +81,7 @@ node scripts/sse-load-test.mjs \
 node scripts/sse-load-test.mjs \
   --stages "50:30,100:30,200:120" \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Долгосрочный тест (30 минут, 50 соединений)**
@@ -91,7 +91,7 @@ node scripts/sse-load-test.mjs \
   --stages "50:1800" \
   --event-interval 30 \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Без инъекции событий (только соединения)**
@@ -101,7 +101,7 @@ node scripts/sse-load-test.mjs \
   --stages "100:300" \
   --event-interval 0 \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 ---
@@ -211,7 +211,7 @@ lsof -p $(pgrep -f "node.*backend") | wc -l
 node scripts/sse-load-test.mjs \
   --stages "1:300" \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Что смотрим:**
@@ -228,7 +228,7 @@ node scripts/sse-load-test.mjs \
 node scripts/sse-load-test.mjs \
   --stages "10:60,50:60,100:60,200:60" \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Что смотрим:**
@@ -246,7 +246,7 @@ node scripts/sse-load-test.mjs \
   --stages "100:120" \
   --event-interval 5 \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Что смотрим:**
@@ -262,7 +262,7 @@ node scripts/sse-load-test.mjs \
 node scripts/sse-load-test.mjs \
   --stages "200:30,0:10" \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 Примечание: стадия `0:10` отключит всех клиентов и подождёт 10 секунд.
@@ -281,7 +281,7 @@ node scripts/sse-load-test.mjs \
   --stages "50:1800" \
   --event-interval 30 \
   --login admin@example.com \
-  --password admin123
+  --password Test123456
 ```
 
 **Что смотрим:**
