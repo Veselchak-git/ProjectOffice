@@ -25,6 +25,12 @@ const buildTestApp = async () => {
 
     // Mock prisma
     fastify.decorate("prisma", {
+        project: {
+            findUnique: async ({ where }: { where: { id: number } }) => {
+                if (where.id === 1) return { id: 1 };
+                return null;
+            },
+        },
         projectMember: {
             findUnique: async () => null,
         },

@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next";
 import type { AuditLog, FetchAuditLogsParams } from "@/entities/audit-log";
 import { fetchAuditLogs } from "@/entities/audit-log";
 
+import { apiClient } from "@/shared/lib/auth";
+import { selectAuthUser } from "@/shared/lib/auth/auth-slice";
 import { ErrorModal } from "@/shared/lib/error-boundary/ErrorModal";
 import { formatDate } from "@/shared/lib/format-date";
 import { useAppDispatch, useAppSelector } from "@/shared/lib/redux";
@@ -52,6 +54,16 @@ export const AuditLogPage: FC = () => {
     const [exportOpen, setExportOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { popoverKeys, bumpKey } = usePopoverKeys();
+    const user = useAppSelector(selectAuthUser);
+    const isAdmin = user?.role === "ADMIN";
+    const { data: availableData } = useQuery({
+        queryKey: ["audit-log-available"],
+        queryFn: () => apiClient("/api/audit-log/available").then(r => r.json()),
+        enabled: !isAdmin,
+        retry: false,
+        staleTime: 0
+    });
+    const accessDenied = !isAdmin && availableData && !availableData.available;
 
     const filterConfig = useMemo<{ fields: FieldOption[] }>(
         () => ({
@@ -314,110 +326,115 @@ export const AuditLogPage: FC = () => {
         }
     });
 
-    return (
-        <div className={styles["audit-log-page"]}>
-            <PageHeader
-                title={t("page.title")}
-                subtitle={t("page.subtitle", { total })}
-                actions={
-                    <>
-                        <Button
-                            className={styles["audit-log-page__export-btn"]}
-                            type="button"
-                            onClick={() => setExportOpen(true)}
-                            startIcon={<ExportIcon />}
-                        >
-                            {t("actions.export")}
-                        </Button>
-                        <ColumnsDropdown
-                            columnsRef={columnsRef}
-                            columnsOpen={columnsOpen}
-                            setColumnsOpen={setColumnsOpen}
-                            columnOrder={columnOrder}
-                            allColumns={ALL_COLUMNS}
-                            table={table}
-                            handleDragEnd={handleDragEnd}
-                        />
-                    </>
-                }
-            />
-
-            {hasActiveFilters && (
-                <FilterChips
-                    conditions={filters.groups.flatMap(g => g.conditions)}
-                    fieldConfigs={filterConfig.fields}
-                    onRemove={handleRemoveFilterCondition}
-                    onClearAll={resetFilters}
+    return accessDenied ? (
+        <ErrorModal isOpen={true} message={t("error.AUTH_FORBIDDEN")} onClose={() => {}} onOkNavigate="/" />
+    ) : (
+        <>
+            <div className={styles["audit-log-page"]}>
+                <PageHeader
+                    title={t("page.title")}
+                    subtitle={t("page.subtitle", { total })}
+                    actions={
+                        <>
+                            <Button
+                                className={styles["audit-log-page__export-btn"]}
+                                type="button"
+                                onClick={() => setExportOpen(true)}
+                                startIcon={<ExportIcon />}
+                            >
+                                {t("actions.export")}
+                            </Button>
+                            <ColumnsDropdown
+                                columnsRef={columnsRef}
+                                columnsOpen={columnsOpen}
+                                setColumnsOpen={setColumnsOpen}
+                                columnOrder={columnOrder}
+                                allColumns={ALL_COLUMNS}
+                                table={table}
+                                handleDragEnd={handleDragEnd}
+                            />
+                        </>
+                    }
                 />
-            )}
 
-            <div className={styles["audit-log-page__table-area"]} ref={containerRef}>
-                {isPending && !data ? (
-                    <p className={styles["audit-log-page__empty"]}>{t("loading")}</p>
-                ) : (
-                    <DataTable
-                        table={table}
-                        total={total}
-                        sorting={sorting}
-                        onSort={handleSort}
-                        className={styles["audit-log-page__table"]}
-                        onRowDoubleClick={log => {
-                            if (log.oldValue != null || log.newValue != null) {
-                                setSelectedLog(log);
-                            }
-                        }}
+                {hasActiveFilters && (
+                    <FilterChips
+                        conditions={filters.groups.flatMap(g => g.conditions)}
+                        fieldConfigs={filterConfig.fields}
+                        onRemove={handleRemoveFilterCondition}
+                        onClearAll={resetFilters}
                     />
                 )}
+
+                <div className={styles["audit-log-page__table-area"]} ref={containerRef}>
+                    {isPending && !data ? (
+                        <p className={styles["audit-log-page__empty"]}>{t("loading")}</p>
+                    ) : (
+                        <DataTable
+                            table={table}
+                            total={total}
+                            sorting={sorting}
+                            onSort={handleSort}
+                            className={styles["audit-log-page__table"]}
+                            onRowDoubleClick={log => {
+                                if (log.oldValue != null || log.newValue != null) {
+                                    setSelectedLog(log);
+                                }
+                            }}
+                        />
+                    )}
+                </div>
+
+                {selectedLog && <AuditLogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
+
+                <ExportModal
+                    isOpen={exportOpen}
+                    onClose={() => setExportOpen(false)}
+                    onExport={() => {
+                        setExportOpen(false);
+                    }}
+                    exportUrl="/api/export/audit-log"
+                    hasActiveFilters={hasActiveFilters}
+                    hasActiveSorting={sorting.length > 0}
+                    {...(hasActiveFilters
+                        ? {
+                              activeFiltersDescription: allConditions
+                                  .map(c => filterConfig.fields.find(f => f.field === c.field)?.label ?? c.field)
+                                  .join(", ")
+                          }
+                        : {})}
+                    {...(sorting.length > 0
+                        ? {
+                              activeSortingDescription: sorting
+                                  .map(s => {
+                                      const label = t(`table.${s.id === "createdAt" ? "created" : s.id}`);
+                                      return `${label} ${s.desc ? "↓" : "↑"}`;
+                                  })
+                                  .join(", ")
+                          }
+                        : {})}
+                    {...(filterQueryString ? { filterQueryString } : {})}
+                    {...(sortBy ? { sortBy } : {})}
+                    {...(sortOrder ? { sortOrder } : {})}
+                    columnNamespace={AUDIT}
+                    availableLocales={["ru", "en"]}
+                    columnLabelKeys={{
+                        eventType: "table.eventType",
+                        subjectType: "table.subjectType",
+                        objectType: "table.objectType",
+                        subjectId: "table.subjectId",
+                        objectId: "table.objectId",
+                        createdAt: "table.created"
+                    }}
+                />
+
+                <ErrorModal
+                    isOpen={!!errorMessage || (isError && !isPending)}
+                    message={errorMessage ?? (error instanceof Error ? error.message : t("error.loading"))}
+                    onClose={() => setErrorMessage(null)}
+                    {...((error as { code?: string })?.code === "AUTH_FORBIDDEN" ? { onOkNavigate: "/" } : {})}
+                />
             </div>
-
-            {selectedLog && <AuditLogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
-
-            <ExportModal
-                isOpen={exportOpen}
-                onClose={() => setExportOpen(false)}
-                onExport={() => {
-                    setExportOpen(false);
-                }}
-                exportUrl="/api/export/audit-log"
-                hasActiveFilters={hasActiveFilters}
-                hasActiveSorting={sorting.length > 0}
-                {...(hasActiveFilters
-                    ? {
-                          activeFiltersDescription: allConditions
-                              .map(c => filterConfig.fields.find(f => f.field === c.field)?.label ?? c.field)
-                              .join(", ")
-                      }
-                    : {})}
-                {...(sorting.length > 0
-                    ? {
-                          activeSortingDescription: sorting
-                              .map(s => {
-                                  const label = t(`table.${s.id === "createdAt" ? "created" : s.id}`);
-                                  return `${label} ${s.desc ? "↓" : "↑"}`;
-                              })
-                              .join(", ")
-                      }
-                    : {})}
-                {...(filterQueryString ? { filterQueryString } : {})}
-                {...(sortBy ? { sortBy } : {})}
-                {...(sortOrder ? { sortOrder } : {})}
-                columnNamespace={AUDIT}
-                availableLocales={["ru", "en"]}
-                columnLabelKeys={{
-                    eventType: "table.eventType",
-                    subjectType: "table.subjectType",
-                    objectType: "table.objectType",
-                    subjectId: "table.subjectId",
-                    objectId: "table.objectId",
-                    createdAt: "table.created"
-                }}
-            />
-
-            <ErrorModal
-                isOpen={!!errorMessage || (isError && !isPending)}
-                message={errorMessage ?? (error instanceof Error ? error.message : t("error.loading"))}
-                onClose={() => setErrorMessage(null)}
-            />
-        </div>
+        </>
     );
 };

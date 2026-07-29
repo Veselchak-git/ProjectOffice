@@ -97,14 +97,17 @@ export const IssuePage: FC = () => {
     }
 
     if (!issue) {
+        const errorCode = (error as { code?: string })?.code;
+        const errorMessage =
+            errorCode === "AUTH_FORBIDDEN"
+                ? t("error.AUTH_FORBIDDEN_ISSUE", { id })
+                : error instanceof Error
+                  ? error.message
+                  : t("error.notFound");
+
         return (
             <div className={styles["issue-page"]}>
-                <ErrorModal
-                    isOpen
-                    message={error instanceof Error ? error.message : t("error.notFound")}
-                    onClose={() => navigate("/tasks")}
-                    onOkNavigate="/tasks"
-                />
+                <ErrorModal isOpen message={errorMessage} onClose={() => navigate("/tasks")} onOkNavigate="/tasks" />
             </div>
         );
     }

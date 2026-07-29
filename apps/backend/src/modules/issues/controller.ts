@@ -56,7 +56,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: getProjectIssuesSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                createProjectAccessGuard(),
+                createProjectAccessGuard({ allowGlobalAdmin: true }),
             ],
         },
         getProjectIssuesService,
@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
             schema: createIssueSchema,
             preHandler: [
                 fastify.authorize(Role.USER, Role.ADMIN),
-                createProjectAccessGuard(),
+                createProjectAccessGuard({ allowGlobalAdmin: true }),
             ],
         },
         createIssueService,

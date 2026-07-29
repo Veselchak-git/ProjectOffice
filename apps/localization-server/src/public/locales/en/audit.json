@@ -19,7 +19,8 @@
     "loading": "Loading audit log…",
     "error": {
         "loading": "Error loading audit log",
-        "stream": "Error connecting to event stream"
+        "stream": "Error connecting to event stream",
+        "AUTH_FORBIDDEN": "Insufficient permissions to access the Audit Log page"
     },
     "modal": {
         "title": "Log Details",

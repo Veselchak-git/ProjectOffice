@@ -77,6 +77,12 @@ const buildTestApp = async () => {
             const results = await Promise.all(queries);
             return results;
         },
+        project: {
+            findUnique: async (args: { where: { id: number } }) => {
+                if (args.where.id === 1) return { id: 1 };
+                return null;
+            },
+        },
         issue: {
             findMany: async (args?: { where?: Record<string, unknown>; skip?: number; take?: number }) => {
                 let filtered = [...mockIssues];

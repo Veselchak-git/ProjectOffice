@@ -131,6 +131,15 @@ export const createProjectAccessGuard = (options?: ProjectAccessGuardOptions): p
 
         if (options?.allowGlobalAdmin && globalRole === Role.ADMIN) return;
 
+        const projectExists = await request.server.prisma.project.findUnique({
+            where: { id: projectId },
+            select: { id: true },
+        });
+
+        if (!projectExists) {
+            throw new AppError(HTTP_STATUS.NOT_FOUND, "Project not found", "PROJECT_NOT_FOUND");
+        }
+
         const member = await request.server.prisma.projectMember.findUnique({
             where: { userId_projectId: { userId, projectId } },
         });

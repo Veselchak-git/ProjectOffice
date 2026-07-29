@@ -4,6 +4,7 @@ import fp from "fastify-plugin";
 import { JWT_DECORATOR_AUTHORIZE } from "@/plugins/jwt-plugin/index.js";
 import type { JwtPayload } from "@/plugins/jwt-plugin/model.js";
 import { Role } from "@/generated/prisma/enums.js";
+import { AppError, HTTP_STATUS } from "@/shared/lib/errors/index.js";
 import { getManagerProjectIds } from "@/shared/lib/project-access/index.js";
 import { AUDIT_LOG_AVAILABLE_PATH, AUDIT_LOG_PATH, AUDIT_LOG_STREAM_PATH, AUDIT_LOG_EXPORT_PATH } from "@/shared/routes.js";
 
@@ -62,22 +63,46 @@ const plugin: FastifyPluginAsyncTypebox = async fastify => {
         },
     );
 
-    // New endpoint: GET /audit-log (list with pagination and sorting)
+    // Endpoint: GET /audit-log (list with pagination and sorting)
     fastify.get(
         AUDIT_LOG_PATH,
         {
             schema: getAuditLogListSchema,
-            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+            preHandler: [
+                fastify.authorize(Role.USER, Role.ADMIN),
+                async request => {
+                    if (request.user.role === Role.ADMIN) return;
+                    const userId = Number(request.user.sub);
+                    const isManager = await request.server.prisma.projectMember.count({
+                        where: { userId, role: "MANAGER" },
+                    });
+                    if (isManager === 0) {
+                        throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "AUTH_FORBIDDEN");
+                    }
+                },
+            ],
         },
         getAuditLogListService,
     );
 
-    // New endpoint: GET /audit-log/export (export all matching logs without pagination)
+    // Endpoint: GET /audit-log/export (export all matching logs without pagination)
     fastify.get(
         AUDIT_LOG_EXPORT_PATH,
         {
             schema: getAuditLogExportSchema,
-            preHandler: [fastify.authorize(Role.USER, Role.ADMIN)],
+            preHandler: [
+                fastify.authorize(Role.USER, Role.ADMIN),
+                async request => {
+                    if (request.user.role === Role.ADMIN) return;
+                    const userId = Number(request.user.sub);
+                    const isManager = await request.server.prisma.projectMember.count({
+                        where: { userId, role: "MANAGER" },
+                    });
+                    if (isManager === 0) {
+                        throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "AUTH_FORBIDDEN");
+                    }
+                },
+            ],
         },
         getAuditLogExportService,
     );

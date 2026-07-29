@@ -106,11 +106,19 @@ export const ProjectPage: FC = () => {
     }
 
     if (isError || !project) {
+        const errorCode = (error as { code?: string })?.code;
+        const errorMessage =
+            errorCode === "AUTH_FORBIDDEN"
+                ? t("error.AUTH_FORBIDDEN_PROJECT", { id: projectId })
+                : error instanceof Error
+                  ? error.message
+                  : t("detail.notFound");
+
         return (
             <div className={styles["project-page"]}>
                 <ErrorModal
                     isOpen
-                    message={error instanceof Error ? error.message : t("detail.notFound")}
+                    message={errorMessage}
                     onClose={() => navigate("/projects")}
                     onOkNavigate="/projects"
                 />

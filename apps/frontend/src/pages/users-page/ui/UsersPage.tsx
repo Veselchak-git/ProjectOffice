@@ -435,6 +435,7 @@ export const UsersPage: FC = () => {
                 isOpen={!!pageError || (isError && !isPending)}
                 message={pageError ?? (error instanceof Error ? error.message : t("error.loading"))}
                 onClose={() => setPageError(null)}
+                {...((error as { code?: string })?.code === "AUTH_FORBIDDEN" ? { onOkNavigate: "/" } : {})}
             />
         </div>
     );

@@ -151,6 +151,9 @@ describe("createProjectAccessGuard", () => {
             body: {},
             server: {
                 prisma: {
+                    project: {
+                        findUnique: vi.fn().mockResolvedValue({ id: 10 }),
+                    },
                     projectMember: {
                         findUnique: vi.fn().mockResolvedValue({
                             userId: 1,
@@ -187,6 +190,9 @@ describe("createProjectAccessGuard", () => {
         const request = buildRequest({
             server: {
                 prisma: {
+                    project: {
+                        findUnique: vi.fn().mockResolvedValue({ id: 10 }),
+                    },
                     projectMember: {
                         findUnique: vi.fn().mockResolvedValue(null),
                     },

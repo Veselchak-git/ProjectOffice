@@ -85,7 +85,7 @@
         "MEMBER_NOT_FOUND": "Member not found in the project",
         "SELF_ROLE_CHANGE": "Cannot change your own permissions",
         "ROLE_HIERARCHY": "Cannot assign a role higher than your own",
-        "AUTH_FORBIDDEN": "Insufficient permissions for this action",
+        "AUTH_FORBIDDEN_PROJECT": "Insufficient permissions to access project #{{id}}",
         "USER_NOT_FOUND": "User not found",
         "PROJECT_ALREADY_EXISTS": "Project with this name already exists"
     },
