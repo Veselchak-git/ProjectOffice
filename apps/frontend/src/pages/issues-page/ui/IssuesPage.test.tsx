@@ -106,7 +106,8 @@ vi.mock("@/shared/ui/data-table", () => ({
         COLUMN_IDS: columns.map(c => c.id),
         DEFAULT_COLUMN_ORDER: columns.map(c => c.id),
         DEFAULT_COLUMN_VISIBILITY: Object.fromEntries(columns.map(c => [c.id, true]))
-    })
+    }),
+    useFilterHeader: () => (title: string) => () => <th>{title}</th>
 }));
 
 vi.mock("@/shared/ui/page-header", () => ({
