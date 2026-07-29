@@ -165,7 +165,7 @@ describe("usersPageController", () => {
             expect(response.statusCode).toBe(403);
         });
 
-        it("returns 200 for USER with MANAGER project role", async () => {
+        it("returns 403 for USER with MANAGER project role", async () => {
             const token = await signUserToken();
 
             const response = await app.inject({
@@ -174,7 +174,7 @@ describe("usersPageController", () => {
                 headers: { authorization: `Bearer ${token}` },
             });
 
-            expect(response.statusCode).toBe(200);
+            expect(response.statusCode).toBe(403);
         });
     });
 
