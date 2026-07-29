@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2016-2026 Tecom LLC
+ * All rights reserved
+ * 
+ * Исключительное право (c) 2016-2026 принадлежит ООО Теком
+ * Все права защищены
+ */
+
 import { buildFilter, parseFilterQuery } from "../../shared/lib/filter/index.js";
 import type { FilterGroup } from "../../shared/lib/filter/types.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
@@ -183,7 +191,6 @@ export const getProjectsExportService = async (
     const finalWhere = additionalWheres.length === 0
         ? where
         : { AND: [where, ...additionalWheres] };
-    const orderBy = buildProjectOrderBy(sortBy, sortOrder);
 
     const include = {
         _count: { select: { versions: true, issues: true } },
@@ -191,7 +198,18 @@ export const getProjectsExportService = async (
         versions: { select: { id: true, version: true }, orderBy: { id: "desc" as const } },
     } as const;
 
-    const projects = await prisma.project.findMany({ where: finalWhere, orderBy, include });
+    let projects;
+
+    if (sortBy === "responsible") {
+        projects = await prisma.project.findMany({ where: finalWhere, include });
+        projects.sort((a, b) => {
+            const cmp = findResponsible(a.memberships).localeCompare(findResponsible(b.memberships));
+            return sortOrder === "asc" ? cmp : -cmp;
+        });
+    } else {
+        const orderBy = buildProjectOrderBy(sortBy, sortOrder);
+        projects = await prisma.project.findMany({ where: finalWhere, orderBy, include });
+    }
 
     return { projects: projects.map(mapProject) };
 };

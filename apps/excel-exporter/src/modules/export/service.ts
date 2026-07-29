@@ -87,20 +87,22 @@ function formatDate(dateStr: string, locale: string, timezone: string): string {
 function translateIssueStatus(status: string, locale: string): string {
     if (locale === "ru") {
         switch (status) {
-            case "OPEN": return "Открыта";
-            case "IN_PROGRESS": return "В работе";
+            case "NEW": return "Новая";
+            case "ACKNOWLEDGED": return "Подтверждена";
+            case "CONFIRMED": return "Подтверждена";
+            case "ASSIGNED": return "Назначена";
             case "RESOLVED": return "Решена";
             case "CLOSED": return "Закрыта";
-            case "REOPENED": return "Переоткрыта";
             default: return status;
         }
     }
     switch (status) {
-        case "OPEN": return "Open";
-        case "IN_PROGRESS": return "In Progress";
+        case "NEW": return "New";
+        case "ACKNOWLEDGED": return "Acknowledged";
+        case "CONFIRMED": return "Confirmed";
+        case "ASSIGNED": return "Assigned";
         case "RESOLVED": return "Resolved";
         case "CLOSED": return "Closed";
-        case "REOPENED": return "Reopened";
         default: return status;
     }
 }
@@ -108,18 +110,18 @@ function translateIssueStatus(status: string, locale: string): string {
 function translatePriority(priority: string, locale: string): string {
     if (locale === "ru") {
         switch (priority) {
-            case "LOW": return "Низкий";
-            case "MEDIUM": return "Средний";
-            case "HIGH": return "Высокий";
-            case "CRITICAL": return "Критический";
+            case "CRITICAL": return "Критичный";
+            case "SERIOUS": return "Серьёзный";
+            case "MINOR": return "Незначительный";
+            case "GENERAL": return "Общий вопрос";
             default: return priority;
         }
     }
     switch (priority) {
-        case "LOW": return "Low";
-        case "MEDIUM": return "Medium";
-        case "HIGH": return "High";
         case "CRITICAL": return "Critical";
+        case "SERIOUS": return "Serious";
+        case "MINOR": return "Minor";
+        case "GENERAL": return "General";
         default: return priority;
     }
 }
@@ -128,9 +130,10 @@ function translateCategory(category: string, locale: string): string {
     if (locale === "ru") {
         switch (category) {
             case "BUG": return "Ошибка";
-            case "FEATURE": return "Функционал";
+            case "FEATURE": return "Функциональность";
             case "TASK": return "Задача";
             case "IMPROVEMENT": return "Улучшение";
+            case "QUESTION": return "Вопрос";
             default: return category;
         }
     }
@@ -139,6 +142,7 @@ function translateCategory(category: string, locale: string): string {
         case "FEATURE": return "Feature";
         case "TASK": return "Task";
         case "IMPROVEMENT": return "Improvement";
+        case "QUESTION": return "Question";
         default: return category;
     }
 }
@@ -213,6 +217,21 @@ function translateObjectType(objectType: string, locale: string): string {
         case "USER": return "User";
         case "AUDIT_LOG": return "Audit";
         default: return objectType;
+    }
+}
+
+function translateRole(role: string, locale: string): string {
+    if (locale === "ru") {
+        switch (role) {
+            case "ADMIN": return "Администратор";
+            case "USER": return "Пользователь";
+            default: return role;
+        }
+    }
+    switch (role) {
+        case "ADMIN": return "Admin";
+        case "USER": return "User";
+        default: return role;
     }
 }
 
@@ -579,7 +598,7 @@ export function createUsersExportWorkbook(
         switch (field) {
             case "id": return user.id;
             case "login": return user.login;
-            case "role": return user.role;
+            case "role": return translateRole(user.role, locale);
             case "createdAt": return formatDate(user.createdAt, locale, timezone);
             default: return "";
         }

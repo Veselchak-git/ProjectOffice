@@ -424,6 +424,7 @@ export const UsersPage: FC = () => {
                 {...(sortOrder ? { sortOrder } : {})}
                 columnNamespace={USERS}
                 availableLocales={["ru", "en"]}
+                fileNamePrefix={{ ru: "Пользователи", en: "Users" }}
                 columnLabelKeys={{
                     login: "table.login",
                     role: "table.role",

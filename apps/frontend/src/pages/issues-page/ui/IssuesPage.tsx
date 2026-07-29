@@ -494,6 +494,7 @@ export const IssuesPage: FC = () => {
                 {...(sortOrder ? { sortOrder } : {})}
                 columnNamespace={ISSUES}
                 availableLocales={["ru", "en"]}
+                fileNamePrefix={{ ru: "Задачи", en: "Issues" }}
                 columnLabelKeys={{
                     title: "table.title",
                     status: "table.status",

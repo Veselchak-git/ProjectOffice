@@ -418,6 +418,7 @@ export const AuditLogPage: FC = () => {
                     {...(sortOrder ? { sortOrder } : {})}
                     columnNamespace={AUDIT}
                     availableLocales={["ru", "en"]}
+                    fileNamePrefix={{ ru: "Аудит-лог", en: "Audit Log" }}
                     columnLabelKeys={{
                         eventType: "table.eventType",
                         subjectType: "table.subjectType",

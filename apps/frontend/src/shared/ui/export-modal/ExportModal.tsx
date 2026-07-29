@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getToken } from "@/shared/lib/auth/token-store";
+import { i18n } from "@/shared/lib/i18n";
 
 import styles from "./ExportModal.module.css";
 import type { ExportModalProps, ExportParams } from "./types";
@@ -49,10 +50,11 @@ export const ExportModal: FC<ExportModalProps> = ({
             const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
             // Резолвим заголовки с учётом выбранной локали экспорта
+            const exportT = i18n.getFixedT(selectedLocale, columnNamespace ?? PROJECTS);
             const resolvedHeaders: Record<string, string> = {};
             if (columnLabelKeys) {
                 for (const [key, i18nKey] of Object.entries(columnLabelKeys)) {
-                    resolvedHeaders[key] = t(i18nKey, { lng: selectedLocale });
+                    resolvedHeaders[key] = exportT(i18nKey);
                 }
             }
 
