@@ -69,6 +69,11 @@
     --multi-select-border-color: var(--semantic-border-default);
 }
 
+.operatorWrapper {
+    position: relative;
+    z-index: 1;
+}
+
 .fieldSelect:hover {
     --select-border-color: var(--semantic-btn-accent-stroke-hover-border);
     --multi-select-border-color: var(--semantic-btn-accent-stroke-hover-border);

@@ -6,6 +6,7 @@
  * Все права защищены
  */
 
+import type { PrismaClient } from "@/generated/prisma/client.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/index.js";
 import { buildFilter, parseFilterQuery } from "../../shared/lib/filter/index.js";
@@ -18,8 +19,72 @@ import { getAuditLogExportSchema, getAuditLogListSchema } from "./schema.js";
 
 const AUDIT_LOG_SORT_FIELDS = new Set(["createdAt", "eventType", "subjectType", "objectType", "subjectId", "objectId"]);
 
+const AUDIT_LOG_FILTER_FIELDS: FieldDefinition[] = [
+    { field: "eventType", label: "Event Type", type: "enum", enumValues: ["USER_CREATED", "USER_UPDATED", "USER_DELETED", "ISSUE_CREATED", "ISSUE_UPDATED", "ISSUE_DELETED", "PROJECT_CREATED", "PROJECT_UPDATED", "PROJECT_DELETED", "MEMBER_ADDED", "MEMBER_UPDATED", "MEMBER_REMOVED", "CREATE", "UPDATE", "DELETE"] },
+    { field: "subjectType", label: "Subject Type", type: "enum", enumValues: ["USER"] },
+    { field: "objectType", label: "Object Type", type: "enum", enumValues: ["ISSUE", "PROJECT", "USER"] },
+    { field: "subjectId", label: "Subject ID", type: "number" },
+    { field: "objectId", label: "Object ID", type: "number" },
+    { field: "createdAt", label: "Created At", type: "date" },
+];
+
 const buildAuditLogOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
     buildOrderBy(AUDIT_LOG_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" });
+
+interface AuditLogRow {
+    id: number;
+    eventType: string;
+    subjectType: string;
+    objectType: string;
+    subjectId: number;
+    objectId: number;
+    oldValue: string | null;
+    newValue: string | null;
+    createdAt: Date;
+    subject: { login: string };
+}
+
+function mapAuditLogResponse(log: AuditLogRow) {
+    return {
+        id: log.id,
+        eventType: log.eventType,
+        subjectType: log.subjectType,
+        objectType: log.objectType,
+        subjectId: log.subjectId,
+        objectId: log.objectId,
+        oldValue: log.oldValue,
+        newValue: log.newValue,
+        subjectLogin: log.subject.login,
+        createdAt: log.createdAt.toISOString(),
+    };
+}
+
+async function buildRoleBasedWhere(prisma: PrismaClient, userRole: string, userId: number): Promise<Record<string, unknown>> {
+    let allowedProjectIds: number[] | null = null; // null = all (ADMIN)
+
+    if (userRole !== Role.ADMIN) {
+        allowedProjectIds = await getManagerProjectIds(prisma, userId);
+    }
+
+    const roleBasedWhere: Record<string, unknown> = {};
+
+    if (allowedProjectIds !== null) {
+        const projectIssues = await prisma.issue.findMany({
+            where: {
+                project: { memberships: { some: { userId, role: "MANAGER" } } },
+            },
+            select: { id: true, projectId: true },
+        });
+        const issueIds = projectIssues.map(i => i.id);
+
+        roleBasedWhere.OR = [
+            { objectType: "PROJECT", objectId: { in: allowedProjectIds } },
+            { objectType: "ISSUE", objectId: { in: issueIds } },
+        ];
+    }
+
+    return roleBasedWhere;
+}
 
 function expandEventTypeFilter(where: Record<string, unknown>): Record<string, unknown> {
     const eventType = where.eventType as Record<string, unknown> | undefined;
@@ -76,40 +141,8 @@ export const getAuditLogListService = async (
     const orderBy = buildAuditLogOrderBy(sortBy, sortOrder);
     const { skip, take } = paginationArgs(page, perPage);
 
-    const AUDIT_LOG_FILTER_FIELDS: FieldDefinition[] = [
-        { field: "eventType", label: "Event Type", type: "enum", enumValues: ["USER_CREATED", "USER_UPDATED", "USER_DELETED", "ISSUE_CREATED", "ISSUE_UPDATED", "ISSUE_DELETED", "PROJECT_CREATED", "PROJECT_UPDATED", "PROJECT_DELETED", "MEMBER_ADDED", "MEMBER_UPDATED", "MEMBER_REMOVED", "CREATE", "UPDATE", "DELETE"] },
-        { field: "subjectType", label: "Subject Type", type: "enum", enumValues: ["USER"] },
-        { field: "objectType", label: "Object Type", type: "enum", enumValues: ["PROJECT", "ISSUE"] },
-        { field: "createdAt", label: "Created At", type: "date" },
-    ];
-
     // Role-based filtering: ADMIN sees all, MANAGER sees only their projects
-    const userRole = request.user.role;
-    const userId = Number(request.user.sub);
-
-    let allowedProjectIds: number[] | null = null; // null = all (ADMIN)
-
-    if (userRole !== Role.ADMIN) {
-        allowedProjectIds = await getManagerProjectIds(prisma, userId);
-    }
-
-    // Build role-based where clause
-    const roleBasedWhere: Record<string, unknown> = {};
-
-    if (allowedProjectIds !== null) {
-        const projectIssues = await prisma.issue.findMany({
-            where: {
-                project: { memberships: { some: { userId, role: "MANAGER" } } },
-            },
-            select: { id: true, projectId: true },
-        });
-        const issueIds = projectIssues.map(i => i.id);
-
-        roleBasedWhere.OR = [
-            { objectType: "PROJECT", objectId: { in: allowedProjectIds } },
-            { objectType: "ISSUE", objectId: { in: issueIds } },
-        ];
-    }
+    const roleBasedWhere = await buildRoleBasedWhere(prisma, request.user.role, Number(request.user.sub));
 
     // Build filter where clause
     const filterQuery = parseFilterQuery(filter);
@@ -136,18 +169,7 @@ export const getAuditLogListService = async (
     ]);
 
     return {
-        logs: logs.map(log => ({
-            id: log.id,
-            eventType: log.eventType,
-            subjectType: log.subjectType,
-            objectType: log.objectType,
-            subjectId: log.subjectId,
-            objectId: log.objectId,
-            oldValue: log.oldValue,
-            newValue: log.newValue,
-            subjectLogin: log.subject.login,
-            createdAt: log.createdAt.toISOString(),
-        })),
+        logs: logs.map(mapAuditLogResponse),
         total,
         page,
         perPage,
@@ -162,40 +184,8 @@ export const getAuditLogExportService = async (
 
     const orderBy = buildAuditLogOrderBy(sortBy, sortOrder);
 
-    const AUDIT_LOG_FILTER_FIELDS: FieldDefinition[] = [
-        { field: "eventType", label: "Event Type", type: "enum", enumValues: ["USER_CREATED", "USER_UPDATED", "USER_DELETED", "ISSUE_CREATED", "ISSUE_UPDATED", "ISSUE_DELETED", "PROJECT_CREATED", "PROJECT_UPDATED", "PROJECT_DELETED", "MEMBER_ADDED", "MEMBER_UPDATED", "MEMBER_REMOVED", "CREATE", "UPDATE", "DELETE"] },
-        { field: "subjectType", label: "Subject Type", type: "enum", enumValues: ["USER"] },
-        { field: "objectType", label: "Object Type", type: "enum", enumValues: ["PROJECT", "ISSUE"] },
-        { field: "createdAt", label: "Created At", type: "date" },
-    ];
-
     // Role-based filtering: ADMIN sees all, MANAGER sees only their projects
-    const userRole = request.user.role;
-    const userId = Number(request.user.sub);
-
-    let allowedProjectIds: number[] | null = null; // null = all (ADMIN)
-
-    if (userRole !== Role.ADMIN) {
-        allowedProjectIds = await getManagerProjectIds(prisma, userId);
-    }
-
-    // Build role-based where clause
-    const roleBasedWhere: Record<string, unknown> = {};
-
-    if (allowedProjectIds !== null) {
-        const projectIssues = await prisma.issue.findMany({
-            where: {
-                project: { memberships: { some: { userId, role: "MANAGER" } } },
-            },
-            select: { id: true, projectId: true },
-        });
-        const issueIds = projectIssues.map(i => i.id);
-
-        roleBasedWhere.OR = [
-            { objectType: "PROJECT", objectId: { in: allowedProjectIds } },
-            { objectType: "ISSUE", objectId: { in: issueIds } },
-        ];
-    }
+    const roleBasedWhere = await buildRoleBasedWhere(prisma, request.user.role, Number(request.user.sub));
 
     // Build filter where clause
     const filterQuery = parseFilterQuery(filter);
@@ -218,17 +208,6 @@ export const getAuditLogExportService = async (
     });
 
     return {
-        logs: logs.map(log => ({
-            id: log.id,
-            eventType: log.eventType,
-            subjectType: log.subjectType,
-            objectType: log.objectType,
-            subjectId: log.subjectId,
-            objectId: log.objectId,
-            oldValue: log.oldValue,
-            newValue: log.newValue,
-            subjectLogin: log.subject.login,
-            createdAt: log.createdAt.toISOString(),
-        })),
+        logs: logs.map(mapAuditLogResponse),
     };
 };

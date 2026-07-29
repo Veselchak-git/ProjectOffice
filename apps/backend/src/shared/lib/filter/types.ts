@@ -24,6 +24,6 @@ export type FilterQuery = FilterGroup;
 export type FieldDefinition = {
     field: string;
     label: string;
-    type: 'enum' | 'text' | 'date';
+    type: 'enum' | 'text' | 'date' | 'number';
     enumValues?: string[];
 };

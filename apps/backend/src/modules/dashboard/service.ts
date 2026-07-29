@@ -155,8 +155,8 @@ export const getDashboardService = async (
 
         const totalClosed = await prisma.issue.count({
             where: userRole === Role.ADMIN
-                ? { assigneeId: userId, status: { in: [IssueStatus.RESOLVED, IssueStatus.CLOSED] } }
-                : { assigneeId: userId, projectId: { in: projectIds }, status: { in: [IssueStatus.RESOLVED, IssueStatus.CLOSED] } },
+                ? { assigneeId: userId, status: IssueStatus.CLOSED }
+                : { assigneeId: userId, projectId: { in: projectIds }, status: IssueStatus.CLOSED },
         });
 
         const totalUsers = userRole === Role.ADMIN

@@ -1,4 +1,5 @@
 import { buildFilter, parseFilterQuery } from "../../shared/lib/filter/index.js";
+import type { FilterGroup } from "../../shared/lib/filter/types.js";
 import type { FastifyRequestTypeBox } from "@/shared/lib/typebox/types.js";
 import { ProjectMemberRole, Role } from "@/generated/prisma/enums.js";
 import { Prisma } from "@/generated/prisma/client.js";
@@ -34,6 +35,26 @@ const findResponsible = (memberships: { user: { login: string }; role: string }[
 };
 
 const PROJECT_SORT_FIELDS = new Set(["name", "status", "createdAt", "taskCount", "versionCount"]);
+
+function buildResponsibleFilter(filterQueryParsed: FilterGroup | undefined): Record<string, unknown> | undefined {
+    if (!filterQueryParsed) return undefined;
+    for (const c of filterQueryParsed.conditions) {
+        if (c.field === "responsible" && typeof c.value === "string") {
+            if (c.operator === "eq") {
+                return { memberships: { some: { user: { login: c.value } } } };
+            } else if (c.operator === "neq") {
+                return { NOT: { memberships: { some: { user: { login: c.value } } } } };
+            } else if (c.operator === "contains") {
+                return { memberships: { some: { user: { login: { contains: c.value, mode: "insensitive" } } } } };
+            } else if (c.operator === "not_contains") {
+                return { NOT: { memberships: { some: { user: { login: { contains: c.value, mode: "insensitive" } } } } } };
+            } else if (c.operator === "starts_with") {
+                return { memberships: { some: { user: { login: { startsWith: c.value, mode: "insensitive" } } } } };
+            }
+        }
+    }
+    return undefined;
+}
 
 const buildProjectOrderBy = (sortBy: string | undefined, sortOrder: string): Record<string, unknown> =>
     buildOrderBy(PROJECT_SORT_FIELDS, sortBy, sortOrder, { createdAt: "desc" }, {
@@ -76,13 +97,21 @@ export const getProjectsListService = async (
         where.memberships = { some: { userId } };
     }
 
-    const filterWhere = buildFilter(parseFilterQuery(filter), [
+    const filterQueryParsed = parseFilterQuery(filter);
+
+    const filterWhere = buildFilter(filterQueryParsed, [
         { field: "name", label: "Название", type: "text" },
         { field: "status", label: "Статус", type: "enum", enumValues: ["ACTIVE", "ARCHIVED"] },
         { field: "createdAt", label: "Дата создания", type: "date" },
     ]);
 
-    const finalWhere = filterWhere ? { AND: [where, filterWhere] } : where;
+    // Handle responsible filter separately — it's a computed field from memberships
+    const responsibleWhere = buildResponsibleFilter(filterQueryParsed);
+
+    const additionalWheres = [filterWhere, responsibleWhere].filter(Boolean);
+    const finalWhere = additionalWheres.length === 0
+        ? where
+        : { AND: [where, ...additionalWheres] };
     const { skip, take } = paginationArgs(page, perPage);
 
     const include = {
@@ -139,13 +168,21 @@ export const getProjectsExportService = async (
         where.memberships = { some: { userId } };
     }
 
-    const filterWhere = buildFilter(parseFilterQuery(filter), [
+    const filterQueryParsed = parseFilterQuery(filter);
+
+    const filterWhere = buildFilter(filterQueryParsed, [
         { field: "name", label: "Название", type: "text" },
         { field: "status", label: "Статус", type: "enum", enumValues: ["ACTIVE", "ARCHIVED"] },
         { field: "createdAt", label: "Дата создания", type: "date" },
     ]);
 
-    const finalWhere = filterWhere ? { AND: [where, filterWhere] } : where;
+    // Handle responsible filter separately — it's a computed field from memberships
+    const responsibleWhere = buildResponsibleFilter(filterQueryParsed);
+
+    const additionalWheres = [filterWhere, responsibleWhere].filter(Boolean);
+    const finalWhere = additionalWheres.length === 0
+        ? where
+        : { AND: [where, ...additionalWheres] };
     const orderBy = buildProjectOrderBy(sortBy, sortOrder);
 
     const include = {

@@ -31,7 +31,7 @@ import { useTablePage } from "@/shared/lib/use-table-page";
 import { getLoginEmailRules, getLoginPasswordRules } from "@/shared/lib/validation";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
-import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
+import { DataTable, FilterChips, useFilterHeader } from "@/shared/ui/data-table";
 import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
 import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
@@ -138,73 +138,40 @@ export const UsersPage: FC = () => {
         [setSorting]
     );
 
+    const isFieldFiltered = useCallback(
+        (field: string) => filters.groups[0]?.conditions.some(c => c.field === field) ?? false,
+        [filters]
+    );
+
+    const renderFilterHeader = useFilterHeader({
+        sorting,
+        isFieldFiltered,
+        filterConfig,
+        allConditions,
+        currentLogic,
+        applyConditions,
+        removeFieldConditions,
+        openFilter,
+        setOpenFilter,
+        bumpKey,
+        popoverKeys
+    });
+
+    const roleFields = useMemo(
+        () => filterConfig.fields.map(f => (f.field === "role" ? { ...f, enumValues: getRoleOptions(t) } : f)),
+        [filterConfig.fields, t]
+    );
+
     const columns = useMemo(
         () =>
             [
                 createSelectColumn(columnHelper),
                 columnHelper.accessor("login", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.login")}
-                                field="login"
-                                sortState={sortState}
-                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "login") ?? false}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`login-popover-${popoverKeys["login"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="login"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("login")}
-                                    isOpen={openFilter === "login"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.login"), "login"),
                     enableSorting: true
                 }),
                 columnHelper.accessor("role", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        const roleOptions = getRoleOptions(t);
-                        return (
-                            <ColumnHeader
-                                title={t("table.role")}
-                                field="role"
-                                sortState={sortState}
-                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "role") ?? false}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`role-popover-${popoverKeys["role"] ?? 0}`}
-                                    fields={filterConfig.fields.map(f =>
-                                        f.field === "role" ? { ...f, enumValues: roleOptions } : f
-                                    )}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="role"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("role")}
-                                    isOpen={openFilter === "role"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.role"), "role", roleFields),
                     enableSorting: true,
                     cell: info => {
                         const role = info.getValue();
@@ -213,55 +180,12 @@ export const UsersPage: FC = () => {
                 }),
                 columnHelper.accessor(row => row.createdAt, {
                     id: "createdAt",
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.created")}
-                                field="createdAt"
-                                sortState={sortState}
-                                isActiveFilter={
-                                    filters.groups[0]?.conditions.some(c => c.field === "createdAt") ?? false
-                                }
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`createdAt-popover-${popoverKeys["createdAt"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="createdAt"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("createdAt")}
-                                    isOpen={openFilter === "createdAt"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.created"), "createdAt"),
                     enableSorting: true,
                     cell: info => formatDate(info.getValue())
                 })
             ] as ColumnDef<User>[],
-        [
-            columnHelper,
-            t,
-            filterConfig,
-            allConditions,
-            currentLogic,
-            applyConditions,
-            removeFieldConditions,
-            filters,
-            setOpenFilter,
-            openFilter,
-            bumpKey,
-            popoverKeys,
-            sorting
-        ]
+        [columnHelper, t, renderFilterHeader, roleFields]
     );
 
     const userParams = {

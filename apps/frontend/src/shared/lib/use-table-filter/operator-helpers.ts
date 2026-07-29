@@ -1,6 +1,8 @@
 import type { FieldOption, FilterCondition, FilterOperator } from "./types";
 
-export function getOperatorsForFieldType(type: "enum" | "text" | "date"): { value: FilterOperator; label: string }[] {
+export function getOperatorsForFieldType(
+    type: "enum" | "text" | "date" | "id"
+): { value: FilterOperator; label: string }[] {
     switch (type) {
         case "enum":
             return [
@@ -17,14 +19,20 @@ export function getOperatorsForFieldType(type: "enum" | "text" | "date"): { valu
         case "date":
             return [
                 { value: "after", label: "После" },
-                { value: "before", label: "До" }
+                { value: "before", label: "До" },
+                { value: "eq", label: "Точное совпадение" }
+            ];
+        case "id":
+            return [
+                { value: "eq", label: "Равно" },
+                { value: "neq", label: "Не равно" }
             ];
         default:
             return [];
     }
 }
 
-export function getValueInputType(operator: FilterOperator): "text" | "date" | "multiselect" {
+export function getValueInputType(operator: FilterOperator, fieldType?: string): "text" | "date" | "multiselect" {
     switch (operator) {
         case "in":
         case "not_in":
@@ -32,6 +40,9 @@ export function getValueInputType(operator: FilterOperator): "text" | "date" | "
         case "after":
         case "before":
             return "date";
+        case "eq":
+            if (fieldType === "date") return "date";
+            return "text";
         default:
             return "text";
     }

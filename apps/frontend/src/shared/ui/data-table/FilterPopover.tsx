@@ -182,8 +182,9 @@ function FilterPopoverContent({ fields, conditions: allConditions, initialField,
     };
 
     const handleOperatorChange = (newOperator: FilterOperator) => {
-        const prevType = getValueInputType(operatorValue);
-        const newType = getValueInputType(newOperator);
+        const fieldOpt = fields.find(f => f.field === fieldValue);
+        const prevType = getValueInputType(operatorValue, fieldOpt?.type);
+        const newType = getValueInputType(newOperator, fieldOpt?.type);
 
         setOperatorValue(newOperator);
 
@@ -226,7 +227,7 @@ function FilterPopoverContent({ fields, conditions: allConditions, initialField,
     // ── Render helpers ─────────────────────────────────────────────────
     const renderValueInput = () => {
         const fieldOption = fields.find(f => f.field === fieldValue);
-        const inputType = getValueInputType(operatorValue);
+        const inputType = getValueInputType(operatorValue, fieldOption?.type);
 
         if (inputType === "multiselect" && fieldOption?.enumValues) {
             const selected = Array.isArray(valueValue) ? valueValue : [];
@@ -296,15 +297,17 @@ function FilterPopoverContent({ fields, conditions: allConditions, initialField,
                     />
                 )}
 
-                <Select
-                    className={styles.fieldSelect ?? ""}
-                    placeholder={t("filter.placeholder.select")}
-                    options={operators.map(op => ({ value: op.value, label: t(`filter.operator.${op.value}`) }))}
-                    value={operatorValue}
-                    onValueChange={value => handleOperatorChange(value as FilterOperator)}
-                    usePortal={false}
-                    data-test="filter-operator-0"
-                />
+                <div className={styles.operatorWrapper}>
+                    <Select
+                        className={styles.fieldSelect ?? ""}
+                        placeholder={t("filter.placeholder.select")}
+                        options={operators.map(op => ({ value: op.value, label: t(`filter.operator.${op.value}`) }))}
+                        value={operatorValue}
+                        onValueChange={value => handleOperatorChange(value as FilterOperator)}
+                        usePortal={false}
+                        data-test="filter-operator-0"
+                    />
+                </div>
 
                 {renderValueInput()}
             </div>

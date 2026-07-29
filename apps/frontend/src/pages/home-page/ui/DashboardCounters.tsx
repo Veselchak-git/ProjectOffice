@@ -62,10 +62,18 @@ export const DashboardCounters: FC<Props> = ({ summary, isLoading, userRole, log
         {
             label: t("dashboard.closed"),
             value: summary?.totalClosed ?? 0,
-            to: `/tasks${buildFilterQuery({
-                logic: "AND",
-                conditions: [{ field: "status", operator: "eq", value: "CLOSED" }]
-            })}`
+            to: login
+                ? `/tasks${buildFilterQuery({
+                      logic: "AND",
+                      conditions: [
+                          { field: "status", operator: "eq", value: "CLOSED" },
+                          { field: "assigneeLogin", operator: "eq", value: login }
+                      ]
+                  })}`
+                : `/tasks${buildFilterQuery({
+                      logic: "AND",
+                      conditions: [{ field: "status", operator: "eq", value: "CLOSED" }]
+                  })}`
         }
     ];
 

@@ -10,3 +10,5 @@ export type { TagPickerOption } from "./TagPicker";
 export { reorderColumn } from "./reorderColumn";
 export { createColumnMeta } from "./column-meta";
 export type { ColumnDefMeta, ColumnMetaResult } from "./column-meta";
+export { useFilterHeader } from "./useFilterHeader";
+export type { UseFilterHeaderOptions } from "./useFilterHeader";

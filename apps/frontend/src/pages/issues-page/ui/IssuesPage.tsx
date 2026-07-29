@@ -27,7 +27,7 @@ import type { FieldOption } from "@/shared/lib/use-table-filter/types";
 import { useTablePage } from "@/shared/lib/use-table-page";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
-import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
+import { DataTable, FilterChips, useFilterHeader } from "@/shared/ui/data-table";
 import { createSelectColumn } from "@/shared/ui/data-table/column-helpers";
 import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
@@ -240,103 +240,39 @@ export const IssuesPage: FC = () => {
 
     const columnHelper = useMemo(() => createColumnHelper<Issue>(), []);
 
+    const isFieldFiltered = useCallback(
+        (field: string) => filters.groups[0]?.conditions.some(c => c.field === field) ?? false,
+        [filters]
+    );
+
+    const renderFilterHeader = useFilterHeader({
+        sorting,
+        isFieldFiltered,
+        filterConfig,
+        allConditions,
+        currentLogic,
+        applyConditions,
+        removeFieldConditions,
+        openFilter,
+        setOpenFilter,
+        bumpKey,
+        popoverKeys
+    });
+
     const columns = useMemo(
         () =>
             [
                 createSelectColumn(columnHelper),
                 columnHelper.accessor("title", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.title")}
-                                field="title"
-                                sortState={sortState}
-                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "title") ?? false}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`title-popover-${popoverKeys["title"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="title"
-                                    isOpen={openFilter === "title"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("title")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.title"), "title"),
                     enableSorting: true
                 }),
                 columnHelper.accessor("projectName", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.project")}
-                                field="projectName"
-                                sortState={sortState}
-                                isActiveFilter={
-                                    filters.groups[0]?.conditions.some(c => c.field === "projectName") ?? false
-                                }
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`projectName-popover-${popoverKeys["projectName"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="projectName"
-                                    isOpen={openFilter === "projectName"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("projectName")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.project"), "projectName"),
                     enableSorting: true
                 }),
                 columnHelper.accessor("status", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.status")}
-                                field="status"
-                                sortState={sortState}
-                                isActiveFilter={filters.groups[0]?.conditions.some(c => c.field === "status") ?? false}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`status-popover-${popoverKeys["status"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="status"
-                                    isOpen={openFilter === "status"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("status")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.status"), "status"),
                     enableSorting: true,
                     cell: info => (
                         <Chip color={getStatusChipColor(info.getValue())}>
@@ -345,36 +281,7 @@ export const IssuesPage: FC = () => {
                     )
                 }),
                 columnHelper.accessor("priority", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.priority")}
-                                field="priority"
-                                sortState={sortState}
-                                isActiveFilter={
-                                    filters.groups[0]?.conditions.some(c => c.field === "priority") ?? false
-                                }
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`priority-popover-${popoverKeys["priority"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="priority"
-                                    isOpen={openFilter === "priority"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("priority")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.priority"), "priority"),
                     enableSorting: true,
                     cell: info => (
                         <Chip color={getPriorityChipColor(info.getValue())}>
@@ -383,128 +290,23 @@ export const IssuesPage: FC = () => {
                     )
                 }),
                 columnHelper.accessor("category", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.category")}
-                                field="category"
-                                sortState={sortState}
-                                isActiveFilter={
-                                    filters.groups[0]?.conditions.some(c => c.field === "category") ?? false
-                                }
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`category-popover-${popoverKeys["category"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="category"
-                                    isOpen={openFilter === "category"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("category")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.category"), "category"),
                     enableSorting: true,
                     cell: info => t(`category.${info.getValue().toLowerCase()}`)
                 }),
                 columnHelper.accessor("assigneeLogin", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.assignee")}
-                                field="assigneeLogin"
-                                sortState={sortState}
-                                isActiveFilter={
-                                    filters.groups[0]?.conditions.some(c => c.field === "assigneeLogin") ?? false
-                                }
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`assigneeLogin-popover-${popoverKeys["assigneeLogin"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="assigneeLogin"
-                                    isOpen={openFilter === "assigneeLogin"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("assigneeLogin")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.assignee"), "assigneeLogin"),
                     enableSorting: true,
                     cell: info => info.getValue() ?? "—"
                 }),
                 columnHelper.accessor((row: Issue) => row.createdAt, {
                     id: "createdAt",
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.created")}
-                                field="createdAt"
-                                sortState={sortState}
-                                isActiveFilter={
-                                    filters.groups[0]?.conditions.some(c => c.field === "createdAt") ?? false
-                                }
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`createdAt-popover-${popoverKeys["createdAt"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="createdAt"
-                                    isOpen={openFilter === "createdAt"}
-                                    onClose={() => setOpenFilter(null)}
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("createdAt")}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.created"), "createdAt"),
                     enableSorting: true,
                     cell: info => formatDate(info.getValue())
                 })
             ] as ColumnDef<Issue>[],
-        [
-            columnHelper,
-            t,
-            sorting,
-            filterConfig,
-            statusLabels,
-            priorityLabels,
-            getStatusChipColor,
-            getPriorityChipColor,
-            filters,
-            allConditions,
-            currentLogic,
-            applyConditions,
-            removeFieldConditions,
-            setOpenFilter,
-            openFilter,
-            bumpKey,
-            popoverKeys
-        ]
+        [columnHelper, t, renderFilterHeader, statusLabels, priorityLabels, getStatusChipColor, getPriorityChipColor]
     );
     const sortBy = sorting[0]?.id;
     const sortOrder: "asc" | "desc" | undefined = sorting[0]?.desc ? "desc" : sorting[0] ? "asc" : undefined;

@@ -28,7 +28,7 @@ import type { FieldOption } from "@/shared/lib/use-table-filter/types";
 import { useTablePage } from "@/shared/lib/use-table-page";
 
 import { ColumnsDropdown } from "@/shared/ui/columns-dropdown";
-import { ColumnHeader, DataTable, FilterChips, FilterPopover } from "@/shared/ui/data-table";
+import { DataTable, FilterChips, useFilterHeader } from "@/shared/ui/data-table";
 import { ExportModal } from "@/shared/ui/export-modal";
 import { PageHeader } from "@/shared/ui/page-header";
 
@@ -78,14 +78,13 @@ export const AuditLogPage: FC = () => {
                     label: t("filter.objectType"),
                     type: "enum",
                     enumValues: [
-                        { value: "ISSUE", label: t("filter.objects.ISSUE") },
-                        { value: "PROJECT", label: t("filter.objects.PROJECT") },
-                        { value: "USER", label: t("filter.objects.USER") },
-                        { value: "AUDIT_LOG", label: t("filter.objects.AUDIT_LOG") }
+                        { value: "ISSUE", label: t("objectType.ISSUE") },
+                        { value: "PROJECT", label: t("objectType.PROJECT") },
+                        { value: "USER", label: t("objectType.USER") }
                     ]
                 },
-                { field: "subjectId", label: t("filter.subjectId"), type: "text" },
-                { field: "objectId", label: t("filter.objectId"), type: "text" },
+                { field: "subjectId", label: t("filter.subjectId"), type: "id" },
+                { field: "objectId", label: t("filter.objectId"), type: "id" },
                 { field: "createdAt", label: t("filter.createdAt"), type: "date" }
             ]
         }),
@@ -166,6 +165,20 @@ export const AuditLogPage: FC = () => {
         [filters, setFilters, applyFilters]
     );
 
+    const renderFilterHeader = useFilterHeader({
+        sorting,
+        isFieldFiltered,
+        filterConfig,
+        allConditions,
+        currentLogic,
+        applyConditions,
+        removeFieldConditions,
+        openFilter,
+        setOpenFilter,
+        bumpKey,
+        popoverKeys
+    });
+
     const columnHelper = useMemo(() => createColumnHelper<AuditLog>(), []);
 
     const eventTypeLabels = useMemo<Record<string, string>>(
@@ -210,34 +223,7 @@ export const AuditLogPage: FC = () => {
         () =>
             [
                 columnHelper.accessor("eventType", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.eventType")}
-                                field="eventType"
-                                sortState={sortState}
-                                isActiveFilter={isFieldFiltered("eventType")}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`eventType-popover-${popoverKeys["eventType"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="eventType"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("eventType")}
-                                    isOpen={openFilter === "eventType"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.eventType"), "eventType"),
                     enableSorting: true,
                     cell: info => {
                         const v = info.getValue();
@@ -251,183 +237,31 @@ export const AuditLogPage: FC = () => {
                     }
                 }),
                 columnHelper.accessor("subjectType", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.subjectType")}
-                                field="subjectType"
-                                sortState={sortState}
-                                isActiveFilter={isFieldFiltered("subjectType")}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`subjectType-popover-${popoverKeys["subjectType"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="subjectType"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("subjectType")}
-                                    isOpen={openFilter === "subjectType"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.subjectType"), "subjectType"),
                     enableSorting: true,
                     cell: info => subjectTypeLabels[info.getValue()] ?? info.getValue()
                 }),
                 columnHelper.accessor("objectType", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.objectType")}
-                                field="objectType"
-                                sortState={sortState}
-                                isActiveFilter={isFieldFiltered("objectType")}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`objectType-popover-${popoverKeys["objectType"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="objectType"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("objectType")}
-                                    isOpen={openFilter === "objectType"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.objectType"), "objectType"),
                     enableSorting: true,
                     cell: info => objectTypeLabels[info.getValue()] ?? info.getValue()
                 }),
                 columnHelper.accessor("subjectId", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.subjectId")}
-                                field="subjectId"
-                                sortState={sortState}
-                                isActiveFilter={isFieldFiltered("subjectId")}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`subjectId-popover-${popoverKeys["subjectId"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="subjectId"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("subjectId")}
-                                    isOpen={openFilter === "subjectId"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.subjectId"), "subjectId"),
                     enableSorting: true
                 }),
                 columnHelper.accessor("objectId", {
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.objectId")}
-                                field="objectId"
-                                sortState={sortState}
-                                isActiveFilter={isFieldFiltered("objectId")}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`objectId-popover-${popoverKeys["objectId"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="objectId"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("objectId")}
-                                    isOpen={openFilter === "objectId"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.objectId"), "objectId"),
                     enableSorting: true
                 }),
                 columnHelper.accessor((row: AuditLog) => row.createdAt, {
                     id: "createdAt",
-                    header: ({ column }) => {
-                        const sorted = sorting.find(s => s.id === column.id);
-                        const sortState: "none" | "asc" | "desc" = sorted ? (sorted.desc ? "desc" : "asc") : "none";
-                        return (
-                            <ColumnHeader
-                                title={t("table.created")}
-                                field="createdAt"
-                                sortState={sortState}
-                                isActiveFilter={isFieldFiltered("createdAt")}
-                                onFilterClick={f => {
-                                    setOpenFilter(f);
-                                    bumpKey(f);
-                                }}
-                            >
-                                <FilterPopover
-                                    key={`createdAt-popover-${popoverKeys["createdAt"] ?? 0}`}
-                                    fields={filterConfig.fields}
-                                    conditions={allConditions}
-                                    logic={currentLogic}
-                                    initialField="createdAt"
-                                    onApply={(conditions, logic) => applyConditions(conditions, logic)}
-                                    onReset={() => removeFieldConditions("createdAt")}
-                                    isOpen={openFilter === "createdAt"}
-                                    onClose={() => setOpenFilter(null)}
-                                />
-                            </ColumnHeader>
-                        );
-                    },
+                    header: renderFilterHeader(t("table.created"), "createdAt"),
                     enableSorting: true,
                     cell: info => formatDate(info.getValue())
                 })
             ] as ColumnDef<AuditLog>[],
-        [
-            columnHelper,
-            t,
-            sorting,
-            filterConfig,
-            isFieldFiltered,
-            allConditions,
-            currentLogic,
-            applyConditions,
-            removeFieldConditions,
-            openFilter,
-            setOpenFilter,
-            bumpKey,
-            popoverKeys,
-            eventTypeLabels,
-            subjectTypeLabels,
-            objectTypeLabels
-        ]
+        [columnHelper, t, renderFilterHeader, eventTypeLabels, subjectTypeLabels, objectTypeLabels]
     );
 
     const sortBy = sorting[0]?.id;

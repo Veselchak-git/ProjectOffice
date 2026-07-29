@@ -24,7 +24,7 @@ export type FilterGroup = {
 export type FieldOption = {
     field: string;
     label: string;
-    type: "enum" | "text" | "date";
+    type: "enum" | "text" | "date" | "id";
     enumValues?: { value: string; label: string }[];
 };
 

@@ -13,7 +13,7 @@ import { buildOrderBy, paginationArgs } from "@/shared/lib/prisma-pagination/ind
 import { resolveProjectAccess } from "@/shared/lib/project-access/index.js";
 import { assertValidAssignee } from "@/shared/lib/validate-assignee/index.js";
 import { buildFilter, parseFilterQuery } from "@/shared/lib/filter/index.js";
-import type { FieldDefinition } from "@/shared/lib/filter/types.js";
+import type { FieldDefinition, FilterGroup } from "@/shared/lib/filter/types.js";
 import {
     IssueCategory,
     IssuePriority,
@@ -100,6 +100,53 @@ const include = {
     reporter: { select: { login: true } },
 } as const;
 
+const ISSUE_FILTER_FIELDS: FieldDefinition[] = [
+    { field: "title", type: "text", label: "Title" },
+    { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
+    { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
+    { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
+    { field: "createdAt", type: "date", label: "Created At" },
+];
+
+interface RelationFilters {
+    assigneeWhere?: Record<string, unknown>;
+    projectNameWhere?: Record<string, unknown>;
+}
+
+function buildRelationFilters(filterQuery: FilterGroup | undefined): RelationFilters {
+    const result: RelationFilters = {};
+    if (!filterQuery) return result;
+    for (const c of filterQuery.conditions) {
+        if (c.field === "assigneeLogin" && typeof c.value === "string") {
+            if (c.operator === "eq") {
+                result.assigneeWhere = { assignee: { login: c.value } };
+            } else if (c.operator === "neq") {
+                result.assigneeWhere = { NOT: { assignee: { login: c.value } } };
+            } else if (c.operator === "contains") {
+                result.assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
+            } else if (c.operator === "not_contains") {
+                result.assigneeWhere = { NOT: { assignee: { login: { contains: c.value, mode: "insensitive" } } } };
+            } else if (c.operator === "starts_with") {
+                result.assigneeWhere = { assignee: { login: { startsWith: c.value, mode: "insensitive" } } };
+            }
+        }
+        if (c.field === "projectName" && typeof c.value === "string") {
+            if (c.operator === "eq") {
+                result.projectNameWhere = { project: { name: c.value } };
+            } else if (c.operator === "neq") {
+                result.projectNameWhere = { NOT: { project: { name: c.value } } };
+            } else if (c.operator === "contains") {
+                result.projectNameWhere = { project: { name: { contains: c.value, mode: "insensitive" } } };
+            } else if (c.operator === "not_contains") {
+                result.projectNameWhere = { NOT: { project: { name: { contains: c.value, mode: "insensitive" } } } };
+            } else if (c.operator === "starts_with") {
+                result.projectNameWhere = { project: { name: { startsWith: c.value, mode: "insensitive" } } };
+            }
+        }
+    }
+    return result;
+}
+
 const getIssueOrThrow = async (prisma: PrismaClient, id: number): Promise<IssueRow> => {
     const issue = await prisma.issue.findUnique({
         where: { id },
@@ -137,28 +184,13 @@ export const getIssuesListService = async (
         ];
     }
 
-    const filterFields: FieldDefinition[] = [
-        { field: "title", type: "text", label: "Title" },
-        { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
-        { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
-        { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
-        { field: "createdAt", type: "date", label: "Created At" },
-    ];
-
     const filterQuery = parseFilterQuery(filter);
-    const filterWhere = buildFilter(filterQuery, filterFields);
+    const filterWhere = buildFilter(filterQuery, ISSUE_FILTER_FIELDS);
 
-    // Handle assigneeLogin filter separately — it's a relation field (assignee.login)
-    let assigneeWhere: Record<string, unknown> | undefined;
-    if (filterQuery) {
-        for (const c of filterQuery.conditions) {
-            if (c.field === "assigneeLogin" && c.operator === "contains" && typeof c.value === "string") {
-                assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
-            }
-        }
-    }
+    // Handle relation fields (assigneeLogin, projectName) separately
+    const { assigneeWhere, projectNameWhere } = buildRelationFilters(filterQuery);
 
-    const additionalWheres = [filterWhere, assigneeWhere].filter(Boolean);
+    const additionalWheres = [filterWhere, assigneeWhere, projectNameWhere].filter(Boolean);
     const where: Record<string, unknown> = additionalWheres.length === 0
         ? roleBasedWhere
         : { AND: [roleBasedWhere, ...additionalWheres] };
@@ -205,28 +237,13 @@ export const getIssuesExportService = async (
         ];
     }
 
-    const filterFields: FieldDefinition[] = [
-        { field: "title", type: "text", label: "Title" },
-        { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
-        { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
-        { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
-        { field: "createdAt", type: "date", label: "Created At" },
-    ];
-
     const filterQuery = parseFilterQuery(filter);
-    const filterWhere = buildFilter(filterQuery, filterFields);
+    const filterWhere = buildFilter(filterQuery, ISSUE_FILTER_FIELDS);
 
-    // Handle assigneeLogin filter separately — it's a relation field (assignee.login)
-    let assigneeWhere: Record<string, unknown> | undefined;
-    if (filterQuery) {
-        for (const c of filterQuery.conditions) {
-            if (c.field === "assigneeLogin" && c.operator === "contains" && typeof c.value === "string") {
-                assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
-            }
-        }
-    }
+    // Handle relation fields (assigneeLogin, projectName) separately
+    const { assigneeWhere, projectNameWhere } = buildRelationFilters(filterQuery);
 
-    const additionalWheres = [filterWhere, assigneeWhere].filter(Boolean);
+    const additionalWheres = [filterWhere, assigneeWhere, projectNameWhere].filter(Boolean);
     const where: Record<string, unknown> = additionalWheres.length === 0
         ? roleBasedWhere
         : { AND: [roleBasedWhere, ...additionalWheres] };
@@ -250,26 +267,11 @@ export const getProjectIssuesService = async (
 
     const baseWhere: Record<string, unknown> = { projectId: id };
 
-    const filterFields: FieldDefinition[] = [
-        { field: "title", type: "text", label: "Title" },
-        { field: "status", type: "enum", enumValues: Object.values(IssueStatus), label: "Status" },
-        { field: "priority", type: "enum", enumValues: Object.values(IssuePriority), label: "Priority" },
-        { field: "category", type: "enum", enumValues: Object.values(IssueCategory), label: "Category" },
-        { field: "createdAt", type: "date", label: "Created At" },
-    ];
-
     const filterQuery = parseFilterQuery(filter);
-    const filterWhere = buildFilter(filterQuery, filterFields);
+    const filterWhere = buildFilter(filterQuery, ISSUE_FILTER_FIELDS);
 
-    // Handle assigneeLogin filter separately — it's a relation field (assignee.login)
-    let assigneeWhere: Record<string, unknown> | undefined;
-    if (filterQuery) {
-        for (const c of filterQuery.conditions) {
-            if (c.field === "assigneeLogin" && c.operator === "contains" && typeof c.value === "string") {
-                assigneeWhere = { assignee: { login: { contains: c.value, mode: "insensitive" } } };
-            }
-        }
-    }
+    // Handle relation fields (assigneeLogin) separately
+    const { assigneeWhere } = buildRelationFilters(filterQuery);
 
     const additionalWheres = [filterWhere, assigneeWhere].filter(Boolean);
     const where: Record<string, unknown> = additionalWheres.length === 0

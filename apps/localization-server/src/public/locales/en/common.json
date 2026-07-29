@@ -47,6 +47,7 @@
             "not_contains": "Does not contain",
             "starts_with": "Starts with",
             "eq": "Exact match",
+            "neq": "Not equal",
             "in": "In list",
             "not_in": "Not in list",
             "after": "After",

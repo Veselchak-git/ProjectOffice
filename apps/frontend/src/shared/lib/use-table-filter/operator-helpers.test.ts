@@ -15,10 +15,16 @@ describe("getOperatorsForFieldType", () => {
         expect(result.map(o => o.value)).toEqual(["contains", "not_contains", "starts_with", "eq"]);
     });
 
-    it("date → 2 оператора (after, before)", () => {
+    it("date → 3 оператора (after, before, eq)", () => {
         const result = getOperatorsForFieldType("date");
+        expect(result).toHaveLength(3);
+        expect(result.map(o => o.value)).toEqual(["after", "before", "eq"]);
+    });
+
+    it("id → 2 оператора (eq, neq)", () => {
+        const result = getOperatorsForFieldType("id");
         expect(result).toHaveLength(2);
-        expect(result.map(o => o.value)).toEqual(["after", "before"]);
+        expect(result.map(o => o.value)).toEqual(["eq", "neq"]);
     });
 });
 
