@@ -72,7 +72,7 @@ describe("ProfilePage", () => {
 
     it("renders success message after successful password change", async () => {
         mockChangePassword.mockResolvedValueOnce(undefined);
-        const user = userEvent.setup();
+        const user = userEvent.setup({ delay: null });
         render(<ProfilePage />);
 
         await user.type(screen.getByPlaceholderText("auth:profile.currentPassword.placeholder"), "oldPass123");
@@ -88,7 +88,7 @@ describe("ProfilePage", () => {
 
     it("shows error modal on password change failure", async () => {
         mockChangePassword.mockRejectedValueOnce(new Error("Old password incorrect"));
-        const user = userEvent.setup();
+        const user = userEvent.setup({ delay: null });
         render(<ProfilePage />);
 
         await user.type(screen.getByPlaceholderText("auth:profile.currentPassword.placeholder"), "oldPass123");
@@ -103,7 +103,7 @@ describe("ProfilePage", () => {
     });
 
     it("disables submit button when not all fields are filled", async () => {
-        const user = userEvent.setup();
+        const user = userEvent.setup({ delay: null });
         render(<ProfilePage />);
 
         await user.type(screen.getByPlaceholderText("auth:profile.currentPassword.placeholder"), "pass123");

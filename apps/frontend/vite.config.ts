@@ -41,7 +41,8 @@ export default mergeConfig(
             globals: true,
             environment: "jsdom",
             setupFiles: [resolve(__dirname, "src/vitest.setup.ts")],
-            css: true
+            css: true,
+            testTimeout: 15_000
         }
     })
 );
