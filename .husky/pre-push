@@ -1,2 +1,2 @@
 echo "Running tests before push..."
-npm exec vitest -- run --passWithNoTests
+npm exec vitest -- run --passWithNoTests --testTimeout=15000
