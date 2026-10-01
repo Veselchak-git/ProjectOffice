@@ -97,7 +97,7 @@ describe("LoginPage", () => {
     });
 
     it("enables submit button when both fields are filled", async () => {
-        const user = userEvent.setup();
+        const user = userEvent.setup({ delay: null });
         renderPage();
 
         await user.type(screen.getByPlaceholderText("auth:login.email.placeholder"), "test@example.com");
@@ -109,7 +109,7 @@ describe("LoginPage", () => {
 
     it("calls login and navigates on successful submit", async () => {
         mockLogin.mockResolvedValueOnce(undefined);
-        const user = userEvent.setup();
+        const user = userEvent.setup({ delay: null });
         renderPage();
 
         await user.type(screen.getByPlaceholderText("auth:login.email.placeholder"), "test@example.com");
@@ -124,7 +124,7 @@ describe("LoginPage", () => {
 
     it("shows error modal on login failure", async () => {
         mockLogin.mockRejectedValueOnce(new Error("Invalid credentials"));
-        const user = userEvent.setup();
+        const user = userEvent.setup({ delay: null });
         renderPage();
 
         await user.type(screen.getByPlaceholderText("auth:login.email.placeholder"), "test@example.com");
